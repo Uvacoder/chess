@@ -1,0 +1,47 @@
+:root {
+  --cell-dim: 100px;
+  --cell-count: 8;
+
+  --clr-black-cell: hsl(89, 27%, 46%);
+  --clr-white-cell: hsl(62, 42%, 87%);
+}
+.board {
+  color: black;
+  display: grid;
+  grid-template-columns: repeat(var(--cell-count), var(--cell-dim));
+}
+.board-col {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: var(--cell-dim);
+}
+.board-col-movable {
+  cursor: pointer;
+}
+.board-col-movable:hover {
+  opacity: 0.9;
+}
+.board-idx {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  font-size: 0.85rem;
+}
+
+.black-cell {
+  background-color: var(--clr-black-cell);
+}
+
+.white-cell {
+  background-color: var(--clr-white-cell);
+}
+
+.mark {
+  background: gold;
+  border: 2px solid black;
+}
+.valid-cell {
+  background: rgba(255, 217, 0, 0.81);
+  border: 2px solid black;
+}
