@@ -1,5 +1,5 @@
 export const START_POSITION =
-  "rn2kbnr/pppQpppp/8/3p4/3P2b1/8/3KPPPP/2BN1BNR b kq - 2 11";
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 export enum COLORS {
   WHITE = "white",
   BLACK = "black",
