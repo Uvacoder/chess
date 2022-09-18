@@ -12,3 +12,7 @@ export enum PIECES {
   ROOK = "R",
   PAWN = "P",
 }
+export const DIM = 8;
+export const CELL_SIZE = 75;
+export const BOARD_SIZE = DIM * CELL_SIZE;
+export const SPRITE_SIZE = 0.8 * CELL_SIZE;

@@ -4,6 +4,7 @@ import Board from "./models/Board";
 import BoardComponent from "./components/board";
 import Fen from "./models/Fen";
 import { START_POSITION } from "./utils/Constants";
+import PlayerBanner from "./components/PlayerBanner";
 
 function App() {
   const [board, setBoard] = useState<Board>();
@@ -20,8 +21,12 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <BoardComponent key={"board"} board={board as Board} />
+    <div className="grid h-screen place-items-center">
+      <div>
+        <PlayerBanner name="Player 1" />
+        <BoardComponent key={"board"} board={board as Board} />
+        <PlayerBanner name="Player 2" />
+      </div>
     </div>
   );
 }
