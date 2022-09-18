@@ -8,7 +8,10 @@ Meanwhile take a look at the roadmap to see what things have been completed.
 
 # Plan
 
-- Implement All Possible Valid Moves for Pieces ✔️
+- Implement All Possible Valid Moves for Pieces ⌛
+  - Remaining:
+    - Castle
+    - En passant
 - Implement Piece Capture ✖️
 - Implement Check Detection ✖️
 - Implement Game Over States ✖️
