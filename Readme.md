@@ -2,7 +2,7 @@
 
 Game Status:
 
-Play the game here: [Play Chess](#)
+Play the game here: [Play Chess](https://chess.suparthnarayanghimire.com.np)
 
 Meanwhile take a look at the roadmap to see what things have been completed.
 
