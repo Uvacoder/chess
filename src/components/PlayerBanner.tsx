@@ -19,7 +19,7 @@ export default function PlayerBanner({ name }: { name: string }) {
         </div>
       </div>
       <div className="bg-neutral-700 px-4 py-2 rounded font-bold">
-        Points: 12
+        ⌛ 8 : 12
       </div>
     </div>
   );
