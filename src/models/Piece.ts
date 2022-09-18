@@ -4,7 +4,7 @@ import Cell from "./Cell";
 type TMove = Array<{ row: number; col: number }>;
 
 export default class Piece {
-  private color: string;
+  protected m_color: string;
   private m_marked = false;
   private m_spriteSrc: string = "";
   private m_hasMoved: boolean = false;
@@ -12,7 +12,13 @@ export default class Piece {
     return this.pieceName ? PIECES[this.pieceName as keyof typeof PIECES] : "";
   }
 
+  public GetColor() {
+    return this.m_color;
+  }
+
   public static GenSlide(
+    board: Cell[][],
+    currColor: string,
     row: number,
     col: number,
     rowOffset: number,
@@ -22,10 +28,17 @@ export default class Piece {
     const newRow = row + rowOffset;
     const newCol = col + colOffset;
 
-    if (Cell.IsValidCell(newRow, newCol)) {
-      console.log({ row: newRow, col: newCol });
+    if (Cell.IsValidCell(board, currColor, newRow, newCol)) {
       list.push({ row: newRow, col: newCol });
-      Piece.GenSlide(newRow, newCol, rowOffset, colOffset, list);
+      Piece.GenSlide(
+        board,
+        currColor,
+        newRow,
+        newCol,
+        rowOffset,
+        colOffset,
+        list
+      );
     } else return list;
   }
 
@@ -35,14 +48,14 @@ export default class Piece {
     protected col: number
   ) {
     this.pieceName = pieceName;
-    this.color = this.pieceName
+    this.m_color = this.pieceName
       ? this.pieceName === this.pieceName.toUpperCase()
         ? COLORS.WHITE
         : COLORS.BLACK
       : "";
 
     this.m_spriteSrc = this.pieceName
-      ? `/assets/sprites/${this.color.toLowerCase()}/${this.pieceName.toLowerCase()}.png`
+      ? `/assets/sprites/${this.m_color.toLowerCase()}/${this.pieceName.toLowerCase()}.png`
       : "";
   }
 
@@ -66,22 +79,35 @@ export default class Piece {
     let move: TMove = [];
     switch (this.pieceName && this.pieceName.toUpperCase()) {
       case PIECES.KING:
-        move = King.ValidMoves(this.row, this.col);
+        move = King.ValidMoves(board, this.m_color, this.row, this.col);
         break;
       case PIECES.QUEEN:
-        move = Queen.ValidMoves(this.row, this.col);
+        move = Queen.ValidMoves(board, this.m_color, this.row, this.col);
         break;
       case PIECES.ROOK:
-        move = Rook.ValidMoves(this.row, this.col, this.m_hasMoved);
+        move = Rook.ValidMoves(
+          board,
+          this.m_color,
+          this.row,
+          this.col,
+          this.m_hasMoved
+        );
         break;
       case PIECES.BISHOP:
-        move = Bishop.ValidMoves(this.row, this.col);
+        move = Bishop.ValidMoves(board, this.m_color, this.row, this.col);
         break;
       case PIECES.KNIGHT:
-        move = Knight.ValidMoves(this.row, this.col);
+        move = Knight.ValidMoves(board, this.m_color, this.row, this.col);
         break;
       case PIECES.PAWN:
-        move = Pawn.ValidMoves(this.row, this.col, this.color, this.m_hasMoved);
+        move = Pawn.ValidMoves(
+          board,
+          this.m_color,
+          this.row,
+          this.col,
+          this.m_color,
+          this.m_hasMoved
+        );
         break;
     }
     return move;
@@ -93,7 +119,7 @@ class King extends Piece {
   private static row: number;
   private static col: number;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number
   ) {
@@ -102,31 +128,37 @@ class King extends Piece {
     King.row = this.row;
     King.col = this.col;
   }
-  public static ValidMoves(row: number, col: number) {
-    let uR = Cell.IsValidCell(row - 1, col + 1)
+  public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number
+  ) {
+    let uR = Cell.IsValidCell(board, currColor, row - 1, col + 1)
       ? { row: row - 1, col: col + 1 }
       : undefined;
-    let uL = Cell.IsValidCell(row - 1, col - 1)
+    let uL = Cell.IsValidCell(board, currColor, row - 1, col - 1)
       ? { row: row - 1, col: col - 1 }
       : undefined;
-    let dR = Cell.IsValidCell(row + 1, col + 1)
+    let dR = Cell.IsValidCell(board, currColor, row + 1, col + 1)
       ? { row: row + 1, col: col + 1 }
       : undefined;
-    let dL = Cell.IsValidCell(row + 1, col - 1)
+    let dL = Cell.IsValidCell(board, currColor, row + 1, col - 1)
       ? { row: row + 1, col: col - 1 }
       : undefined;
-    let u = Cell.IsValidCell(row - 1, col)
+    let u = Cell.IsValidCell(board, currColor, row - 1, col)
       ? { row: row - 1, col: col }
       : undefined;
-    let d = Cell.IsValidCell(row + 1, col)
+    let d = Cell.IsValidCell(board, currColor, row + 1, col)
       ? { row: row + 1, col: col }
       : undefined;
-    let r = Cell.IsValidCell(row, col + 1)
+    let r = Cell.IsValidCell(board, currColor, row, col + 1)
       ? { row: row, col: col + 1 }
       : undefined;
-    let l = Cell.IsValidCell(row, col - 1)
+    let l = Cell.IsValidCell(board, currColor, row, col - 1)
       ? { row: row, col: col - 1 }
       : undefined;
+
     const moves = [];
     if (uR) moves.push(uR);
     if (uL) moves.push(uL);
@@ -142,24 +174,29 @@ class King extends Piece {
 class Queen extends Piece {
   public m_pieceName: string = PIECES.QUEEN;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number
   ) {
     super(PIECES.QUEEN, row, col);
     this.m_color = m_color;
   }
-  public static ValidMoves(row: number, col: number) {
+  public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number
+  ) {
     const moves = [{ row, col }];
-    Piece.GenSlide(row, col, -1, 0, moves);
-    Piece.GenSlide(row, col, 1, 0, moves);
-    Piece.GenSlide(row, col, 0, -1, moves);
-    Piece.GenSlide(row, col, 0, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, 0, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, 0, moves);
+    Piece.GenSlide(board, currColor, row, col, 0, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, 0, 1, moves);
 
-    Piece.GenSlide(row, col, 1, 1, moves);
-    Piece.GenSlide(row, col, -1, 1, moves);
-    Piece.GenSlide(row, col, 1, -1, moves);
-    Piece.GenSlide(row, col, -1, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, -1, moves);
     return moves;
   }
 }
@@ -167,7 +204,7 @@ class Queen extends Piece {
 class Rook extends Piece {
   public m_pieceName: string = PIECES.ROOK;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number,
     protected hasMoved: boolean
@@ -175,12 +212,18 @@ class Rook extends Piece {
     super(PIECES.ROOK, row, col);
     this.m_color = m_color;
   }
-  public static ValidMoves(row: number, col: number, hasMoved: boolean) {
+  public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number,
+    hasMoved: boolean
+  ) {
     const moves = [{ row, col }];
-    Piece.GenSlide(row, col, -1, 0, moves);
-    Piece.GenSlide(row, col, 1, 0, moves);
-    Piece.GenSlide(row, col, 0, -1, moves);
-    Piece.GenSlide(row, col, 0, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, 0, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, 0, moves);
+    Piece.GenSlide(board, currColor, row, col, 0, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, 0, 1, moves);
 
     return moves;
   }
@@ -188,19 +231,24 @@ class Rook extends Piece {
 class Bishop extends Piece {
   public m_pieceName: string = PIECES.BISHOP;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number
   ) {
     super(PIECES.BISHOP, row, col);
     this.m_color = m_color;
   }
-  public static ValidMoves(row: number, col: number) {
+  public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number
+  ) {
     const moves = [{ row, col }];
-    Piece.GenSlide(row, col, 1, 1, moves);
-    Piece.GenSlide(row, col, -1, 1, moves);
-    Piece.GenSlide(row, col, 1, -1, moves);
-    Piece.GenSlide(row, col, -1, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, 1, moves);
+    Piece.GenSlide(board, currColor, row, col, 1, -1, moves);
+    Piece.GenSlide(board, currColor, row, col, -1, -1, moves);
     return moves;
   }
 }
@@ -208,37 +256,42 @@ class Bishop extends Piece {
 class Knight extends Piece {
   public m_pieceName: string = PIECES.KNIGHT;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number
   ) {
     super(PIECES.KNIGHT, row, col);
     this.m_color = m_color;
   }
-  public static ValidMoves(row: number, col: number) {
-    let uR = Cell.IsValidCell(row - 2, col + 1)
+  public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number
+  ) {
+    let uR = Cell.IsValidCell(board, currColor, row - 2, col + 1)
       ? { row: row - 2, col: col + 1 }
       : undefined;
-    let uL = Cell.IsValidCell(row - 2, col - 1)
+    let uL = Cell.IsValidCell(board, currColor, row - 2, col - 1)
       ? { row: row - 2, col: col - 1 }
       : undefined;
-    let dR = Cell.IsValidCell(row + 2, col + 1)
+    let dR = Cell.IsValidCell(board, currColor, row + 2, col + 1)
       ? { row: row + 2, col: col + 1 }
       : undefined;
-    let dL = Cell.IsValidCell(row + 2, col - 1)
+    let dL = Cell.IsValidCell(board, currColor, row + 2, col - 1)
       ? { row: row + 2, col: col - 1 }
       : undefined;
 
-    let rR = Cell.IsValidCell(row - 1, col + 2)
+    let rR = Cell.IsValidCell(board, currColor, row - 1, col + 2)
       ? { row: row - 1, col: col + 2 }
       : undefined;
-    let rL = Cell.IsValidCell(row - 1, col - 2)
+    let rL = Cell.IsValidCell(board, currColor, row - 1, col - 2)
       ? { row: row - 1, col: col - 2 }
       : undefined;
-    let lR = Cell.IsValidCell(row + 1, col + 2)
+    let lR = Cell.IsValidCell(board, currColor, row + 1, col + 2)
       ? { row: row + 1, col: col + 2 }
       : undefined;
-    let lL = Cell.IsValidCell(row + 1, col - 2)
+    let lL = Cell.IsValidCell(board, currColor, row + 1, col - 2)
       ? { row: row + 1, col: col - 2 }
       : undefined;
     const moves = [];
@@ -257,7 +310,7 @@ class Knight extends Piece {
 class Pawn extends Piece {
   public m_pieceName: string = PIECES.PAWN;
   constructor(
-    private m_color: string,
+    protected m_color: string,
     protected row: number,
     protected col: number
   ) {
@@ -266,18 +319,28 @@ class Pawn extends Piece {
   }
 
   public static ValidMoves(
+    board: Cell[][],
+    currColor: string,
     row: number,
     col: number,
-    color: string,
+    m_color: string,
     hasMoved: boolean
   ): TMove {
-    if (color === COLORS.WHITE) {
-      const moves = [{ row: row - 1, col }];
-      if (!hasMoved) moves.push({ row: row - 2, col });
+    if (m_color === COLORS.WHITE) {
+      const moves = [];
+      if (Cell.IsValidCell(board, currColor, row - 1, col))
+        moves.push({ row: row - 1, col });
+
+      if (!hasMoved && Cell.IsValidCell(board, currColor, row - 2, col))
+        moves.push({ row: row - 2, col });
       return moves;
     } else {
       const moves = [{ row: row + 1, col }];
-      if (!hasMoved) moves.push({ row: row + 2, col });
+      if (Cell.IsValidCell(board, currColor, row + 1, col))
+        moves.push({ row: row + 1, col });
+
+      if (!hasMoved && Cell.IsValidCell(board, currColor, row + 2, col))
+        moves.push({ row: row + 2, col });
       return moves;
     }
   }

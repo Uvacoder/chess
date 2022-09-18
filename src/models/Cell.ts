@@ -1,3 +1,4 @@
+import Board from "./Board";
 import Piece from "./Piece";
 
 export default class Cell {
@@ -8,8 +9,20 @@ export default class Cell {
     private m_marked: boolean = false,
     private m_validCellMark: boolean = false
   ) {}
-  public static IsValidCell(row: number, col: number) {
-    return row >= 0 && row <= 7 && col >= 0 && col <= 7;
+  public static IsValidCell(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number
+  ) {
+    const notOutOfBounds = row >= 0 && row <= 7 && col >= 0 && col <= 7;
+    if (!notOutOfBounds) return false;
+    const piece = board[col][row].Piece;
+    if (piece === null) {
+      return notOutOfBounds;
+    } else {
+      return notOutOfBounds && piece.GetColor() !== currColor;
+    }
   }
   public GetRow() {
     return this.m_row;

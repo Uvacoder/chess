@@ -6,7 +6,7 @@ export default function PlayerBanner({ name }: { name: string }) {
       <div className="flex items-center gap-5">
         <div className="w-[50px] h-[50px] object-cover rounded-full">
           <img
-            src="https://source.unsplash.com/1000x1000"
+            src="https://source.unsplash.com/100x100"
             className="rounded-full w-full h-full object-cover"
             alt={name}
           />

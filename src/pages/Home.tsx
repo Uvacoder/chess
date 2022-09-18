@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Board from "../models/Board";
 import BoardComponent from "../components/board";
 import Fen from "../models/Fen";
-import { START_POSITION } from "../utils/Constants";
+import { AVAILABLE_FENS, START_POSITION } from "../utils/Constants";
 import PlayerBanner from "../components/PlayerBanner";
 import { toast } from "react-toastify";
 function App() {
@@ -60,23 +60,45 @@ function App() {
                 </a>
               </h2>
 
-              <label htmlFor="fen">Enter Fen String</label>
-              <textarea
-                rows={6}
-                className={`resize-none  appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-2 border-${
-                  fenErr.error === false ? "green" : "red"
-                }-500`}
-                name="fen"
-                id="fen"
-                placeholder="Enter Valid FEN String"
-                value={inputVal}
-                onChange={(e) => {
-                  setInputVal(e.target.value);
-                }}
-              />
-              {fenErr.error === true && (
-                <p className="text-red-500 mb-2">{fenErr.message}</p>
-              )}
+              <div>
+                <label htmlFor="fen-text">Enter Fen String</label>
+                <textarea
+                  rows={6}
+                  className={`resize-none  appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-2 border-${
+                    fenErr.error === false ? "green" : "red"
+                  }-500`}
+                  name="fen-text"
+                  id="fen-text"
+                  placeholder="Enter Valid FEN String"
+                  value={inputVal}
+                  onChange={(e) => {
+                    setInputVal(e.target.value);
+                  }}
+                />
+                {fenErr.error === true && (
+                  <p className="text-red-500 mb-2">{fenErr.message}</p>
+                )}
+              </div>
+              <p>OR</p>
+              <div>
+                <label htmlFor="fen-select">Select From Available Games</label>
+                <select
+                  name="fen-select"
+                  id="fen-select"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 outline-none cursor-pointer"
+                  onChange={(e) => {
+                    setInputVal(e.target.value);
+                  }}
+                >
+                  {AVAILABLE_FENS.map((fen, idx) => {
+                    return (
+                      <option value={fen} key={`fen-${idx}`}>
+                        Fen {idx}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => {

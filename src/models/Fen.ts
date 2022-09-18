@@ -15,6 +15,7 @@ export default class Fen {
           else {
             const piece = new Piece(pieceName, rankIndex, pieceIndex);
             const cell = new Cell(rankIndex, pieceIndex, piece);
+            this.board.SetOccupiedSpace(rankIndex, pieceIndex);
             return cell;
           }
         });
