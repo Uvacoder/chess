@@ -105,8 +105,7 @@ export default class Piece {
           this.m_color,
           this.row,
           this.col,
-          this.m_color,
-          this.m_hasMoved
+          this.m_color
         );
         break;
     }
@@ -323,15 +322,14 @@ class Pawn extends Piece {
     currColor: string,
     row: number,
     col: number,
-    m_color: string,
-    hasMoved: boolean
+    m_color: string
   ): TMove {
     if (m_color === COLORS.WHITE) {
       const moves = [];
       if (Cell.IsValidCell(board, currColor, row - 1, col))
         moves.push({ row: row - 1, col });
-
-      if (!hasMoved && Cell.IsValidCell(board, currColor, row - 2, col))
+      // if color is black and row is second
+      if (row === 6 && Cell.IsValidCell(board, currColor, row - 2, col))
         moves.push({ row: row - 2, col });
       return moves;
     } else {
@@ -339,7 +337,7 @@ class Pawn extends Piece {
       if (Cell.IsValidCell(board, currColor, row + 1, col))
         moves.push({ row: row + 1, col });
 
-      if (!hasMoved && Cell.IsValidCell(board, currColor, row + 2, col))
+      if (row == 2 && Cell.IsValidCell(board, currColor, row + 2, col))
         moves.push({ row: row + 2, col });
       return moves;
     }
