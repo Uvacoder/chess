@@ -6,7 +6,8 @@ export default class Fen {
   constructor(private board: Board, private fen: string) {
     try {
       const fenParser = new FenParser(fen);
-      if (!fenParser.isValid) throw new Error("Invalid FEN");
+      if (!fenParser.isValid)
+        throw new Error("Please provide a valid FEN string");
       const fenParsedBoard = fenParser.ranks.map((rank, rankIndex) => {
         const splitRank = rank.split("");
         return splitRank.map((pieceName, pieceIndex) => {
