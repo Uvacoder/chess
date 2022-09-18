@@ -4,6 +4,8 @@ import Cell from "../models/Cell";
 
 export default function Board({ board }: { board: BoardClass }) {
   const [state, setState] = useState(0);
+  const [clickCount, setClickCount] = useState(0);
+
   return (
     board && (
       <div>
@@ -17,6 +19,15 @@ export default function Board({ board }: { board: BoardClass }) {
                       onClick={() => {
                         if (cell !== null) {
                           board.ValidMoves(cell);
+                          setClickCount((p) => p + 1);
+                          if (
+                            cell.Piece === null &&
+                            clickCount !== 0 &&
+                            clickCount + 1 > 1
+                          ) {
+                            board.MovePiece(cell);
+                            setClickCount((p) => 0);
+                          }
                           setState((p) => p + 0.000000000001);
                         }
                       }}

@@ -33,7 +33,6 @@ function App() {
         error: true,
         message: error.message || "Something went wrong",
       });
-      console.log(error);
     }
     return () => toast.dismiss();
   }, [startFen]);

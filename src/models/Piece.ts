@@ -1,22 +1,15 @@
 import { COLORS, PIECES } from "../utils/Constants";
 import Cell from "./Cell";
 
-type TMove = Array<{ row: number; col: number }>;
+export type TMove = Array<{ row: number; col: number }>;
 
 export default class Piece {
   protected m_color: string;
   private m_marked = false;
   private m_spriteSrc: string = "";
   private m_hasMoved: boolean = false;
-  public m_getName() {
-    return this.pieceName ? PIECES[this.pieceName as keyof typeof PIECES] : "";
-  }
 
-  public GetColor() {
-    return this.m_color;
-  }
-
-  public static GenSlide(
+  protected static GenSlide(
     board: Cell[][],
     currColor: string,
     row: number,
@@ -63,6 +56,26 @@ export default class Piece {
     this.m_spriteSrc = this.pieceName
       ? `/assets/sprites/${this.m_color.toLowerCase()}/${this.pieceName.toLowerCase()}.png`
       : "";
+  }
+
+  public m_getName() {
+    return this.pieceName ? PIECES[this.pieceName as keyof typeof PIECES] : "";
+  }
+
+  public GetColor() {
+    return this.m_color;
+  }
+  public SetRow(row: number) {
+    this.row = row;
+  }
+  public SetCol(col: number) {
+    this.col = col;
+  }
+  public GetRow() {
+    return this.row;
+  }
+  public GetCol() {
+    return this.col;
   }
 
   public MarkStatus() {
