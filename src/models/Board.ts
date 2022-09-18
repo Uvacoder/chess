@@ -18,13 +18,22 @@ export default class Board {
   public SetBoard(board: Cell[][]) {
     this.board = board;
   }
+  private ResetBoardMarkers() {
+    this.board.forEach((cellRow) => {
+      cellRow.forEach((cell) => {
+        cell.SetMarked(false);
+
+        cell.SetValidCellMark(false);
+      });
+    });
+  }
   public ValidMoves(cell: Cell) {
+    this.ResetBoardMarkers();
     if (cell.Piece !== null) {
       const piece = cell.Piece;
       cell.SetMarked(true);
       console.log(cell.Piece);
       const moves = piece.GetValidMoves(this.board);
-      console.log(moves);
       moves.forEach((move) => {
         if (this.board !== null) {
           this.board[move.col][move.row]!.SetValidCellMark(true);
