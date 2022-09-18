@@ -106,13 +106,7 @@ export default class Piece {
         move = Knight.ValidMoves(board, this.m_color, this.row, this.col);
         break;
       case PIECES.PAWN:
-        move = Pawn.ValidMoves(
-          board,
-          this.m_color,
-          this.row,
-          this.col,
-          this.m_color
-        );
+        move = Pawn.ValidMoves(board, this.m_color, this.row, this.col);
         break;
     }
     return move;
@@ -397,25 +391,60 @@ class Pawn extends Piece {
     board: Cell[][],
     currColor: string,
     row: number,
-    col: number,
-    m_color: string
+    col: number
   ): TMove {
-    if (m_color === COLORS.WHITE) {
+    function getMoves(rowOffset: number, uniqeRank: number) {
       const moves = [];
-      if (Cell.IsValidCell(board, currColor, row - 1, col))
-        moves.push({ row: row - 1, col });
-      // if color is black and row is second
-      if (row === 6 && Cell.IsValidCell(board, currColor, row - 2, col))
-        moves.push({ row: row - 2, col });
+      let uL = undefined,
+        uR = undefined,
+        u = undefined,
+        uu = undefined;
+      const uLCheck = Cell.IsValidCell(
+        board,
+        currColor,
+        row + rowOffset,
+        col - 1
+      );
+      const uRCheck = Cell.IsValidCell(
+        board,
+        currColor,
+        row + rowOffset,
+        col + 1
+      );
+      const uCheck = Cell.IsValidCell(board, currColor, row + rowOffset, col);
+      if (!uLCheck.outOfBounds) {
+        if (uLCheck.hasPiece && uLCheck.oppositeColor)
+          uL = { row: row + rowOffset, col: col - 1 };
+      }
+      if (!uRCheck.outOfBounds) {
+        if (uRCheck.hasPiece && uRCheck.oppositeColor)
+          uR = { row: row + rowOffset, col: col + 1 };
+      }
+      if (!uCheck.outOfBounds) {
+        if (!uCheck.hasPiece) u = { row: row + rowOffset, col: col };
+      }
+      if (row === uniqeRank) {
+        const uuCheck = Cell.IsValidCell(
+          board,
+          currColor,
+          row + rowOffset * 2,
+          col
+        );
+        if (!uuCheck.outOfBounds) {
+          if (!uuCheck.hasPiece) uu = { row: row + rowOffset * 2, col: col };
+        }
+      }
+      if (uL) moves.push(uL);
+      if (uR) moves.push(uR);
+      if (u) moves.push(u);
+      if (uu) moves.push(uu);
       return moves;
-    } else {
-      const moves = [{ row: row + 1, col }];
-      if (Cell.IsValidCell(board, currColor, row + 1, col))
-        moves.push({ row: row + 1, col });
+    }
 
-      if (row == 2 && Cell.IsValidCell(board, currColor, row + 2, col))
-        moves.push({ row: row + 2, col });
-      return moves;
+    if (currColor === COLORS.WHITE) {
+      return getMoves(-1, 6);
+    } else {
+      return getMoves(1, 1);
     }
   }
 }
