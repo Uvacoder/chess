@@ -39,11 +39,11 @@ export default class Board {
     if (cell.Piece !== null) {
       const piece = cell.Piece;
       cell.SetMarked(true);
-      console.log(cell.Piece);
       const moves = piece.GetValidMoves(this.m_board);
       moves.forEach((move) => {
         if (this.m_board !== null) {
-          this.m_board[move.col][move.row]!.SetValidCellMark(true);
+          this.m_board &&
+            this.m_board[move.col][move.row].SetValidCellMark(true);
         }
       });
     }

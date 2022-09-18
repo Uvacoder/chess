@@ -16,12 +16,21 @@ export default class Cell {
     col: number
   ) {
     const notOutOfBounds = row >= 0 && row <= 7 && col >= 0 && col <= 7;
-    if (!notOutOfBounds) return false;
+    if (!notOutOfBounds)
+      return {
+        outOfBounds: true,
+        hasPiece: false,
+        oppositeColor: false,
+      };
     const piece = board[col][row].Piece;
     if (piece === null) {
-      return notOutOfBounds;
+      return { outOfBounds: false, hasPiece: false, oppositeColor: false };
     } else {
-      return notOutOfBounds && piece.GetColor() !== currColor;
+      // if opposite color is seen
+      if (piece.GetColor() !== currColor) {
+        return { outOfBounds: false, hasPiece: true, oppositeColor: true };
+      }
+      return { outOfBounds: false, hasPiece: true, oppositeColor: false };
     }
   }
   public GetRow() {

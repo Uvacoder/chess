@@ -28,17 +28,23 @@ export default class Piece {
     const newRow = row + rowOffset;
     const newCol = col + colOffset;
 
-    if (Cell.IsValidCell(board, currColor, newRow, newCol)) {
-      list.push({ row: newRow, col: newCol });
-      Piece.GenSlide(
-        board,
-        currColor,
-        newRow,
-        newCol,
-        rowOffset,
-        colOffset,
-        list
-      );
+    const check = Cell.IsValidCell(board, currColor, newRow, newCol);
+
+    if (!check.outOfBounds) {
+      if (!check.hasPiece) {
+        list.push({ row: newRow, col: newCol });
+        Piece.GenSlide(
+          board,
+          currColor,
+          newRow,
+          newCol,
+          rowOffset,
+          colOffset,
+          list
+        );
+      } else if (check.hasPiece && check.oppositeColor) {
+        list.push({ row: newRow, col: newCol });
+      }
     } else return list;
   }
 
@@ -133,32 +139,67 @@ class King extends Piece {
     row: number,
     col: number
   ) {
-    let uR = Cell.IsValidCell(board, currColor, row - 1, col + 1)
-      ? { row: row - 1, col: col + 1 }
-      : undefined;
-    let uL = Cell.IsValidCell(board, currColor, row - 1, col - 1)
-      ? { row: row - 1, col: col - 1 }
-      : undefined;
-    let dR = Cell.IsValidCell(board, currColor, row + 1, col + 1)
-      ? { row: row + 1, col: col + 1 }
-      : undefined;
-    let dL = Cell.IsValidCell(board, currColor, row + 1, col - 1)
-      ? { row: row + 1, col: col - 1 }
-      : undefined;
-    let u = Cell.IsValidCell(board, currColor, row - 1, col)
-      ? { row: row - 1, col: col }
-      : undefined;
-    let d = Cell.IsValidCell(board, currColor, row + 1, col)
-      ? { row: row + 1, col: col }
-      : undefined;
-    let r = Cell.IsValidCell(board, currColor, row, col + 1)
-      ? { row: row, col: col + 1 }
-      : undefined;
-    let l = Cell.IsValidCell(board, currColor, row, col - 1)
-      ? { row: row, col: col - 1 }
-      : undefined;
+    const urCheck = Cell.IsValidCell(board, currColor, row - 1, col + 1);
+    const uLCheck = Cell.IsValidCell(board, currColor, row - 1, col - 1);
+    const dRCheck = Cell.IsValidCell(board, currColor, row + 1, col + 1);
+    const dLCheck = Cell.IsValidCell(board, currColor, row + 1, col - 1);
+
+    const uCheck = Cell.IsValidCell(board, currColor, row - 1, col);
+    const dCheck = Cell.IsValidCell(board, currColor, row + 1, col);
+    const rCheck = Cell.IsValidCell(board, currColor, row, col + 1);
+    const lCheck = Cell.IsValidCell(board, currColor, row, col - 1);
+
+    let uR = undefined,
+      uL = undefined,
+      dR = undefined,
+      dL = undefined,
+      u = undefined,
+      d = undefined,
+      l = undefined,
+      r = undefined;
+    if (!urCheck.outOfBounds) {
+      if (urCheck.hasPiece === false) uR = { row: row - 1, col: col + 1 };
+      else if (urCheck.hasPiece === true && urCheck.oppositeColor)
+        uR = { row: row - 1, col: col + 1 };
+    }
+    if (!uLCheck.outOfBounds) {
+      if (uLCheck.hasPiece === false) uL = { row: row - 1, col: col - 1 };
+      else if (uLCheck.hasPiece === true && uLCheck.oppositeColor)
+        uL = { row: row - 1, col: col - 1 };
+    }
+    if (!dRCheck.outOfBounds) {
+      if (dRCheck.hasPiece === false) dR = { row: row + 1, col: col + 1 };
+      else if (dRCheck.hasPiece === true && dRCheck.oppositeColor)
+        dR = { row: row + 1, col: col + 1 };
+    }
+    if (!dLCheck.outOfBounds) {
+      if (dLCheck.hasPiece === false) dL = { row: row + 1, col: col - 1 };
+      else if (dLCheck.hasPiece === true && dLCheck.oppositeColor)
+        dL = { row: row + 1, col: col - 1 };
+    }
+    if (!uCheck.outOfBounds) {
+      if (uCheck.hasPiece === false) u = { row: row - 1, col: col };
+      else if (uCheck.hasPiece === true && uCheck.oppositeColor)
+        u = { row: row - 1, col: col };
+    }
+    if (!dCheck.outOfBounds) {
+      if (dCheck.hasPiece === false) d = { row: row + 1, col: col };
+      else if (dCheck.hasPiece === true && dCheck.oppositeColor)
+        d = { row: row + 1, col: col };
+    }
+    if (!rCheck.outOfBounds) {
+      if (rCheck.hasPiece === false) r = { row: row, col: col + 1 };
+      else if (rCheck.hasPiece === true && rCheck.oppositeColor)
+        r = { row: row, col: col + 1 };
+    }
+    if (!lCheck.outOfBounds) {
+      if (lCheck.hasPiece === false) l = { row: row, col: col - 1 };
+      else if (lCheck.hasPiece === true && lCheck.oppositeColor)
+        l = { row: row, col: col - 1 };
+    }
 
     const moves = [];
+
     if (uR) moves.push(uR);
     if (uL) moves.push(uL);
     if (dR) moves.push(dR);
@@ -167,6 +208,7 @@ class King extends Piece {
     if (l) moves.push(l);
     if (d) moves.push(d);
     if (r) moves.push(r);
+
     return moves;
   }
 }
@@ -268,40 +310,74 @@ class Knight extends Piece {
     row: number,
     col: number
   ) {
-    let uR = Cell.IsValidCell(board, currColor, row - 2, col + 1)
-      ? { row: row - 2, col: col + 1 }
-      : undefined;
-    let uL = Cell.IsValidCell(board, currColor, row - 2, col - 1)
-      ? { row: row - 2, col: col - 1 }
-      : undefined;
-    let dR = Cell.IsValidCell(board, currColor, row + 2, col + 1)
-      ? { row: row + 2, col: col + 1 }
-      : undefined;
-    let dL = Cell.IsValidCell(board, currColor, row + 2, col - 1)
-      ? { row: row + 2, col: col - 1 }
-      : undefined;
+    let uR = undefined,
+      uL = undefined,
+      dR = undefined,
+      dL = undefined,
+      rU = undefined,
+      rD = undefined,
+      lU = undefined,
+      lD = undefined;
+    const uRCheck = Cell.IsValidCell(board, currColor, row - 2, col + 1);
+    const uLCheck = Cell.IsValidCell(board, currColor, row - 2, col - 1);
+    const dRCheck = Cell.IsValidCell(board, currColor, row + 2, col + 1);
+    const dLCheck = Cell.IsValidCell(board, currColor, row + 2, col - 1);
+    const rUCheck = Cell.IsValidCell(board, currColor, row - 1, col + 2);
+    const rDCheck = Cell.IsValidCell(board, currColor, row + 1, col + 2);
+    const lUCheck = Cell.IsValidCell(board, currColor, row - 1, col - 2);
+    const lDCheck = Cell.IsValidCell(board, currColor, row + 1, col - 2);
 
-    let rR = Cell.IsValidCell(board, currColor, row - 1, col + 2)
-      ? { row: row - 1, col: col + 2 }
-      : undefined;
-    let rL = Cell.IsValidCell(board, currColor, row - 1, col - 2)
-      ? { row: row - 1, col: col - 2 }
-      : undefined;
-    let lR = Cell.IsValidCell(board, currColor, row + 1, col + 2)
-      ? { row: row + 1, col: col + 2 }
-      : undefined;
-    let lL = Cell.IsValidCell(board, currColor, row + 1, col - 2)
-      ? { row: row + 1, col: col - 2 }
-      : undefined;
+    if (!uRCheck.outOfBounds) {
+      if (!uRCheck.hasPiece) uR = { row: row - 2, col: col + 1 };
+      else if (uRCheck.hasPiece && uRCheck.oppositeColor)
+        uR = { row: row - 2, col: col + 1 };
+    }
+    if (!uLCheck.outOfBounds) {
+      if (!uLCheck.hasPiece) uL = { row: row - 2, col: col - 1 };
+      else if (uLCheck.hasPiece && uLCheck.oppositeColor)
+        uL = { row: row - 2, col: col - 1 };
+    }
+    if (!dRCheck.outOfBounds) {
+      if (!dRCheck.hasPiece) dR = { row: row + 2, col: col + 1 };
+      else if (dRCheck.hasPiece && dRCheck.oppositeColor)
+        dR = { row: row + 2, col: col + 1 };
+    }
+    if (!dLCheck.outOfBounds) {
+      if (!dLCheck.hasPiece) dL = { row: row + 2, col: col - 1 };
+      else if (dLCheck.hasPiece && dLCheck.oppositeColor)
+        dL = { row: row + 2, col: col - 1 };
+    }
+    if (!rUCheck.outOfBounds) {
+      if (!rUCheck.hasPiece) rU = { row: row - 1, col: col + 2 };
+      else if (rUCheck.hasPiece && rUCheck.oppositeColor)
+        rU = { row: row - 1, col: col + 2 };
+    }
+    if (!rDCheck.outOfBounds) {
+      if (!rDCheck.hasPiece) rD = { row: row + 1, col: col + 2 };
+      else if (rDCheck.hasPiece && rDCheck.oppositeColor)
+        rD = { row: row + 1, col: col + 2 };
+    }
+    if (!lUCheck.outOfBounds) {
+      if (!lUCheck.hasPiece) lU = { row: row - 1, col: col - 2 };
+      else if (lUCheck.hasPiece && lUCheck.oppositeColor)
+        lU = { row: row - 1, col: col - 2 };
+    }
+    if (!lDCheck.outOfBounds) {
+      if (!lDCheck.hasPiece) lD = { row: row + 1, col: col - 2 };
+      else if (lDCheck.hasPiece && lDCheck.oppositeColor)
+        lD = { row: row + 1, col: col - 2 };
+    }
+
     const moves = [];
+
     if (uR) moves.push(uR);
     if (uL) moves.push(uL);
     if (dR) moves.push(dR);
     if (dL) moves.push(dL);
-    if (rR) moves.push(rR);
-    if (rL) moves.push(rL);
-    if (lR) moves.push(lR);
-    if (lL) moves.push(lL);
+    if (rU) moves.push(rU);
+    if (rD) moves.push(rD);
+    if (lU) moves.push(lU);
+    if (lD) moves.push(lD);
     return moves;
   }
 }

@@ -35,7 +35,7 @@ export default function Board({ board }: { board: BoardClass }) {
                       }
                     `}
                     >
-                      <p className="board-idx">
+                      <p className="board-idx text-black">
                         [{cellIdx}, {rowIdx}]
                       </p>
                       {cell.Piece?.GetSpriteSrc() && (
