@@ -1,9 +1,7 @@
-import { BOARD_SIZE } from "../utils/Constants";
-
 export default function PlayerBanner({ name }: { name: string }) {
   return (
     <div
-      className={`my-5 w-[${BOARD_SIZE}px] block p-6 bg-black rounded-lg shadow-md flex items-center justify-between`}
+      className={`my-5 w-[600px] block p-6 bg-black rounded-lg shadow-md flex items-center justify-between`}
     >
       <div className="flex items-center gap-5">
         <div className="w-[50px] h-[50px] object-cover rounded-full">

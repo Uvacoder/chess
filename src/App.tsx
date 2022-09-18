@@ -30,43 +30,6 @@ function App() {
         </div>
         <div className="grid w-[300px]">
           <div className="my-5 p-5 bg-neutral-900 rounded-lg">
-            {/* <div className="mb-3">
-              <h2 className="font-bold text-lg">Play Game</h2>
-              <input
-                type="text"
-                className="mt-3 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                name="fen"
-                id="fen"
-                placeholder="Enter Player 1 Name"
-              />
-              <input
-                type="text"
-                className="mt-3 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                name="fen"
-                id="fen"
-                placeholder="Enter Player 2 Name"
-              />
-              <button
-                className="mt-3 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="button"
-              >
-                Start Game
-              </button>
-            </div>
-            <div className="flex gap-4">
-              <button
-                className="mt-3 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="button"
-              >
-                Offer Draw
-              </button>
-              <button
-                className="mt-3 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                type="button"
-              >
-                Resign
-              </button>
-            </div> */}
             <div>
               <h2 className="font-bold text-lg">Set Board Position</h2>
               <input
