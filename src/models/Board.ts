@@ -30,7 +30,7 @@ export default class Board {
   public SetOccupiedSpace(cellRow: number, cellCol: number) {
     this.OccupiedSpace.set({ row: cellRow, col: cellCol }, true);
   }
-  private ResetBoardMarkers() {
+  public ResetBoardMarkers() {
     this.m_board.forEach((cellRow) => {
       cellRow.forEach((cell) => {
         cell.SetMarked(false);
@@ -38,25 +38,28 @@ export default class Board {
       });
     });
   }
+  public MarkValidMoves(cell: Cell) {
+    cell.SetMarked(true);
+    this.m_activePiece.validMoves.forEach((move) => {
+      if (this.m_board !== null) {
+        this.m_board && this.m_board[move.col][move.row].SetValidCellMark(true);
+      }
+    });
+  }
+
   public ValidMoves(cell: Cell) {
     this.ResetBoardMarkers();
     if (cell.Piece !== null) {
       const piece = cell.Piece;
-      cell.SetMarked(true);
 
       const moves = piece.GetValidMoves(this.m_board);
 
       this.m_activePiece.piece = piece;
       this.m_activePiece.validMoves = moves;
-
-      console.log(moves);
-      moves.forEach((move) => {
-        if (this.m_board !== null) {
-          this.m_board &&
-            this.m_board[move.col][move.row].SetValidCellMark(true);
-        }
-      });
     }
+  }
+  public Capture(cell: Cell) {
+    this.MovePiece(cell);
   }
   public MovePiece(cell: Cell) {
     if (this.m_activePiece.piece && this.m_activePiece.piece) {
@@ -65,13 +68,11 @@ export default class Board {
       );
 
       if (isValidRowCol) {
-        console.log("valid");
-
+        console.log("VALID CELL");
+        this.m_activePiece.piece.SetHasMovePiece();
         const currPiece = this.m_activePiece.piece;
         const newCell = this.m_board[cell.GetCol()][cell.GetRow()];
-        const currCell = (this.m_board[currPiece.GetCol()][
-          currPiece.GetRow()
-        ].Piece = null);
+        this.m_board[currPiece.GetCol()][currPiece.GetRow()].Piece = null;
         newCell.Piece = currPiece;
         currPiece.SetRow(cell.GetRow());
         currPiece.SetCol(cell.GetCol());

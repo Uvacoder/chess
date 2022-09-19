@@ -1,10 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BoardClass from "../models/Board";
 import Cell from "../models/Cell";
+import Game from "../models/Game";
+import Piece from "../models/Piece";
 
 export default function Board({ board }: { board: BoardClass }) {
   const [state, setState] = useState(0);
   const [clickCount, setClickCount] = useState(0);
+  const [activePiece, setActivePiece] = useState<Piece | null>(null);
+
+  function handleClick(cell: Cell) {
+    function movePiece() {
+      if (cell !== null) {
+        if (cell.Piece !== null) {
+          setActivePiece(cell.Piece);
+        }
+        board.ValidMoves(cell);
+        board.MarkValidMoves(cell);
+
+        setClickCount((p) => p + 1);
+        if (cell.Piece === null && clickCount !== 0 && clickCount + 1 > 1) {
+          board.MovePiece(cell);
+          setClickCount((p) => 0);
+          board.ResetBoardMarkers();
+        }
+        setState((p) => p + 0.000000000001);
+      }
+    }
+    if (activePiece !== null) {
+      setActivePiece(null);
+      board.Capture(cell);
+      setClickCount((p) => 0);
+      board.ResetBoardMarkers();
+    } else {
+      movePiece();
+    }
+  }
 
   return (
     board && (
@@ -17,19 +48,7 @@ export default function Board({ board }: { board: BoardClass }) {
                   return (
                     <div
                       onClick={() => {
-                        if (cell !== null) {
-                          board.ValidMoves(cell);
-                          setClickCount((p) => p + 1);
-                          if (
-                            cell.Piece === null &&
-                            clickCount !== 0 &&
-                            clickCount + 1 > 1
-                          ) {
-                            board.MovePiece(cell);
-                            setClickCount((p) => 0);
-                          }
-                          setState((p) => p + 0.000000000001);
-                        }
+                        handleClick(cell);
                       }}
                       key={`board-piece-${cellIdx}`}
                       className={`

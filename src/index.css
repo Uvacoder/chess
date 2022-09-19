@@ -20,6 +20,7 @@
 }
 * {
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 a {
   font-weight: 500;

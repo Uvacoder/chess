@@ -5,7 +5,7 @@ import Fen from "../models/Fen";
 import { AVAILABLE_FENS, START_POSITION } from "../utils/Constants";
 import PlayerBanner from "../components/PlayerBanner";
 import { toast } from "react-toastify";
-function App() {
+function FenComponent() {
   const [board, setBoard] = useState<Board>();
   const [startFen, setStartFen] = useState(START_POSITION);
   const [inputVal, setInputVal] = useState(START_POSITION);
@@ -41,12 +41,10 @@ function App() {
     <div className="grid h-screen place-items-center">
       <div className="flex items-stretch gap-5">
         <div className="">
-          <PlayerBanner name="Player 1" />
           <BoardComponent key={"board"} board={board as Board} />
-          <PlayerBanner name="Player 2" />
         </div>
         <div className="grid w-[320px]">
-          <div className="my-5 p-5 bg-neutral-900 rounded-lg">
+          <div className="p-5 bg-neutral-900 rounded-lg">
             <div>
               <h2 className="font-bold mb-3 text-lg">
                 Set Board Position{" "}
@@ -127,4 +125,4 @@ function App() {
   );
 }
 
-export default App;
+export default FenComponent;

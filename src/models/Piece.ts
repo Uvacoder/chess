@@ -127,6 +127,7 @@ export default class Piece {
 }
 
 class King extends Piece {
+  public readonly POINT = Infinity;
   public m_pieceName: string = PIECES.KING;
   private static row: number;
   private static col: number;
@@ -220,6 +221,7 @@ class King extends Piece {
   }
 }
 class Queen extends Piece {
+  public readonly POINT = 900;
   public m_pieceName: string = PIECES.QUEEN;
   constructor(
     protected m_color: string,
@@ -250,6 +252,7 @@ class Queen extends Piece {
 }
 
 class Rook extends Piece {
+  public readonly POINT = 500;
   public m_pieceName: string = PIECES.ROOK;
   constructor(
     protected m_color: string,
@@ -277,6 +280,8 @@ class Rook extends Piece {
   }
 }
 class Bishop extends Piece {
+  public readonly POINT = 300;
+
   public m_pieceName: string = PIECES.BISHOP;
   constructor(
     protected m_color: string,
@@ -302,6 +307,7 @@ class Bishop extends Piece {
 }
 
 class Knight extends Piece {
+  public readonly POINT = 300;
   public m_pieceName: string = PIECES.KNIGHT;
   constructor(
     protected m_color: string,
@@ -390,6 +396,7 @@ class Knight extends Piece {
 }
 
 class Pawn extends Piece {
+  public readonly POINT = 100;
   public m_pieceName: string = PIECES.PAWN;
   constructor(
     protected m_color: string,

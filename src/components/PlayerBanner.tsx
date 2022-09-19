@@ -1,3 +1,4 @@
+import { Flag } from "tabler-icons-react";
 export default function PlayerBanner({ name }: { name: string }) {
   return (
     <div
@@ -12,7 +13,14 @@ export default function PlayerBanner({ name }: { name: string }) {
           />
         </div>
         <div>
-          <h1 className="text-xl font-bold">{name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">{name}</h1>
+            <div>
+              <button className="text-white bg-neutral-700 hover:bg-neutral-500 rounded-full p-1 ">
+                <Flag size={20} />
+              </button>
+            </div>
+          </div>
           <p>Capture Opponent's Pieces to View Them Here</p>
         </div>
       </div>
