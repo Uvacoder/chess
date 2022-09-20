@@ -22,7 +22,8 @@
 |     Drag to Move      |        ✖️         |
 |   Click to Capture    |        ✔️         |
 |    Drag to Capture    |        ✖️         |
-|    Check Detection    |        ✖️         |
+|    Check Detection    |        ✔️         |
+|   Discovered Check    |        ✖️         |
 |       Checkmate       |        ✖️         |
 |      Resignation      |        ✖️         |
 |        Time Up        |        ✖️         |

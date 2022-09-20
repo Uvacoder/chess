@@ -25,6 +25,68 @@ export default class Board {
     piece: null,
     validMoves: [],
   };
+  private FindChecks(oppositeColor: COLORS) {
+    function findResponsibleSquare(
+      attacker: { piece: Piece; validMoves: TMove },
+      checkedKing: Piece
+    ): Array<any> {
+      const moves = [];
+      let st = -1,
+        end = -2;
+      const kingPosInValidMoves = attacker.validMoves.find((move) => {
+        return (
+          move.row === checkedKing.GetRow() && move.col === checkedKing.GetCol()
+        );
+      });
+      if (!kingPosInValidMoves) return [];
+      if (attacker.piece.GetRow() === checkedKing.GetRow()) {
+        st = Math.min(kingPosInValidMoves.col, attacker.piece.GetCol());
+        end = Math.max(kingPosInValidMoves.col, attacker.piece.GetCol());
+        if (st === end) st = 0;
+        if (st === end) st = 0;
+        for (let i = st; i <= end; i++)
+          moves.push({ row: checkedKing.GetRow(), col: i });
+      }
+      if (attacker.piece.GetCol() === checkedKing.GetCol()) {
+        st = Math.min(kingPosInValidMoves.row, attacker.piece.GetRow());
+        end = Math.max(kingPosInValidMoves.row, attacker.piece.GetRow());
+        if (st === end) st = 0;
+        for (let i = st; i <= end; i++)
+          moves.push({ col: checkedKing.GetCol(), row: i });
+      }
+      if (
+        Math.abs(attacker.piece.GetCol() - checkedKing.GetCol()) ===
+        Math.abs(attacker.piece.GetRow() - checkedKing.GetRow())
+      ) {
+        const diff =
+          Math.abs(attacker.piece.GetCol() - checkedKing.GetCol()) - 1;
+        const kingInMoveIdx = attacker.validMoves.findIndex(
+          (move) =>
+            move.row === checkedKing.GetRow() &&
+            move.col === checkedKing.GetCol()
+        );
+
+        for (let i = kingInMoveIdx; i >= kingInMoveIdx - diff; i--) {
+          moves.push(attacker.validMoves[i]);
+        }
+        console.log("HERE", attacker.validMoves[0]);
+        moves.push(attacker.validMoves[0]);
+      } else if (attacker.piece.GetName().toUpperCase() === PIECES.KNIGHT) {
+        moves.push(
+          { row: attacker.piece.GetRow(), col: attacker.piece.GetCol() },
+          kingPosInValidMoves
+        );
+      }
+      return moves;
+    }
+    this.m_checkStatus.status = true;
+    this.m_checkStatus.king = this.m_kingPos[oppositeColor];
+    this.m_checkStatus.responsibleSquares = findResponsibleSquare(
+      this.m_activePiece as { piece: Piece; validMoves: TMove },
+      this.m_checkStatus.king as Piece
+    );
+    this.MarkCheckCellMoves();
+  }
   constructor() {
     for (let i = 0; i < this.count; i++) {
       this.m_board.push(
@@ -140,70 +202,7 @@ export default class Board {
             move.col === this.m_kingPos[oppositeColor]?.GetCol()
           );
         });
-        if (isCheck) {
-          function findResponsibleSquare(
-            attacker: { piece: Piece; validMoves: TMove },
-            checkedKing: Piece
-          ): Array<any> {
-            const moves = [];
-            let st = -1,
-              end = -2;
-            const kingPosInValidMoves = attacker.validMoves.find((move) => {
-              return (
-                move.row === checkedKing.GetRow() &&
-                move.col === checkedKing.GetCol()
-              );
-            });
-            if (!kingPosInValidMoves) return [];
-            if (attacker.piece.GetRow() === checkedKing.GetRow()) {
-              st = Math.min(kingPosInValidMoves.col, attacker.piece.GetCol());
-              end = Math.max(kingPosInValidMoves.col, attacker.piece.GetCol());
-              if (st === end) st = 0;
-              if (st === end) st = 0;
-              for (let i = st; i <= end; i++)
-                moves.push({ row: checkedKing.GetRow(), col: i });
-            } else if (attacker.piece.GetCol() === checkedKing.GetCol()) {
-              st = Math.min(kingPosInValidMoves.row, attacker.piece.GetRow());
-              end = Math.max(kingPosInValidMoves.row, attacker.piece.GetRow());
-              if (st === end) st = 0;
-              for (let i = st; i <= end; i++)
-                moves.push({ col: checkedKing.GetCol(), row: i });
-            } else if (
-              Math.abs(attacker.piece.GetCol() - checkedKing.GetCol()) ===
-              Math.abs(attacker.piece.GetRow() - checkedKing.GetRow())
-            ) {
-              const diff =
-                Math.abs(attacker.piece.GetCol() - checkedKing.GetCol()) - 1;
-              const kingInMoveIdx = attacker.validMoves.findIndex(
-                (move) =>
-                  move.row === checkedKing.GetRow() &&
-                  move.col === checkedKing.GetCol()
-              );
-
-              for (let i = kingInMoveIdx; i >= kingInMoveIdx - diff; i--) {
-                moves.push(attacker.validMoves[i]);
-              }
-              console.log("HERE", attacker.validMoves[0]);
-              moves.push(attacker.validMoves[0]);
-            } else if (
-              attacker.piece.GetName().toUpperCase() === PIECES.KNIGHT
-            ) {
-              moves.push(
-                { row: attacker.piece.GetRow(), col: attacker.piece.GetCol() },
-                kingPosInValidMoves
-              );
-            }
-            return moves;
-          }
-          this.m_checkStatus.status = true;
-          this.m_checkStatus.king = this.m_kingPos[oppositeColor];
-          this.m_checkStatus.responsibleSquares = findResponsibleSquare(
-            this.m_activePiece as { piece: Piece; validMoves: TMove },
-            this.m_checkStatus.king as Piece
-          );
-          this.MarkCheckCellMoves();
-        }
-        console.log(this.m_activePiece, this.m_kingPos, this.m_checkStatus);
+        if (isCheck) this.FindChecks(oppositeColor);
       }
     }
   }
