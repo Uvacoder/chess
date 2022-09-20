@@ -9,9 +9,9 @@ Meanwhile take a look at the roadmap to see what things have been completed.
 # Plan
 
 - Implement All Possible Valid Moves for Pieces ⌛
-  - Remaining:
-    - Castle
-    - En passant
+  - Basic Moves ✔️
+  - Castle ✖️
+  - En passant ✖️
 - Implement Piece Movement / Transfer ⌛
   - Piece Click to Move ✔️
   - Piece Drag to Move ✖️
