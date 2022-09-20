@@ -1,10 +1,14 @@
 # Chess ♞
 
-Play the game here: [Play Chess](https://chess.suparthnarayanghimire.com.np)
-
-Meanwhile take a look at the roadmap to see what things have been completed.
+[Play Chess](https://chess.suparthnarayanghimire.com.np)
 
 **Status: Development**
+
+# Tech Stack
+
+- <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/typescript/typescript.png" width="10px"/> Typescript
+- <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/tailwind/tailwind.png" width="10px"/> Tailwind CSS
+- <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/react/react.png" width="10px"/> React
 
 # Plan
 
