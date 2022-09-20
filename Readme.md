@@ -12,8 +12,12 @@ Meanwhile take a look at the roadmap to see what things have been completed.
   - Remaining:
     - Castle
     - En passant
-- Implement Piece Movement / Transfer ✔️
-- Implement Piece Capture ✔️
+- Implement Piece Movement / Transfer ⌛
+  - Piece Click to Move ✔️
+  - Piece Drag to Move ✖️
+- Implement Piece Capture ⌛
+  - Piece Click to Capture ✔️
+  - Piece Drag to Capture ✖️
 - Implement Check Detection ✖️
 - Implement Game Over States ✖️
   - Game Won/Lost
