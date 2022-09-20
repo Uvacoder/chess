@@ -58,8 +58,8 @@ export default class Piece {
       : "";
   }
 
-  public m_getName() {
-    return this.pieceName ? PIECES[this.pieceName as keyof typeof PIECES] : "";
+  public GetName() {
+    return this.pieceName;
   }
 
   public GetColor() {
@@ -238,6 +238,7 @@ class Queen extends Piece {
     col: number
   ) {
     const moves = [{ row, col }];
+    Piece.GenSlide(board, currColor, row, col, 0, 0, moves);
     Piece.GenSlide(board, currColor, row, col, -1, 0, moves);
     Piece.GenSlide(board, currColor, row, col, 1, 0, moves);
     Piece.GenSlide(board, currColor, row, col, 0, -1, moves);

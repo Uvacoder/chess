@@ -45,3 +45,7 @@
   background: rgba(255, 217, 0, 0.81);
   border: 2px solid black;
 }
+.check-cell {
+  background: rgba(255, 97, 40, 0.81);
+  border: 2px solid black;
+}

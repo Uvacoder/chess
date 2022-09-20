@@ -7,7 +7,8 @@ export default class Cell {
     private m_col: number,
     public Piece: Piece | null,
     private m_marked: boolean = false,
-    private m_validCellMark: boolean = false
+    private m_validCellMark: boolean = false,
+    private m_checkCellMark: boolean = false
   ) {}
   public static IsValidCell(
     board: Cell[][],
@@ -43,7 +44,14 @@ export default class Cell {
     return this.m_validCellMark;
   }
   public SetValidCellMark(status: boolean) {
+    console.log(status);
     this.m_validCellMark = status;
+  }
+  public SetCheckCellMark(status: boolean) {
+    this.m_checkCellMark = status;
+  }
+  public GetCheckCellMark() {
+    return this.m_checkCellMark;
   }
   public SetMarked(status: boolean) {
     this.m_marked = status;

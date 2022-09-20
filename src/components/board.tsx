@@ -63,10 +63,12 @@ export default function Board({ board }: { board: BoardClass }) {
                       } ${cell.GetMarked() === true && "mark"} ${
                         cell.GetValidCellMark() === true && "valid-cell"
                       }
+                      ${cell.GetCheckCellMark() === true && "check-cell"}
                     `}
                     >
                       <p className="board-idx text-black">
-                        [{cellIdx}, {rowIdx}]
+                        [{cellIdx}, {rowIdx}]{" "}
+                        {/* {cell.GetCheckCellMark() === true && " CHECK"} */}
                       </p>
                       {cell.Piece?.GetSpriteSrc() && (
                         <img
