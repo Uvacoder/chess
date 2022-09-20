@@ -185,6 +185,13 @@ export default class Board {
               }
               console.log("HERE", attacker.validMoves[0]);
               moves.push(attacker.validMoves[0]);
+            } else if (
+              attacker.piece.GetName().toUpperCase() === PIECES.KNIGHT
+            ) {
+              moves.push(
+                { row: attacker.piece.GetRow(), col: attacker.piece.GetCol() },
+                kingPosInValidMoves
+              );
             }
             return moves;
           }
