@@ -463,9 +463,9 @@ class Pawn extends Piece {
     }
 
     if (currColor === COLORS.WHITE) {
-      return getMoves(-1, 6);
+      return [{ row, col }, ...getMoves(-1, 6)];
     } else {
-      return getMoves(1, 1);
+      return [{ row, col }, ...getMoves(1, 1)];
     }
   }
 }

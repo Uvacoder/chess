@@ -183,6 +183,7 @@ export default class Board {
               for (let i = kingInMoveIdx; i >= kingInMoveIdx - diff; i--) {
                 moves.push(attacker.validMoves[i]);
               }
+              console.log("HERE", attacker.validMoves[0]);
               moves.push(attacker.validMoves[0]);
             }
             return moves;
