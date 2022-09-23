@@ -10,14 +10,21 @@ export default class Cell {
     private m_validCellMark: boolean = false,
     private m_checkCellMark: boolean = false
   ) {}
+  public static NotOutOfBounds(row: number, col: number) {
+    const NotOutOfBounds = row >= 0 && row <= 7 && col >= 0 && col <= 7;
+    return {
+      outOfBounds: NotOutOfBounds,
+      hasPiece: false,
+      oppositeColor: false,
+    };
+  }
   public static IsValidCell(
     board: Cell[][],
     currColor: string,
     row: number,
     col: number
   ) {
-    const notOutOfBounds = row >= 0 && row <= 7 && col >= 0 && col <= 7;
-    if (!notOutOfBounds)
+    if (!Cell.NotOutOfBounds(row, col))
       return {
         outOfBounds: true,
         hasPiece: false,

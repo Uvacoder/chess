@@ -9,6 +9,33 @@ export default class Piece {
   private m_spriteSrc: string = "";
   private m_hasMoved: boolean = false;
 
+  protected static GenCoverage(
+    board: Cell[][],
+    currColor: string,
+    row: number,
+    col: number,
+    rowOffset: number,
+    colOffset: number,
+    list: TMove
+  ) {
+    const newRow = row + rowOffset;
+    const newCol = col + colOffset;
+
+    const check = Cell.IsValidCell(board, currColor, newRow, newCol);
+
+    if (!check.outOfBounds) {
+      list.push({ row: newRow, col: newCol });
+      Piece.GenSlide(
+        board,
+        currColor,
+        newRow,
+        newCol,
+        rowOffset,
+        colOffset,
+        list
+      );
+    } else return list;
+  }
   protected static GenSlide(
     board: Cell[][],
     currColor: string,
@@ -94,39 +121,40 @@ export default class Piece {
     this.m_marked = true;
   }
 
-  public GetValidMoves(board: Cell[][]) {
+  public static GetValidMoves(
+    board: Cell[][],
+    pieceName: string,
+    color: string,
+    row: number,
+    col: number,
+    hasMoved: boolean = false
+  ) {
     let move: TMove = [];
-    switch (this.pieceName && this.pieceName.toUpperCase()) {
+    switch (pieceName && pieceName.toUpperCase()) {
       case PIECES.KING:
-        move = King.ValidMoves(board, this.m_color, this.row, this.col);
+        move = King.ValidMoves(board, color, row, col);
         break;
       case PIECES.QUEEN:
-        move = Queen.ValidMoves(board, this.m_color, this.row, this.col);
+        move = Queen.ValidMoves(board, color, row, col);
         break;
       case PIECES.ROOK:
-        move = Rook.ValidMoves(
-          board,
-          this.m_color,
-          this.row,
-          this.col,
-          this.m_hasMoved
-        );
+        move = Rook.ValidMoves(board, color, row, col, hasMoved);
         break;
       case PIECES.BISHOP:
-        move = Bishop.ValidMoves(board, this.m_color, this.row, this.col);
+        move = Bishop.ValidMoves(board, color, row, col);
         break;
       case PIECES.KNIGHT:
-        move = Knight.ValidMoves(board, this.m_color, this.row, this.col);
+        move = Knight.ValidMoves(board, color, row, col);
         break;
       case PIECES.PAWN:
-        move = Pawn.ValidMoves(board, this.m_color, this.row, this.col);
+        move = Pawn.ValidMoves(board, color, row, col);
         break;
     }
     return move;
   }
 }
 
-class King extends Piece {
+export class King extends Piece {
   public readonly POINT = Infinity;
   public m_pieceName: string = PIECES.KING;
   private static row: number;
@@ -140,6 +168,48 @@ class King extends Piece {
     this.m_color = m_color;
     King.row = this.row;
     King.col = this.col;
+  }
+  public static CheckPinned(
+    board: Cell[][],
+    oppositeColor: COLORS,
+    activePiece: Piece,
+    row: number,
+    col: number
+  ) {
+    const coverages = [{ row, col }];
+    Piece.GenCoverage(board, oppositeColor, row, col, 0, 0, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, -1, 0, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, 1, 0, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, 0, -1, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, 0, 1, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, 1, 1, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, -1, 1, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, 1, -1, coverages);
+    Piece.GenCoverage(board, oppositeColor, row, col, -1, -1, coverages);
+
+    // if in coverages array, there is a valid move where the move is in the same row or col as the active piece or is in diagonal of active piece
+    // then the active piece is pinned
+    const curPiecePos = {
+      row: activePiece.GetRow(),
+      col: activePiece.GetCol(),
+    };
+    const pinned = coverages.map((move) => {
+      const piece = board[move.row][move.col].Piece;
+      if (piece === null) return false;
+      else if (piece.GetColor() !== oppositeColor) return false;
+      else {
+        const pieceName = piece.GetName();
+        const pieceCoverage = Piece.GetValidMoves(
+          board,
+          pieceName,
+          piece.GetColor(),
+          move.row,
+          move.col
+        );
+      }
+    });
+
+    return coverages;
   }
   public static ValidMoves(
     board: Cell[][],

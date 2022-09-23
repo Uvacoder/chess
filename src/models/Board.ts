@@ -1,13 +1,13 @@
 import { COLORS, PIECES } from "../utils/Constants";
 import Cell from "./Cell";
-import Piece, { TMove } from "./Piece";
+import Piece, { King, TMove } from "./Piece";
 export default class Board {
   private count: number = 8;
   private m_turn = COLORS.WHITE;
   private OccupiedSpace = new Map<{ row: number; col: number }, boolean>();
   private m_board: Cell[][] = [];
 
-  private m_kingPos: { black: Piece | null; white: Piece | null } = {
+  private m_kings: { black: Piece | null; white: Piece | null } = {
     black: null,
     white: null,
   };
@@ -80,7 +80,7 @@ export default class Board {
       return moves;
     }
     this.m_checkStatus.status = true;
-    this.m_checkStatus.king = this.m_kingPos[oppositeColor];
+    this.m_checkStatus.king = this.m_kings[oppositeColor];
     this.m_checkStatus.responsibleSquares = findResponsibleSquare(
       this.m_activePiece as { piece: Piece; validMoves: TMove },
       this.m_checkStatus.king as Piece
@@ -110,7 +110,7 @@ export default class Board {
             cell.Piece.GetName() === PIECES.KING.toLowerCase()
           ) {
             const key: COLORS = cell.Piece.GetColor() as COLORS;
-            this.m_kingPos[key] = cell.Piece;
+            this.m_kings[key] = cell.Piece;
           }
         }
       });
@@ -152,20 +152,31 @@ export default class Board {
 
   public ValidMoves(cell: Cell) {
     this.ResetBoardMarkers();
-    if (cell.Piece !== null) {
-      const piece = cell.Piece;
+    if (cell.Piece !== null && this.m_activePiece.piece !== null) {
+      const tempBoard = this.m_board;
+      tempBoard[cell.GetCol()][cell.GetRow()].Piece = null;
+      const sameColor: COLORS = this.m_activePiece.piece?.GetColor() as COLORS;
+      const king = this.m_kings[sameColor as COLORS];
+      const oppositeColor =
+        sameColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+      const isPinned = King.CheckPinned(
+        tempBoard,
+        oppositeColor,
+        this.m_activePiece.piece,
+        this.m_activePiece.piece.GetRow(),
+        this.m_activePiece.piece.GetCol()
+      );
 
-      const moves = piece.GetValidMoves(this.m_board);
-      if (this.m_checkStatus.status === false) {
-        this.m_activePiece.piece = piece;
-        this.m_activePiece.validMoves = moves;
-      } else {
-        // check if the attacking piece can be captures
-        // if not, check if there are any moves in moves that blocks the check
-        //  see if king can goto any other square that is not in squares of danger
-        //
-        this.m_activePiece.validMoves = [];
-      }
+      //   const piece = cell.Piece;
+
+      //   const moves = piece.GetValidMoves(this.m_board);
+      //   if (this.m_checkStatus.status === false) {
+      //     this.m_activePiece.piece = piece;
+      //     this.m_activePiece.validMoves = moves;
+      //   } else {
+
+      //     this.m_activePiece.validMoves = [];
+      //   }
     }
   }
   public Capture(cell: Cell) {
@@ -189,7 +200,7 @@ export default class Board {
         this.ValidMoves(cell);
         if (this.m_activePiece.piece.GetName() === PIECES.KING) {
           const key: COLORS = this.m_activePiece.piece.GetColor() as COLORS;
-          this.m_kingPos[key] = this.m_activePiece.piece;
+          this.m_kings[key] = this.m_activePiece.piece;
         }
 
         const oppositeColor =
@@ -198,8 +209,8 @@ export default class Board {
             : COLORS.WHITE;
         const isCheck = this.m_activePiece.validMoves.some((move) => {
           return (
-            move.row === this.m_kingPos[oppositeColor]?.GetRow() &&
-            move.col === this.m_kingPos[oppositeColor]?.GetCol()
+            move.row === this.m_kings[oppositeColor]?.GetRow() &&
+            move.col === this.m_kings[oppositeColor]?.GetCol()
           );
         });
         if (isCheck) this.FindChecks(oppositeColor);
