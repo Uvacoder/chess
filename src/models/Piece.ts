@@ -61,6 +61,19 @@ abstract class Piece {
     return slide;
   }
 
+  protected FilterOccupancy(board: Cell[][], arr: (TLocation | null)[]) {
+    return arr.filter((loc) => {
+      if (loc === null) return false;
+      else {
+        const occupied = Cell.Occupied(board, loc);
+        if (!occupied) return true;
+        else {
+          if (board[loc.x][loc.y].piece?.color === this.color) return false;
+          else return true;
+        }
+      }
+    }) as TLocation[];
+  }
   public abstract CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][]
@@ -148,19 +161,14 @@ export class King extends Piece {
     if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
     if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
 
-    return [u, l, d, r, ul, ur, dl, dr].filter((loc) => {
-      if (loc === null) return false;
-      else {
-        const occupied = Cell.Occupied(board, loc);
-        if (!occupied) return true;
-        else {
-          if (board[loc.x][loc.y].piece?.color === this.color) return false;
-          else return true;
-        }
-      }
-    }) as TLocation[];
+    const arr = [u, l, d, r, ul, ur, dl, dr];
+
+    return this.FilterOccupancy(board, arr);
   }
   public CalculateCoverage(board: Cell[][], currentLocation: TLocation) {
+    const knightSq = Knight.GetKnightMoves(currentLocation).filter(
+      (l) => l !== null
+    ) as TLocation[];
     const coverage = [
       ...Piece.GenSlide(currentLocation, board, 1, 0, false),
       ...Piece.GenSlide(currentLocation, board, -1, 0, false),
@@ -170,6 +178,7 @@ export class King extends Piece {
       ...Piece.GenSlide(currentLocation, board, -1, 1, false),
       ...Piece.GenSlide(currentLocation, board, 1, 1, false),
       ...Piece.GenSlide(currentLocation, board, -1, -1, false),
+      ...knightSq,
     ];
     return coverage;
   }
@@ -232,10 +241,7 @@ export class Knight extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.KNIGHT);
   }
-  public CalculateValidMoves(
-    srcLocation: TLocation,
-    board: Cell[][]
-  ): TLocation[] {
+  public static GetKnightMoves(srcLocation: TLocation) {
     let uul, uur, ddl, ddr;
     let rru, rrd, llu, lld;
     uul = { x: srcLocation.x - 2, y: srcLocation.y - 1 };
@@ -255,18 +261,14 @@ export class Knight extends Piece {
     if (Cell.OutOfBounds(rrd)) rrd = null;
     if (Cell.OutOfBounds(llu)) llu = null;
     if (Cell.OutOfBounds(lld)) lld = null;
-
-    return [uul, uur, ddl, ddr, rru, rrd, llu, lld].filter((loc) => {
-      if (loc === null) return false;
-      else {
-        const occupied = Cell.Occupied(board, loc);
-        if (!occupied) return true;
-        else {
-          if (board[loc.x][loc.y].piece?.color === this.color) return false;
-          else return true;
-        }
-      }
-    }) as TLocation[];
+    return [uul, uur, ddl, ddr, rru, rrd, llu, lld];
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    const arr = Knight.GetKnightMoves(srcLocation);
+    return this.FilterOccupancy(board, arr);
   }
 }
 export class Pawn extends Piece {

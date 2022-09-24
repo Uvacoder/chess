@@ -33,6 +33,11 @@ export default function BoardComponent({ board }: { board: Board }) {
                         background: "#D6C407",
                         border: "2px solid #2a2a2a",
                       };
+                    else if (cell.activeSq && cell.piece !== null)
+                      return {
+                        background: "#D6A707",
+                        border: "2px solid #2a2a2a",
+                      };
                     else if (snapshot.isDraggingOver && cell.validSq)
                       return {
                         background: "pink",
@@ -41,11 +46,6 @@ export default function BoardComponent({ board }: { board: Board }) {
                     else if (cell.checkSq)
                       return {
                         background: "red",
-                        border: "2px solid #2a2a2a",
-                      };
-                    else if (cell.activeSq && cell.piece !== null)
-                      return {
-                        background: "#D6A707",
                         border: "2px solid #2a2a2a",
                       };
                     else return { background: color };
