@@ -1,69 +1,57 @@
-import Board from "./Board";
-import Piece from "./Piece";
+import { TLocation, TPiece } from "../@types";
+import { COLORS } from "../utils/Constants";
+import { King } from "./Piece";
 
 export default class Cell {
+  private m_validSq = false;
+  private m_activeSq = false;
   constructor(
-    private m_row: number,
-    private m_col: number,
-    public Piece: Piece | null,
-    private m_marked: boolean = false,
-    private m_validCellMark: boolean = false,
-    private m_checkCellMark: boolean = false
+    private m_location: TLocation,
+    private m_color: COLORS,
+    private m_piece: TPiece | null
   ) {}
-  public static NotOutOfBounds(row: number, col: number) {
-    const NotOutOfBounds = row >= 0 && row <= 7 && col >= 0 && col <= 7;
-    return {
-      outOfBounds: NotOutOfBounds,
-      hasPiece: false,
-      oppositeColor: false,
-    };
+  // getters
+  get location(): TLocation {
+    return this.m_location;
   }
-  public static IsValidCell(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ) {
-    if (!Cell.NotOutOfBounds(row, col))
-      return {
-        outOfBounds: true,
-        hasPiece: false,
-        oppositeColor: false,
-      };
-    const piece = board[col][row].Piece;
-    if (piece === null) {
-      return { outOfBounds: false, hasPiece: false, oppositeColor: false };
-    } else {
-      // if opposite color is seen
-      if (piece.GetColor() !== currColor) {
-        return { outOfBounds: false, hasPiece: true, oppositeColor: true };
-      }
-      return { outOfBounds: false, hasPiece: true, oppositeColor: false };
-    }
+  get color(): COLORS {
+    return this.m_color;
   }
-  public GetRow() {
-    return this.m_row;
+  get piece(): TPiece | null {
+    return this.m_piece;
   }
-  public GetCol() {
-    return this.m_col;
+  get validSq(): boolean {
+    return this.m_validSq;
   }
-  public GetValidCellMark() {
-    return this.m_validCellMark;
+
+  get activeSq(): boolean {
+    return this.m_activeSq;
   }
-  public SetValidCellMark(status: boolean) {
-    console.log(status);
-    this.m_validCellMark = status;
+
+  // setters
+  set location(location: TLocation) {
+    this.m_location = location;
   }
-  public SetCheckCellMark(status: boolean) {
-    this.m_checkCellMark = status;
+  set color(color: COLORS) {
+    this.m_color = color;
   }
-  public GetCheckCellMark() {
-    return this.m_checkCellMark;
+  set piece(piece: TPiece | null) {
+    this.m_piece = piece;
   }
-  public SetMarked(status: boolean) {
-    this.m_marked = status;
+  set validSq(valid: boolean) {
+    this.m_validSq = valid;
   }
-  public GetMarked() {
-    return this.m_marked;
+  set activeSq(active: boolean) {
+    this.m_activeSq = active;
+  }
+
+  public static OutOfBounds(location: TLocation): boolean {
+    if (location.x < 0 || location.x > 7 || location.y < 0 || location.y > 7)
+      return true;
+    return false;
+  }
+  public static Occupied(board: Cell[][], location: TLocation): boolean {
+    const piece = board[location.x][location.y].piece;
+    return piece !== null;
   }
 }

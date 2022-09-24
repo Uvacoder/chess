@@ -12,6 +12,7 @@
     "@chess-fu/fen-parser": "^1.1.4",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.0",
     "react-toastify": "^9.0.8",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.185",
     "@types/react": "^18.0.17",
+    "@types/react-beautiful-dnd": "^13.1.2",
     "@types/react-dom": "^18.0.6",
     "@types/react-toastify": "^4.1.0",
     "@vitejs/plugin-react": "^2.1.0",

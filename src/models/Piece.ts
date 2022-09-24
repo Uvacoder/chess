@@ -1,541 +1,311 @@
+import { TLocation } from "../@types";
 import { COLORS, PIECES } from "../utils/Constants";
 import Cell from "./Cell";
-
-export type TMove = Array<{ row: number; col: number }>;
-
-export default class Piece {
-  protected m_color: string;
-  private m_marked = false;
-  private m_spriteSrc: string = "";
-  private m_hasMoved: boolean = false;
-
-  protected static GenCoverage(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number,
-    rowOffset: number,
-    colOffset: number,
-    list: TMove
-  ) {
-    const newRow = row + rowOffset;
-    const newCol = col + colOffset;
-
-    const check = Cell.IsValidCell(board, currColor, newRow, newCol);
-
-    if (!check.outOfBounds) {
-      list.push({ row: newRow, col: newCol });
-      Piece.GenSlide(
-        board,
-        currColor,
-        newRow,
-        newCol,
-        rowOffset,
-        colOffset,
-        list
-      );
-    } else return list;
-  }
-  protected static GenSlide(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number,
-    rowOffset: number,
-    colOffset: number,
-    list: TMove
-  ) {
-    const newRow = row + rowOffset;
-    const newCol = col + colOffset;
-
-    const check = Cell.IsValidCell(board, currColor, newRow, newCol);
-
-    if (!check.outOfBounds) {
-      if (!check.hasPiece) {
-        list.push({ row: newRow, col: newCol });
-        Piece.GenSlide(
-          board,
-          currColor,
-          newRow,
-          newCol,
-          rowOffset,
-          colOffset,
-          list
-        );
-      } else if (check.hasPiece && check.oppositeColor) {
-        list.push({ row: newRow, col: newCol });
-      }
-    } else return list;
+abstract class Piece {
+  private m_sprite: string;
+  private m_hasMoved = false;
+  constructor(private m_color: COLORS, private m_name: PIECES) {
+    this.m_sprite = `/assets/sprites/${m_color}/${m_name.toLowerCase()}.svg`;
   }
 
-  constructor(
-    private pieceName: string,
-    protected row: number,
-    protected col: number
-  ) {
-    this.pieceName = pieceName;
-    this.m_color = this.pieceName
-      ? this.pieceName === this.pieceName.toUpperCase()
-        ? COLORS.WHITE
-        : COLORS.BLACK
-      : "";
-
-    this.m_spriteSrc = this.pieceName
-      ? `/assets/sprites/${this.m_color.toLowerCase()}/${this.pieceName.toLowerCase()}.png`
-      : "";
-  }
-
-  public GetName() {
-    return this.pieceName;
-  }
-
-  public GetColor() {
+  // getters
+  get color(): COLORS {
     return this.m_color;
   }
-  public SetRow(row: number) {
-    this.row = row;
+  get name(): string {
+    return this.m_name;
   }
-  public SetCol(col: number) {
-    this.col = col;
+  get sprite(): string {
+    return this.m_sprite;
   }
-  public GetRow() {
-    return this.row;
-  }
-  public GetCol() {
-    return this.col;
-  }
-
-  public MarkStatus() {
-    return this.m_marked;
-  }
-  public GetSpriteSrc() {
-    return this.m_spriteSrc;
-  }
-  public GetHasMovedStatus() {
+  get hasMoved(): boolean {
     return this.m_hasMoved;
   }
-  public SetHasMovePiece() {
-    this.m_hasMoved = true;
-  }
-  public MarkPiece() {
-    this.m_marked = true;
-  }
 
-  public static GetValidMoves(
-    board: Cell[][],
-    pieceName: string,
-    color: string,
-    row: number,
-    col: number,
-    hasMoved: boolean = false
-  ) {
-    let move: TMove = [];
-    switch (pieceName && pieceName.toUpperCase()) {
-      case PIECES.KING:
-        move = King.ValidMoves(board, color, row, col);
-        break;
-      case PIECES.QUEEN:
-        move = Queen.ValidMoves(board, color, row, col);
-        break;
-      case PIECES.ROOK:
-        move = Rook.ValidMoves(board, color, row, col, hasMoved);
-        break;
-      case PIECES.BISHOP:
-        move = Bishop.ValidMoves(board, color, row, col);
-        break;
-      case PIECES.KNIGHT:
-        move = Knight.ValidMoves(board, color, row, col);
-        break;
-      case PIECES.PAWN:
-        move = Pawn.ValidMoves(board, color, row, col);
-        break;
-    }
-    return move;
+  // setters
+  set color(color: COLORS) {
+    this.m_color = color;
   }
+  set name(name: string) {
+    this.m_name = name as PIECES;
+  }
+  set sprite(sprite: string) {
+    this.m_sprite = sprite;
+  }
+  set hasMoved(hasMoved: boolean) {
+    this.m_hasMoved = hasMoved;
+  }
+  public static GenSlide(
+    curLocation: TLocation,
+    board: Cell[][],
+    xOffset: number,
+    yOffset: number
+  ) {
+    const slide: Array<TLocation> = [];
+    let x = curLocation.x + xOffset;
+    let y = curLocation.y + yOffset;
+
+    while (!Cell.OutOfBounds({ x, y })) {
+      if (
+        board[x][y].piece?.color ===
+        board[curLocation.x][curLocation.y].piece?.color
+      )
+        break;
+      slide.push({ x, y });
+      if (Cell.Occupied(board, { x, y })) break;
+      x += xOffset;
+      y += yOffset;
+    }
+    return slide;
+  }
+  public abstract CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[];
 }
 
 export class King extends Piece {
-  public readonly POINT = Infinity;
-  public m_pieceName: string = PIECES.KING;
-  private static row: number;
-  private static col: number;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number
-  ) {
-    super(PIECES.KING, row, col);
-    this.m_color = m_color;
-    King.row = this.row;
-    King.col = this.col;
+  constructor(color: COLORS) {
+    super(color, PIECES.KING);
   }
-  public static CheckPinned(
-    board: Cell[][],
-    oppositeColor: COLORS,
-    activePiece: Piece,
-    row: number,
-    col: number
-  ) {
-    const coverages = [{ row, col }];
-    Piece.GenCoverage(board, oppositeColor, row, col, 0, 0, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, -1, 0, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, 1, 0, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, 0, -1, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, 0, 1, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, 1, 1, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, -1, 1, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, 1, -1, coverages);
-    Piece.GenCoverage(board, oppositeColor, row, col, -1, -1, coverages);
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    const validMoves: TLocation[] = [];
+    let u, d, l, r, ul, ur, dl, dr;
+    u = { x: srcLocation.x, y: srcLocation.y - 1 };
+    d = { x: srcLocation.x, y: srcLocation.y + 1 };
+    l = { x: srcLocation.x - 1, y: srcLocation.y };
+    r = { x: srcLocation.x + 1, y: srcLocation.y };
+    ul = { x: srcLocation.x - 1, y: srcLocation.y - 1 };
+    ur = { x: srcLocation.x + 1, y: srcLocation.y - 1 };
+    dl = { x: srcLocation.x - 1, y: srcLocation.y + 1 };
+    dr = { x: srcLocation.x + 1, y: srcLocation.y + 1 };
+    if (Cell.OutOfBounds(u)) u = null;
+    if (Cell.OutOfBounds(d)) d = null;
+    if (Cell.OutOfBounds(l)) l = null;
+    if (Cell.OutOfBounds(r)) r = null;
 
-    // if in coverages array, there is a valid move where the move is in the same row or col as the active piece or is in diagonal of active piece
-    // then the active piece is pinned
-    const curPiecePos = {
-      row: activePiece.GetRow(),
-      col: activePiece.GetCol(),
-    };
-    const pinned = coverages.map((move) => {
-      const piece = board[move.row][move.col].Piece;
-      if (piece === null) return false;
-      else if (piece.GetColor() !== oppositeColor) return false;
+    if (Cell.OutOfBounds(ul)) ul = null;
+    if (Cell.OutOfBounds(ur)) ur = null;
+    if (Cell.OutOfBounds(dl)) dl = null;
+    if (Cell.OutOfBounds(dr)) dr = null;
+
+    function NeighbourIsKing(location: TLocation, prevLocation: TLocation) {
+      //  find all neighhbous of location
+      //  if any of them is king return true
+      //  else return false
+      let u, d, l, r, ul, ur, dl, dr;
+      u = { x: location.x, y: location.y - 1 };
+      d = { x: location.x, y: location.y + 1 };
+      l = { x: location.x - 1, y: location.y };
+      r = { x: location.x + 1, y: location.y };
+      ul = { x: location.x - 1, y: location.y - 1 };
+      ur = { x: location.x + 1, y: location.y - 1 };
+      dl = { x: location.x - 1, y: location.y + 1 };
+      dr = { x: location.x + 1, y: location.y + 1 };
+
+      if (Cell.OutOfBounds(u)) u = null;
+      if (Cell.OutOfBounds(d)) d = null;
+      if (Cell.OutOfBounds(l)) l = null;
+      if (Cell.OutOfBounds(r)) r = null;
+
+      if (Cell.OutOfBounds(ul)) ul = null;
+      if (Cell.OutOfBounds(ur)) ur = null;
+      if (Cell.OutOfBounds(dl)) dl = null;
+      if (Cell.OutOfBounds(dr)) dr = null;
+
+      if (u && u.x === prevLocation.x && u.y === prevLocation.y) u = null;
+      if (d && d.x === prevLocation.x && d.y === prevLocation.y) d = null;
+      if (l && l.x === prevLocation.x && l.y === prevLocation.y) l = null;
+      if (r && r.x === prevLocation.x && r.y === prevLocation.y) r = null;
+      if (ul && ul.x === prevLocation.x && ul.y === prevLocation.y) ul = null;
+      if (ur && ur.x === prevLocation.x && ur.y === prevLocation.y) ur = null;
+      if (dl && dl.x === prevLocation.x && dl.y === prevLocation.y) dl = null;
+      if (dr && dr.x === prevLocation.x && dr.y === prevLocation.y) dr = null;
+
+      if (u && board[u.x][u.y].piece?.name === PIECES.KING) return true;
+      if (d && board[d.x][d.y].piece?.name === PIECES.KING) return true;
+      if (l && board[l.x][l.y].piece?.name === PIECES.KING) return true;
+      if (r && board[r.x][r.y].piece?.name === PIECES.KING) return true;
+      if (ul && board[ul.x][ul.y].piece?.name === PIECES.KING) return true;
+      if (ur && board[ur.x][ur.y].piece?.name === PIECES.KING) return true;
+      if (dl && board[dl.x][dl.y].piece?.name === PIECES.KING) return true;
+      if (dr && board[dr.x][dr.y].piece?.name === PIECES.KING) return true;
+      return false;
+    }
+
+    if (u && NeighbourIsKing(u, srcLocation)) u = null;
+    if (d && NeighbourIsKing(d, srcLocation)) d = null;
+    if (l && NeighbourIsKing(l, srcLocation)) l = null;
+    if (r && NeighbourIsKing(r, srcLocation)) r = null;
+    if (ul && NeighbourIsKing(ul, srcLocation)) ul = null;
+    if (ur && NeighbourIsKing(ur, srcLocation)) ur = null;
+    if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
+    if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
+
+    return [u, l, d, r, ul, ur, dl, dr].filter((loc) => {
+      if (loc === null) return false;
       else {
-        const pieceName = piece.GetName();
-        const pieceCoverage = Piece.GetValidMoves(
-          board,
-          pieceName,
-          piece.GetColor(),
-          move.row,
-          move.col
-        );
-      }
-    });
-
-    return coverages;
-  }
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ) {
-    const urCheck = Cell.IsValidCell(board, currColor, row - 1, col + 1);
-    const uLCheck = Cell.IsValidCell(board, currColor, row - 1, col - 1);
-    const dRCheck = Cell.IsValidCell(board, currColor, row + 1, col + 1);
-    const dLCheck = Cell.IsValidCell(board, currColor, row + 1, col - 1);
-
-    const uCheck = Cell.IsValidCell(board, currColor, row - 1, col);
-    const dCheck = Cell.IsValidCell(board, currColor, row + 1, col);
-    const rCheck = Cell.IsValidCell(board, currColor, row, col + 1);
-    const lCheck = Cell.IsValidCell(board, currColor, row, col - 1);
-
-    let uR = undefined,
-      uL = undefined,
-      dR = undefined,
-      dL = undefined,
-      u = undefined,
-      d = undefined,
-      l = undefined,
-      r = undefined;
-    if (!urCheck.outOfBounds) {
-      if (urCheck.hasPiece === false) uR = { row: row - 1, col: col + 1 };
-      else if (urCheck.hasPiece === true && urCheck.oppositeColor)
-        uR = { row: row - 1, col: col + 1 };
-    }
-    if (!uLCheck.outOfBounds) {
-      if (uLCheck.hasPiece === false) uL = { row: row - 1, col: col - 1 };
-      else if (uLCheck.hasPiece === true && uLCheck.oppositeColor)
-        uL = { row: row - 1, col: col - 1 };
-    }
-    if (!dRCheck.outOfBounds) {
-      if (dRCheck.hasPiece === false) dR = { row: row + 1, col: col + 1 };
-      else if (dRCheck.hasPiece === true && dRCheck.oppositeColor)
-        dR = { row: row + 1, col: col + 1 };
-    }
-    if (!dLCheck.outOfBounds) {
-      if (dLCheck.hasPiece === false) dL = { row: row + 1, col: col - 1 };
-      else if (dLCheck.hasPiece === true && dLCheck.oppositeColor)
-        dL = { row: row + 1, col: col - 1 };
-    }
-    if (!uCheck.outOfBounds) {
-      if (uCheck.hasPiece === false) u = { row: row - 1, col: col };
-      else if (uCheck.hasPiece === true && uCheck.oppositeColor)
-        u = { row: row - 1, col: col };
-    }
-    if (!dCheck.outOfBounds) {
-      if (dCheck.hasPiece === false) d = { row: row + 1, col: col };
-      else if (dCheck.hasPiece === true && dCheck.oppositeColor)
-        d = { row: row + 1, col: col };
-    }
-    if (!rCheck.outOfBounds) {
-      if (rCheck.hasPiece === false) r = { row: row, col: col + 1 };
-      else if (rCheck.hasPiece === true && rCheck.oppositeColor)
-        r = { row: row, col: col + 1 };
-    }
-    if (!lCheck.outOfBounds) {
-      if (lCheck.hasPiece === false) l = { row: row, col: col - 1 };
-      else if (lCheck.hasPiece === true && lCheck.oppositeColor)
-        l = { row: row, col: col - 1 };
-    }
-
-    const moves = [];
-
-    if (uR) moves.push(uR);
-    if (uL) moves.push(uL);
-    if (dR) moves.push(dR);
-    if (dL) moves.push(dL);
-    if (u) moves.push(u);
-    if (l) moves.push(l);
-    if (d) moves.push(d);
-    if (r) moves.push(r);
-
-    return moves;
-  }
-}
-class Queen extends Piece {
-  public readonly POINT = 900;
-  public m_pieceName: string = PIECES.QUEEN;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number
-  ) {
-    super(PIECES.QUEEN, row, col);
-    this.m_color = m_color;
-  }
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ) {
-    const moves = [{ row, col }];
-    Piece.GenSlide(board, currColor, row, col, 0, 0, moves);
-    Piece.GenSlide(board, currColor, row, col, -1, 0, moves);
-    Piece.GenSlide(board, currColor, row, col, 1, 0, moves);
-    Piece.GenSlide(board, currColor, row, col, 0, -1, moves);
-    Piece.GenSlide(board, currColor, row, col, 0, 1, moves);
-
-    Piece.GenSlide(board, currColor, row, col, 1, 1, moves);
-    Piece.GenSlide(board, currColor, row, col, -1, 1, moves);
-    Piece.GenSlide(board, currColor, row, col, 1, -1, moves);
-    Piece.GenSlide(board, currColor, row, col, -1, -1, moves);
-    return moves;
-  }
-}
-
-class Rook extends Piece {
-  public readonly POINT = 500;
-  public m_pieceName: string = PIECES.ROOK;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number,
-    protected hasMoved: boolean
-  ) {
-    super(PIECES.ROOK, row, col);
-    this.m_color = m_color;
-  }
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number,
-    hasMoved: boolean
-  ) {
-    const moves = [{ row, col }];
-    Piece.GenSlide(board, currColor, row, col, -1, 0, moves);
-    Piece.GenSlide(board, currColor, row, col, 1, 0, moves);
-    Piece.GenSlide(board, currColor, row, col, 0, -1, moves);
-    Piece.GenSlide(board, currColor, row, col, 0, 1, moves);
-
-    return moves;
-  }
-}
-class Bishop extends Piece {
-  public readonly POINT = 300;
-
-  public m_pieceName: string = PIECES.BISHOP;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number
-  ) {
-    super(PIECES.BISHOP, row, col);
-    this.m_color = m_color;
-  }
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ) {
-    const moves = [{ row, col }];
-    Piece.GenSlide(board, currColor, row, col, 1, 1, moves);
-    Piece.GenSlide(board, currColor, row, col, -1, 1, moves);
-    Piece.GenSlide(board, currColor, row, col, 1, -1, moves);
-    Piece.GenSlide(board, currColor, row, col, -1, -1, moves);
-    return moves;
-  }
-}
-
-class Knight extends Piece {
-  public readonly POINT = 300;
-  public m_pieceName: string = PIECES.KNIGHT;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number
-  ) {
-    super(PIECES.KNIGHT, row, col);
-    this.m_color = m_color;
-  }
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ) {
-    let uR = undefined,
-      uL = undefined,
-      dR = undefined,
-      dL = undefined,
-      rU = undefined,
-      rD = undefined,
-      lU = undefined,
-      lD = undefined;
-    const uRCheck = Cell.IsValidCell(board, currColor, row - 2, col + 1);
-    const uLCheck = Cell.IsValidCell(board, currColor, row - 2, col - 1);
-    const dRCheck = Cell.IsValidCell(board, currColor, row + 2, col + 1);
-    const dLCheck = Cell.IsValidCell(board, currColor, row + 2, col - 1);
-    const rUCheck = Cell.IsValidCell(board, currColor, row - 1, col + 2);
-    const rDCheck = Cell.IsValidCell(board, currColor, row + 1, col + 2);
-    const lUCheck = Cell.IsValidCell(board, currColor, row - 1, col - 2);
-    const lDCheck = Cell.IsValidCell(board, currColor, row + 1, col - 2);
-
-    if (!uRCheck.outOfBounds) {
-      if (!uRCheck.hasPiece) uR = { row: row - 2, col: col + 1 };
-      else if (uRCheck.hasPiece && uRCheck.oppositeColor)
-        uR = { row: row - 2, col: col + 1 };
-    }
-    if (!uLCheck.outOfBounds) {
-      if (!uLCheck.hasPiece) uL = { row: row - 2, col: col - 1 };
-      else if (uLCheck.hasPiece && uLCheck.oppositeColor)
-        uL = { row: row - 2, col: col - 1 };
-    }
-    if (!dRCheck.outOfBounds) {
-      if (!dRCheck.hasPiece) dR = { row: row + 2, col: col + 1 };
-      else if (dRCheck.hasPiece && dRCheck.oppositeColor)
-        dR = { row: row + 2, col: col + 1 };
-    }
-    if (!dLCheck.outOfBounds) {
-      if (!dLCheck.hasPiece) dL = { row: row + 2, col: col - 1 };
-      else if (dLCheck.hasPiece && dLCheck.oppositeColor)
-        dL = { row: row + 2, col: col - 1 };
-    }
-    if (!rUCheck.outOfBounds) {
-      if (!rUCheck.hasPiece) rU = { row: row - 1, col: col + 2 };
-      else if (rUCheck.hasPiece && rUCheck.oppositeColor)
-        rU = { row: row - 1, col: col + 2 };
-    }
-    if (!rDCheck.outOfBounds) {
-      if (!rDCheck.hasPiece) rD = { row: row + 1, col: col + 2 };
-      else if (rDCheck.hasPiece && rDCheck.oppositeColor)
-        rD = { row: row + 1, col: col + 2 };
-    }
-    if (!lUCheck.outOfBounds) {
-      if (!lUCheck.hasPiece) lU = { row: row - 1, col: col - 2 };
-      else if (lUCheck.hasPiece && lUCheck.oppositeColor)
-        lU = { row: row - 1, col: col - 2 };
-    }
-    if (!lDCheck.outOfBounds) {
-      if (!lDCheck.hasPiece) lD = { row: row + 1, col: col - 2 };
-      else if (lDCheck.hasPiece && lDCheck.oppositeColor)
-        lD = { row: row + 1, col: col - 2 };
-    }
-
-    const moves = [];
-
-    if (uR) moves.push(uR);
-    if (uL) moves.push(uL);
-    if (dR) moves.push(dR);
-    if (dL) moves.push(dL);
-    if (rU) moves.push(rU);
-    if (rD) moves.push(rD);
-    if (lU) moves.push(lU);
-    if (lD) moves.push(lD);
-    return moves;
-  }
-}
-
-class Pawn extends Piece {
-  public readonly POINT = 100;
-  public m_pieceName: string = PIECES.PAWN;
-  constructor(
-    protected m_color: string,
-    protected row: number,
-    protected col: number
-  ) {
-    super(PIECES.PAWN, row, col);
-    this.m_color = m_color;
-  }
-
-  public static ValidMoves(
-    board: Cell[][],
-    currColor: string,
-    row: number,
-    col: number
-  ): TMove {
-    function getMoves(rowOffset: number, uniqeRank: number) {
-      const moves = [];
-      let uL = undefined,
-        uR = undefined,
-        u = undefined,
-        uu = undefined;
-      const uLCheck = Cell.IsValidCell(
-        board,
-        currColor,
-        row + rowOffset,
-        col - 1
-      );
-      const uRCheck = Cell.IsValidCell(
-        board,
-        currColor,
-        row + rowOffset,
-        col + 1
-      );
-      const uCheck = Cell.IsValidCell(board, currColor, row + rowOffset, col);
-      if (!uLCheck.outOfBounds) {
-        if (uLCheck.hasPiece && uLCheck.oppositeColor)
-          uL = { row: row + rowOffset, col: col - 1 };
-      }
-      if (!uRCheck.outOfBounds) {
-        if (uRCheck.hasPiece && uRCheck.oppositeColor)
-          uR = { row: row + rowOffset, col: col + 1 };
-      }
-      if (!uCheck.outOfBounds) {
-        if (!uCheck.hasPiece) u = { row: row + rowOffset, col: col };
-      }
-      if (row === uniqeRank) {
-        const uuCheck = Cell.IsValidCell(
-          board,
-          currColor,
-          row + rowOffset * 2,
-          col
-        );
-        if (!uuCheck.outOfBounds) {
-          if (!uuCheck.hasPiece) uu = { row: row + rowOffset * 2, col: col };
+        const occupied = Cell.Occupied(board, loc);
+        if (!occupied) return true;
+        else {
+          if (board[loc.x][loc.y].piece?.color === this.color) return false;
+          else return true;
         }
       }
-      if (uL) moves.push(uL);
-      if (uR) moves.push(uR);
-      if (u) moves.push(u);
-      if (uu) moves.push(uu);
-      return moves;
+    }) as TLocation[];
+  }
+}
+export class Queen extends Piece {
+  constructor(color: COLORS) {
+    super(color, PIECES.QUEEN);
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    const coverageSquares = [
+      ...Piece.GenSlide(srcLocation, board, 1, 0),
+      ...Piece.GenSlide(srcLocation, board, -1, 0),
+      ...Piece.GenSlide(srcLocation, board, 0, 1),
+      ...Piece.GenSlide(srcLocation, board, 0, -1),
+      ...Piece.GenSlide(srcLocation, board, 1, -1),
+      ...Piece.GenSlide(srcLocation, board, -1, 1),
+      ...Piece.GenSlide(srcLocation, board, 1, 1),
+      ...Piece.GenSlide(srcLocation, board, -1, -1),
+    ];
+    return coverageSquares;
+  }
+}
+export class Rook extends Piece {
+  constructor(color: COLORS) {
+    super(color, PIECES.ROOK);
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    return [
+      srcLocation,
+      ...Piece.GenSlide(srcLocation, board, 1, 0),
+      ...Piece.GenSlide(srcLocation, board, -1, 0),
+      ...Piece.GenSlide(srcLocation, board, 0, 1),
+      ...Piece.GenSlide(srcLocation, board, 0, -1),
+    ];
+  }
+}
+export class Bishop extends Piece {
+  constructor(color: COLORS) {
+    super(color, PIECES.BISHOP);
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    return [
+      ...Piece.GenSlide(srcLocation, board, 1, 1),
+      ...Piece.GenSlide(srcLocation, board, -1, -1),
+      ...Piece.GenSlide(srcLocation, board, 1, -1),
+      ...Piece.GenSlide(srcLocation, board, -1, 1),
+    ];
+  }
+}
+export class Knight extends Piece {
+  constructor(color: COLORS) {
+    super(color, PIECES.KNIGHT);
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    let uul, uur, ddl, ddr;
+    let rru, rrd, llu, lld;
+    uul = { x: srcLocation.x - 2, y: srcLocation.y - 1 };
+    uur = { x: srcLocation.x - 2, y: srcLocation.y + 1 };
+    ddl = { x: srcLocation.x + 2, y: srcLocation.y - 1 };
+    ddr = { x: srcLocation.x + 2, y: srcLocation.y + 1 };
+    rru = { x: srcLocation.x - 1, y: srcLocation.y - 2 };
+    rrd = { x: srcLocation.x + 1, y: srcLocation.y - 2 };
+    llu = { x: srcLocation.x - 1, y: srcLocation.y + 2 };
+    lld = { x: srcLocation.x + 1, y: srcLocation.y + 2 };
+    if (Cell.OutOfBounds(uul)) uul = null;
+    if (Cell.OutOfBounds(uur)) uur = null;
+    if (Cell.OutOfBounds(ddl)) ddl = null;
+    if (Cell.OutOfBounds(ddr)) ddr = null;
+
+    if (Cell.OutOfBounds(rru)) rru = null;
+    if (Cell.OutOfBounds(rrd)) rrd = null;
+    if (Cell.OutOfBounds(llu)) llu = null;
+    if (Cell.OutOfBounds(lld)) lld = null;
+
+    return [uul, uur, ddl, ddr, rru, rrd, llu, lld].filter((loc) => {
+      if (loc === null) return false;
+      else {
+        const occupied = Cell.Occupied(board, loc);
+        if (!occupied) return true;
+        else {
+          if (board[loc.x][loc.y].piece?.color === this.color) return false;
+          else return true;
+        }
+      }
+    }) as TLocation[];
+  }
+}
+export class Pawn extends Piece {
+  constructor(color: COLORS) {
+    super(color, PIECES.PAWN);
+  }
+  public CalculateValidMoves(
+    srcLocation: TLocation,
+    board: Cell[][]
+  ): TLocation[] {
+    let f, fl, fr;
+
+    f = {
+      x: srcLocation.x + (this.color === COLORS.WHITE ? -1 : 1),
+      y: srcLocation.y,
+    };
+
+    fl = {
+      x: srcLocation.x + (this.color === COLORS.WHITE ? -1 : 1),
+      y: srcLocation.y - 1,
+    };
+    fr = {
+      x: srcLocation.x + (this.color === COLORS.WHITE ? -1 : 1),
+      y: srcLocation.y + 1,
+    };
+    if (Cell.OutOfBounds(f)) f = null;
+    if (Cell.OutOfBounds(fl)) fl = null;
+    if (Cell.OutOfBounds(fr)) fr = null;
+
+    if (f && Cell.Occupied(board, f)) f = null;
+
+    if (fl) {
+      if (Cell.Occupied(board, fl)) {
+        if (board[fl.x][fl.y].piece?.color === this.color) fl = null;
+      } else fl = null;
+    }
+    if (fr) {
+      if (Cell.Occupied(board, fr)) {
+        if (board[fr.x][fr.y].piece?.color === this.color) fr = null;
+      } else fr = null;
     }
 
-    if (currColor === COLORS.WHITE) {
-      return [{ row, col }, ...getMoves(-1, 6)];
-    } else {
-      return [{ row, col }, ...getMoves(1, 1)];
+    let ff = null;
+    if (this.color === COLORS.WHITE) {
+      if (srcLocation.x === 6) {
+        ff = { x: 4, y: srcLocation.y };
+      }
+    } else if (this.color === COLORS.BLACK) {
+      if (srcLocation.x === 1) {
+        ff = { x: 3, y: srcLocation.y };
+      }
     }
+    if (!f) ff = null;
+    if (ff && Cell.Occupied(board, ff)) ff = null;
+
+    return [f, fl, fr, ff].filter((loc) => loc !== null) as TLocation[];
   }
 }
