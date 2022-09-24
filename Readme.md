@@ -16,13 +16,13 @@
 | :-------------------: | :---------------: |
 |          FEN          |        ✔️         |
 |      Basic Moves      |        ✔️         |
+|     Click to Move     |        ✔️         |
+|     Drag to Move      |        ✔️         |
+|   Click to Capture    |        ✔️         |
+|    Drag to Capture    |        ✔️         |
 |        Castle         |        ✖️         |
 |      En Passant       |        ✖️         |
-|     Click to Move     |        ✔️         |
-|     Drag to Move      |        ✖️         |
-|   Click to Capture    |        ✔️         |
-|    Drag to Capture    |        ✖️         |
-|    Check Detection    |        ✔️         |
+|    Check Detection    |        ✖️         |
 |   Discovered Check    |        ✖️         |
 |       Checkmate       |        ✖️         |
 |      Resignation      |        ✖️         |
