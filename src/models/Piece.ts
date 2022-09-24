@@ -39,7 +39,8 @@ abstract class Piece {
     curLocation: TLocation,
     board: Cell[][],
     xOffset: number,
-    yOffset: number
+    yOffset: number,
+    checkOccupancy = true
   ) {
     const slide: Array<TLocation> = [];
     let x = curLocation.x + xOffset;
@@ -47,17 +48,19 @@ abstract class Piece {
 
     while (!Cell.OutOfBounds({ x, y })) {
       if (
+        checkOccupancy &&
         board[x][y].piece?.color ===
-        board[curLocation.x][curLocation.y].piece?.color
+          board[curLocation.x][curLocation.y].piece?.color
       )
         break;
       slide.push({ x, y });
-      if (Cell.Occupied(board, { x, y })) break;
+      if (checkOccupancy && Cell.Occupied(board, { x, y })) break;
       x += xOffset;
       y += yOffset;
     }
     return slide;
   }
+
   public abstract CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][]
@@ -156,6 +159,19 @@ export class King extends Piece {
         }
       }
     }) as TLocation[];
+  }
+  public CalculateCoverage(board: Cell[][], currentLocation: TLocation) {
+    const coverage = [
+      ...Piece.GenSlide(currentLocation, board, 1, 0, false),
+      ...Piece.GenSlide(currentLocation, board, -1, 0, false),
+      ...Piece.GenSlide(currentLocation, board, 0, 1, false),
+      ...Piece.GenSlide(currentLocation, board, 0, -1, false),
+      ...Piece.GenSlide(currentLocation, board, 1, -1, false),
+      ...Piece.GenSlide(currentLocation, board, -1, 1, false),
+      ...Piece.GenSlide(currentLocation, board, 1, 1, false),
+      ...Piece.GenSlide(currentLocation, board, -1, -1, false),
+    ];
+    return coverage;
   }
 }
 export class Queen extends Piece {

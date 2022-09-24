@@ -11,6 +11,22 @@ export default class Game {
     try {
       const parser = new FenParser(fenString || START_POSITION);
       if (!parser.isValid) throw new Error("Invalid FEN String");
+      const kings = {
+        [COLORS.WHITE]: {
+          location: { x: -1, y: -1 },
+          checkInfo: {
+            status: false,
+            responsibleSquares: [],
+          },
+        },
+        [COLORS.BLACK]: {
+          location: { x: -1, y: -1 },
+          checkInfo: {
+            status: false,
+            responsibleSquares: [],
+          },
+        },
+      };
       const boardData = parser.ranks.map((rank, row) => {
         return rank.split("").map((piece, col) => {
           let pieceObj = null;
@@ -20,6 +36,7 @@ export default class Game {
             switch (piece.toUpperCase()) {
               case PIECES.KING:
                 pieceObj = new King(color);
+                kings[color].location = { x: row, y: col };
                 break;
               case PIECES.QUEEN:
                 pieceObj = new Queen(color);
@@ -44,7 +61,9 @@ export default class Game {
       });
       const board = new Board();
       board.board = boardData;
+
       this.m_board = board;
+      this.m_board.kings = kings;
     } catch (e) {
       throw e;
     }

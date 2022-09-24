@@ -5,6 +5,7 @@ import { King } from "./Piece";
 export default class Cell {
   private m_validSq = false;
   private m_activeSq = false;
+  private m_checkSq = false;
   constructor(
     private m_location: TLocation,
     private m_color: COLORS,
@@ -27,6 +28,9 @@ export default class Cell {
   get activeSq(): boolean {
     return this.m_activeSq;
   }
+  get checkSq(): boolean {
+    return this.m_checkSq;
+  }
 
   // setters
   set location(location: TLocation) {
@@ -43,6 +47,9 @@ export default class Cell {
   }
   set activeSq(active: boolean) {
     this.m_activeSq = active;
+  }
+  set checkSq(check: boolean) {
+    this.m_checkSq = check;
   }
 
   public static OutOfBounds(location: TLocation): boolean {

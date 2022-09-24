@@ -28,19 +28,24 @@ export default function BoardComponent({ board }: { board: Board }) {
               >
                 {(provided, snapshot) => {
                   const cellStyle = function () {
-                    if (cell.activeSq && cell.piece !== null)
+                    if (cell.validSq)
                       return {
-                        background: "#D6A707",
+                        background: "#D6C407",
                         border: "2px solid #2a2a2a",
                       };
-                    else if (snapshot.isDraggingOver && cell.validSq) {
+                    else if (snapshot.isDraggingOver && cell.validSq)
                       return {
                         background: "pink",
                         border: "2px solid #2a2a2a",
                       };
-                    } else if (cell.validSq)
+                    else if (cell.checkSq)
                       return {
-                        background: "#D6C407",
+                        background: "red",
+                        border: "2px solid #2a2a2a",
+                      };
+                    else if (cell.activeSq && cell.piece !== null)
+                      return {
+                        background: "#D6A707",
                         border: "2px solid #2a2a2a",
                       };
                     else return { background: color };
@@ -61,6 +66,9 @@ export default function BoardComponent({ board }: { board: Board }) {
                         setState(!state);
                       }}
                     >
+                      <div className="absolute">
+                        {x}, {y}
+                      </div>
                       <Draggable
                         draggableId={`${cell.location.x}-${cell.location.y}`}
                         index={cell.location.x * 8 + cell.location.y}

@@ -22,10 +22,6 @@ export const AVAILABLE_FENS = [
 export enum COLORS {
   WHITE = "white",
   BLACK = "black",
-
-  VALID = "yellow",
-  ACTIVE = "red",
-  HOVER = "pink",
 }
 export enum PIECES {
   KING = "K",
