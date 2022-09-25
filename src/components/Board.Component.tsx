@@ -66,9 +66,9 @@ export default function BoardComponent({ board }: { board: Board }) {
                         setState(!state);
                       }}
                     >
-                      <div className="absolute">
+                      {/* <div className="absolute">
                         {x}, {y}
-                      </div>
+                      </div> */}
                       <Draggable
                         draggableId={`${cell.location.x}-${cell.location.y}`}
                         index={cell.location.x * 8 + cell.location.y}
