@@ -69,6 +69,15 @@ export default class Board {
     this.m_currPiece.location = { x: -1, y: -1 };
   }
 
+  public CopyBoard() {
+    return this.m_board.map((row, rIdx) => {
+      return row.map((col, cIdx) => {
+        const cellColor = (rIdx + cIdx) % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
+        return new Cell(col.location, cellColor, col.piece);
+      });
+    });
+  }
+
   public ResetBoardMarkers() {
     this.m_board.forEach((row) => {
       row.forEach((cell) => {
@@ -118,6 +127,9 @@ export default class Board {
       this.m_currPiece.piece = cell.piece;
       this.m_currPiece.location = cell.location;
 
+      this.m_currPiece.piece.ResetPinnedStatus();
+      this.CurrPiecePinned();
+
       const validMoves = cell.piece.CalculateValidMoves(
         cell.location,
         this.m_board
@@ -129,35 +141,169 @@ export default class Board {
     }
   }
 
-  public KingInCheck() {
-    const responsibleSquares: TLocation[] = [];
-    const currColor = this.m_currPiece.piece!.color;
+  public CurrPiecePinned() {
+    if (!this.m_currPiece.piece || this.m_currPiece.piece instanceof King)
+      return;
+    const playerColor = this.m_currPiece.piece.color;
     const opponentColor =
-      currColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-    const opponentKingLocation = this.m_kings[opponentColor]!.location;
-    const opponentKing =
-      this.m_board[opponentKingLocation.x][opponentKingLocation.y].piece;
+      this.m_currPiece.piece.color === COLORS.WHITE
+        ? COLORS.BLACK
+        : COLORS.WHITE;
+    // check if piece is pinned
+    const playerKing = this.m_kings[this.m_currPiece.piece.color];
 
-    const kingCoverage = (opponentKing as King)!.CalculateCoverage(
-      this.m_board,
-      opponentKingLocation
+    const tempBoard = this.CopyBoard();
+    const currLocation = this.m_currPiece.location;
+    tempBoard[currLocation.x][currLocation.y].piece = null;
+    let kingChecks = [];
+
+    kingChecks = this.KingInCheck(
+      tempBoard,
+      playerColor,
+      opponentColor,
+      King.CalculateCoverage
     );
+    // if king is in same row as the active piece
+    if (playerKing.location.x === this.m_currPiece.location.x) {
+      this.m_currPiece.piece.pinned.horizontal = false;
+      this.m_currPiece.piece.pinned.topLeft = true;
+      this.m_currPiece.piece.pinned.bottomLeft = true;
+      this.m_currPiece.piece.pinned.topRight = true;
+      this.m_currPiece.piece.pinned.bottomRight = true;
+      const pieceLocationInChecks = kingChecks.find(
+        (location) =>
+          location &&
+          location.x === this.m_currPiece.location.x &&
+          location.y === this.m_currPiece.location.y
+      );
+
+      if (pieceLocationInChecks !== undefined) {
+        this.m_currPiece.piece.pinned.vertical = true;
+      } else {
+        this.m_currPiece.piece.pinned.vertical = false;
+        this.m_currPiece.piece.pinned.topLeft = false;
+        this.m_currPiece.piece.pinned.bottomLeft = false;
+        this.m_currPiece.piece.pinned.topRight = false;
+        this.m_currPiece.piece.pinned.bottomRight = false;
+      }
+    } else if (playerKing.location.y === this.m_currPiece.location.y) {
+      this.m_currPiece.piece.pinned.vertical = false;
+      this.m_currPiece.piece.pinned.topLeft = true;
+      this.m_currPiece.piece.pinned.bottomLeft = true;
+      this.m_currPiece.piece.pinned.topRight = true;
+      this.m_currPiece.piece.pinned.bottomRight = true;
+      const pieceLocationInChecks = kingChecks.find(
+        (location) =>
+          location &&
+          location.x === this.m_currPiece.location.x &&
+          location.y === this.m_currPiece.location.y
+      );
+
+      if (pieceLocationInChecks !== undefined) {
+        this.m_currPiece.piece.pinned.horizontal = true;
+      } else {
+        this.m_currPiece.piece.pinned.horizontal = false;
+        this.m_currPiece.piece.pinned.topLeft = false;
+        this.m_currPiece.piece.pinned.bottomLeft = false;
+        this.m_currPiece.piece.pinned.topRight = false;
+        this.m_currPiece.piece.pinned.bottomRight = false;
+      }
+    } else if (
+      Math.abs(playerKing.location.x - this.m_currPiece.location.x) ===
+      Math.abs(playerKing.location.y - this.m_currPiece.location.y)
+    ) {
+      // this.m_currPiece.piece.pinned.horizontal = true;
+      // this.m_currPiece.piece.pinned.vertical = true;
+      this.m_currPiece.piece.pinned.topLeft = true;
+      this.m_currPiece.piece.pinned.topRight = true;
+      this.m_currPiece.piece.pinned.bottomLeft = true;
+      this.m_currPiece.piece.pinned.bottomRight = true;
+
+      const pieceLocationInChecks = kingChecks.find(
+        (location) =>
+          location &&
+          location.x === this.m_currPiece.location.x &&
+          location.y === this.m_currPiece.location.y
+      );
+      if (pieceLocationInChecks) {
+        this.m_currPiece.piece.pinned.vertical = true;
+        this.m_currPiece.piece.pinned.horizontal = true;
+      }
+      if (
+        pieceLocationInChecks &&
+        playerKing.location.x > this.m_currPiece.location.x &&
+        playerKing.location.y > this.m_currPiece.location.y
+      ) {
+        this.m_currPiece.piece.pinned.topLeft = false;
+        this.m_currPiece.piece.pinned.bottomRight = false;
+      } else if (
+        pieceLocationInChecks &&
+        playerKing.location.x > this.m_currPiece.location.x &&
+        playerKing.location.y < this.m_currPiece.location.y
+      ) {
+        this.m_currPiece.piece.pinned.topRight = false;
+        this.m_currPiece.piece.pinned.bottomLeft = false;
+      } else if (
+        pieceLocationInChecks &&
+        playerKing.location.x < this.m_currPiece.location.x &&
+        playerKing.location.y > this.m_currPiece.location.y
+      ) {
+        this.m_currPiece.piece.pinned.topRight = false;
+        this.m_currPiece.piece.pinned.bottomLeft = false;
+      } else if (
+        pieceLocationInChecks &&
+        playerKing.location.x < this.m_currPiece.location.x &&
+        playerKing.location.y < this.m_currPiece.location.y
+      ) {
+        this.m_currPiece.piece.pinned.topLeft = false;
+        this.m_currPiece.piece.pinned.bottomRight = false;
+      } else {
+        this.m_currPiece.piece.pinned.topLeft = false;
+        this.m_currPiece.piece.pinned.topRight = false;
+        this.m_currPiece.piece.pinned.bottomLeft = false;
+        this.m_currPiece.piece.pinned.bottomRight = false;
+      }
+    } else {
+      this.m_currPiece.piece.pinned.vertical = false;
+      this.m_currPiece.piece.pinned.topLeft = false;
+      this.m_currPiece.piece.pinned.bottomLeft = false;
+      this.m_currPiece.piece.pinned.topRight = false;
+      this.m_currPiece.piece.pinned.bottomRight = false;
+      this.m_currPiece.piece.pinned.horizontal = false;
+    }
+  }
+
+  public KingInCheck(
+    board: Cell[][],
+    kingColor: COLORS,
+    attackerColor: COLORS,
+    coverageFunction: (board: Cell[][], location: TLocation) => TLocation[]
+  ) {
+    const responsibleSquares: TLocation[] = [];
+
+    const kingLocation = this.m_kings[kingColor]!.location;
+    console.log(kingLocation);
+    // const kingCoverage = (king as King)!.CalculateCoverage(board, kingLocation);
+    const kingCoverage = coverageFunction(board, kingLocation);
+
     const attackers = kingCoverage.map((location) => {
-      const piece = this.m_board[location.x][location.y].piece;
+      const piece = board[location.x][location.y].piece;
       if (piece === null) return null;
-      if (piece.color !== currColor) return null;
-      const pieceValidMoves = piece.CalculateValidMoves(location, this.m_board);
+      if (piece.color !== attackerColor) return null;
+      const pieceValidMoves = piece.CalculateValidMoves(location, board);
       const kingInValidMoves = pieceValidMoves.find(
         (location) =>
-          location.x === opponentKingLocation.x &&
-          location.y === opponentKingLocation.y
+          location.x === kingLocation.x && location.y === kingLocation.y
       );
+
       if (kingInValidMoves) return location;
       else return null;
     });
     const attackerCells = attackers
       .filter((attacker) => attacker !== null)
       .flat();
+
+    console.log(attackerCells);
     if (attackerCells.length === 0) return [];
     function FindResponsibleSquares(
       attackerLocation: TLocation,
@@ -259,32 +405,39 @@ export default class Board {
     }
     const _responsibleSquares = attackerCells
       .map((attacker) => {
-        if (attacker)
-          return FindResponsibleSquares(attacker, opponentKingLocation);
+        if (attacker) return FindResponsibleSquares(attacker, kingLocation);
       })
       .flat();
+
     return [...responsibleSquares, ..._responsibleSquares];
   }
 
   public MovePiece(srcLocation: TLocation, destLocation: TLocation) {
     this.ResetCheckMarkers();
+
     if (this.m_currPiece.piece instanceof King)
       this.m_kings[this.m_currPiece.piece.color]!.location = destLocation;
 
-    const currColor = this.m_currPiece.piece!.color;
-    const oppColor = currColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+    const playerColor = this.m_currPiece.piece!.color;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
     this.m_board[destLocation.x][destLocation.y].piece = this.m_currPiece.piece;
     this.m_board[srcLocation.x][srcLocation.y].piece = null;
 
     this.m_currPiece.location = destLocation;
-    const checkSquares = this.KingInCheck();
+    const checkSquares = this.KingInCheck(
+      this.m_board,
+      opponentColor,
+      playerColor,
+      King.CalculateCoverage
+    );
 
     if (checkSquares.length > 0) {
-      this.m_kings[oppColor]!.checkInfo.status = true;
-      this.m_kings[oppColor]!.checkInfo.responsibleSquares =
+      this.m_kings[opponentColor]!.checkInfo.status = true;
+      this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
         checkSquares as TLocation[];
-      this.MarkCheckSquares(oppColor);
+      this.MarkCheckSquares(opponentColor);
     }
 
     this.ResetCurrPiece();

@@ -51,6 +51,9 @@ export default class Cell {
   set checkSq(check: boolean) {
     this.m_checkSq = check;
   }
+  public SetPiece(p: TPiece | null) {
+    this.m_piece = p;
+  }
 
   public static OutOfBounds(location: TLocation): boolean {
     if (location.x < 0 || location.x > 7 || location.y < 0 || location.y > 7)
