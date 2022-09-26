@@ -93,7 +93,6 @@ export default class Board {
   }
   public MarkCheckSquares(color: COLORS) {
     const king = this.m_kings[color];
-    // if (!this.m_kings[color].checkInfo.responsibleSquares) return;
     king.checkInfo.responsibleSquares.flat().forEach((location) => {
       this.m_board[location.x][location.y].checkSq = true;
     });
@@ -109,6 +108,7 @@ export default class Board {
 
   public PieceClick(cell: Cell) {
     this.ResetBoardMarkers();
+
     const cellInValidMoves = this.m_currPiece.validLocations.find(
       (location) =>
         location.x === cell.location.x && location.y === cell.location.y
@@ -121,8 +121,9 @@ export default class Board {
         return;
       this.MovePiece(this.m_currPiece.location, cell.location);
       this.ResetBoardMarkers();
+    } else if (cell.piece === null) {
+      this.ResetCurrPiece();
     } else {
-      if (cell.piece === null) return;
       cell.activeSq = true;
       this.m_currPiece.piece = cell.piece;
       this.m_currPiece.location = cell.location;
@@ -326,7 +327,6 @@ export default class Board {
       .filter((attacker) => attacker !== null)
       .flat();
 
-    console.log(attackerCells);
     if (attackerCells.length === 0) return [];
     function FindResponsibleSquares(
       attackerLocation: TLocation,
@@ -438,6 +438,10 @@ export default class Board {
 
     if (this.m_currPiece.piece instanceof King)
       this.m_kings[this.m_currPiece.piece.color]!.location = destLocation;
+
+    //if the destination location has king. dont allow it
+    if (this.m_board[destLocation.x][destLocation.y].piece instanceof King)
+      return;
 
     const playerColor = this.m_currPiece.piece!.color;
     const opponentColor =
