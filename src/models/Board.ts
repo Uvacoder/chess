@@ -33,12 +33,12 @@ export default class Board {
 
   private m_currPiece: {
     piece: TPiece | null;
-    validMoves: TLocation[];
+    validLocations: TLocation[];
     boardCoverage: TLocation[];
     location: TLocation;
   } = {
     piece: null,
-    validMoves: [],
+    validLocations: [],
     boardCoverage: [],
     location: { x: -1, y: -1 },
   };
@@ -64,7 +64,7 @@ export default class Board {
   }
   private ResetCurrPiece() {
     this.m_currPiece.piece = null;
-    this.m_currPiece.validMoves = [];
+    this.m_currPiece.validLocations = [];
     this.m_currPiece.boardCoverage = [];
     this.m_currPiece.location = { x: -1, y: -1 };
   }
@@ -87,14 +87,14 @@ export default class Board {
     });
   }
   public MarkValidState() {
-    this.m_currPiece.validMoves.forEach((location) => {
+    this.m_currPiece.validLocations.forEach((location) => {
       this.m_board[location.x][location.y].validSq = true;
     });
   }
   public MarkCheckSquares(color: COLORS) {
     const king = this.m_kings[color];
     // if (!this.m_kings[color].checkInfo.responsibleSquares) return;
-    king.checkInfo.responsibleSquares.forEach((location) => {
+    king.checkInfo.responsibleSquares.flat().forEach((location) => {
       this.m_board[location.x][location.y].checkSq = true;
     });
     this.m_board[king.location.x][king.location.y].checkSq = true;
@@ -109,7 +109,7 @@ export default class Board {
 
   public PieceClick(cell: Cell) {
     this.ResetBoardMarkers();
-    const cellInValidMoves = this.m_currPiece.validMoves.find(
+    const cellInValidMoves = this.m_currPiece.validLocations.find(
       (location) =>
         location.x === cell.location.x && location.y === cell.location.y
     );
@@ -130,12 +130,38 @@ export default class Board {
       this.m_currPiece.piece.ResetPinnedStatus();
       this.CurrPiecePinned();
 
-      const validMoves = cell.piece.CalculateValidMoves(
+      let validLocations = cell.piece.CalculateValidMoves(
         cell.location,
         this.m_board
       );
+      //check if king of same color as the piece is in check
+      // if yes, remove all the moves that don't get the king out of check, ie. filter those moves from valid moves that are not in responsible squares
+      const currKing = this.m_kings[cell.piece.color];
+      if (this.m_currPiece.piece instanceof King) {
+        //valid moves should contain location wthat is not in responsible squares
+        validLocations = validLocations.filter(
+          (location) =>
+            !currKing.checkInfo.responsibleSquares
+              .flat()
+              .find(
+                (responsibleLocation) =>
+                  responsibleLocation.x === location.x &&
+                  responsibleLocation.y === location.y
+              )
+        );
+      } else if (currKing.checkInfo.status === true) {
+        const responsibleSquares = currKing.checkInfo.responsibleSquares;
+        console.log(responsibleSquares);
+        if (responsibleSquares.length === 1) {
+          validLocations = validLocations.filter((cell) => {
+            return responsibleSquares.flat().find((sq) => {
+              return sq.x == cell.x && sq.y == cell.y;
+            });
+          });
+        } else validLocations = [];
+      }
 
-      this.m_currPiece.validMoves = validMoves;
+      this.m_currPiece.validLocations = validLocations;
 
       this.MarkValidState();
     }
@@ -162,7 +188,7 @@ export default class Board {
       playerColor,
       opponentColor,
       King.CalculateCoverage
-    );
+    ).flat();
     // if king is in same row as the active piece
     if (playerKing.location.x === this.m_currPiece.location.x) {
       this.m_currPiece.piece.pinned.horizontal = false;
@@ -212,8 +238,6 @@ export default class Board {
       Math.abs(playerKing.location.x - this.m_currPiece.location.x) ===
       Math.abs(playerKing.location.y - this.m_currPiece.location.y)
     ) {
-      // this.m_currPiece.piece.pinned.horizontal = true;
-      // this.m_currPiece.piece.pinned.vertical = true;
       this.m_currPiece.piece.pinned.topLeft = true;
       this.m_currPiece.piece.pinned.topRight = true;
       this.m_currPiece.piece.pinned.bottomLeft = true;
@@ -282,7 +306,6 @@ export default class Board {
     const responsibleSquares: TLocation[] = [];
 
     const kingLocation = this.m_kings[kingColor]!.location;
-    console.log(kingLocation);
     // const kingCoverage = (king as King)!.CalculateCoverage(board, kingLocation);
     const kingCoverage = coverageFunction(board, kingLocation);
 
@@ -403,11 +426,9 @@ export default class Board {
         }
       } else return attackerLocation;
     }
-    const _responsibleSquares = attackerCells
-      .map((attacker) => {
-        if (attacker) return FindResponsibleSquares(attacker, kingLocation);
-      })
-      .flat();
+    const _responsibleSquares = attackerCells.map((attacker) => {
+      if (attacker) return FindResponsibleSquares(attacker, kingLocation);
+    });
 
     return [...responsibleSquares, ..._responsibleSquares];
   }
@@ -421,6 +442,9 @@ export default class Board {
     const playerColor = this.m_currPiece.piece!.color;
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    this.m_kings[playerColor].checkInfo.status = false;
+    this.m_kings[playerColor].checkInfo.responsibleSquares = [];
 
     this.m_board[destLocation.x][destLocation.y].piece = this.m_currPiece.piece;
     this.m_board[srcLocation.x][srcLocation.y].piece = null;
@@ -452,7 +476,7 @@ export default class Board {
     const destLocation = ConvertIdxToLocation(destIdx);
     const srcLocation = ConvertIdxToLocation(srcIdx);
 
-    const destInValidMove = this.m_currPiece.validMoves.find(
+    const destInValidMove = this.m_currPiece.validLocations.find(
       (location) =>
         location.x === destLocation.x && location.y === destLocation.y
     );
