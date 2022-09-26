@@ -23,7 +23,7 @@
 |    Check Detection     |        ✔️         |
 |    Discovered Check    |        ✔️         |
 |      Pinned Piece      |        ✔️         |
-| Restrict Move on Check |        ✖️         |
+| Restrict Move on Check |        ✔️         |
 |         Castle         |        ✖️         |
 |       En Passant       |        ✖️         |
 |       Checkmate        |        ✖️         |
