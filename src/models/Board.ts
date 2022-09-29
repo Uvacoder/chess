@@ -6,6 +6,7 @@ import { King, Knight } from "./Piece";
 
 export default class Board {
   private m_board: Cell[][] = [];
+  private m_sound_src = "";
   private m_kings: {
     [key in COLORS]: {
       location: TLocation;
@@ -46,10 +47,29 @@ export default class Board {
   // setters
   set board(board: Cell[][]) {
     this.m_board = board;
+
+    // assign valid location to each piece when board is forst initialized
+    // this.m_board.forEach((cellRow, rIdx) => {
+    //   cellRow.forEach((cell, cIdx) => {
+    //     if (cell.piece) {
+    //       const validLocations = cell.piece.CalculateValidMoves(
+    //         { x: rIdx, y: cIdx },
+    //         this.m_board
+    //       );
+    //       cell.piece.validLocations = validLocations;
+    //     }
+    //   });
+    // });
   }
   // getters
   get board(): Cell[][] {
     return this.m_board;
+  }
+  get sound(): string {
+    return this.m_sound_src;
+  }
+  set sound(src: string) {
+    this.m_sound_src = src;
   }
   set kings(kings: {
     [key in COLORS]: {
@@ -105,10 +125,65 @@ export default class Board {
       });
     });
   }
+  public ResetCheck() {
+    this.m_kings[COLORS.BLACK].checkInfo.status = false;
+    this.m_kings[COLORS.BLACK].checkInfo.responsibleSquares = [];
+    this.m_kings[COLORS.WHITE].checkInfo.status = false;
+    this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
+    this.ResetCheckMarkers();
+  }
+  private ResetSound() {
+    this.sound = "";
+  }
+  private AssignValidMovesToPiece(cell: Cell) {
+    // check if piece is pinned
+
+    if (this.m_currPiece.piece === null) return;
+
+    this.m_currPiece.piece.ResetPinnedStatus();
+    this.CurrPiecePinned();
+
+    let validLocations = this.m_currPiece.piece.CalculateValidMoves(
+      cell.location,
+      this.m_board
+    );
+    //check if king of same color as the piece is in check
+    // if yes, remove all the moves that don't get the king out of check, ie. filter those moves from valid moves that are not in responsible squares
+    const currKing = this.m_kings[this.m_currPiece.piece.color];
+    if (this.m_currPiece.piece instanceof King) {
+      //valid moves should contain location wthat is not in responsible squares, except if the responsible square has a piece of opposite color
+      validLocations = validLocations.filter((location) => {
+        return !currKing.checkInfo.responsibleSquares
+          .flat()
+          .find((responsibleLocation) => {
+            const pieceAtLocation =
+              this.m_board[responsibleLocation.x][responsibleLocation.y].piece;
+            if (pieceAtLocation === null)
+              return (
+                responsibleLocation.x === location.x &&
+                responsibleLocation.y === location.y
+              );
+          });
+      });
+    } else if (currKing.checkInfo.status === true) {
+      const responsibleSquares = currKing.checkInfo.responsibleSquares;
+      if (responsibleSquares.length === 1) {
+        validLocations = validLocations.filter((cell) => {
+          return responsibleSquares.flat().find((sq) => {
+            return sq.x == cell.x && sq.y == cell.y;
+          });
+        });
+      } else validLocations = [];
+    }
+
+    this.m_currPiece.validLocations = validLocations;
+
+    console.log(this.m_currPiece.piece);
+  }
 
   public PieceClick(cell: Cell) {
     this.ResetBoardMarkers();
-
+    this.ResetSound();
     const cellInValidMoves = this.m_currPiece.validLocations.find(
       (location) =>
         location.x === cell.location.x && location.y === cell.location.y
@@ -127,43 +202,7 @@ export default class Board {
       cell.activeSq = true;
       this.m_currPiece.piece = cell.piece;
       this.m_currPiece.location = cell.location;
-
-      this.m_currPiece.piece.ResetPinnedStatus();
-      this.CurrPiecePinned();
-
-      let validLocations = cell.piece.CalculateValidMoves(
-        cell.location,
-        this.m_board
-      );
-      //check if king of same color as the piece is in check
-      // if yes, remove all the moves that don't get the king out of check, ie. filter those moves from valid moves that are not in responsible squares
-      const currKing = this.m_kings[cell.piece.color];
-      if (this.m_currPiece.piece instanceof King) {
-        //valid moves should contain location wthat is not in responsible squares
-        validLocations = validLocations.filter(
-          (location) =>
-            !currKing.checkInfo.responsibleSquares
-              .flat()
-              .find(
-                (responsibleLocation) =>
-                  responsibleLocation.x === location.x &&
-                  responsibleLocation.y === location.y
-              )
-        );
-      } else if (currKing.checkInfo.status === true) {
-        const responsibleSquares = currKing.checkInfo.responsibleSquares;
-        console.log(responsibleSquares);
-        if (responsibleSquares.length === 1) {
-          validLocations = validLocations.filter((cell) => {
-            return responsibleSquares.flat().find((sq) => {
-              return sq.x == cell.x && sq.y == cell.y;
-            });
-          });
-        } else validLocations = [];
-      }
-
-      this.m_currPiece.validLocations = validLocations;
-
+      this.AssignValidMovesToPiece(cell);
       this.MarkValidState();
     }
   }
@@ -434,7 +473,7 @@ export default class Board {
   }
 
   public MovePiece(srcLocation: TLocation, destLocation: TLocation) {
-    this.ResetCheckMarkers();
+    this.ResetCheck();
 
     if (this.m_currPiece.piece instanceof King)
       this.m_kings[this.m_currPiece.piece.color]!.location = destLocation;
@@ -450,9 +489,15 @@ export default class Board {
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];
 
+    const pieceAtDestination =
+      this.m_board[destLocation.x][destLocation.y].piece;
+    if (pieceAtDestination) this.sound = "/assets/sounds/capture.mp3";
+    else this.sound = "/assets/sounds/move-self.mp3";
     this.m_board[destLocation.x][destLocation.y].piece = this.m_currPiece.piece;
     this.m_board[srcLocation.x][srcLocation.y].piece = null;
 
+    const destCell = this.m_board[destLocation.x][destLocation.y];
+    this.AssignValidMovesToPiece(destCell);
     this.m_currPiece.location = destLocation;
     const checkSquares = this.KingInCheck(
       this.m_board,
@@ -465,6 +510,7 @@ export default class Board {
       this.m_kings[opponentColor]!.checkInfo.status = true;
       this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
         checkSquares as TLocation[];
+      this.sound = "/assets/sounds/check.mp3";
       this.MarkCheckSquares(opponentColor);
     }
 

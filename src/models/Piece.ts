@@ -74,6 +74,7 @@ abstract class Piece {
   set hasMoved(hasMoved: boolean) {
     this.m_hasMoved = hasMoved;
   }
+  
   public static GenSlide(
     curLocation: TLocation,
     board: Cell[][],
