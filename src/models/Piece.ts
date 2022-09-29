@@ -207,23 +207,27 @@ export class King extends Piece {
     if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
     if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
 
-    console.log(checkDirection);
-
+    const kingColor = this.color;
+    const opponentColor =
+      kingColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
     if (checkDirection.h) {
-      u = null;
-      d = null;
+      u = u && board[u.x][u.y].piece?.color !== opponentColor ? null : u;
+      d = d && board[d.x][d.y].piece?.color !== opponentColor ? null : d;
     }
+
     if (checkDirection.v) {
-      l = null;
-      r = null;
+      l = l && board[l.x][l.y].piece?.color !== opponentColor ? null : l;
+      r = r && board[r.x][r.y].piece?.color !== opponentColor ? null : r;
     }
+
     if (checkDirection.ld) {
-      ul = null;
-      dr = null;
+      ul = ul && board[ul.x][ul.y].piece?.color !== opponentColor ? null : ul;
+      dr = dr && board[dr.x][dr.y].piece?.color !== opponentColor ? null : dr;
     }
+
     if (checkDirection.rd) {
-      ur = null;
-      dl = null;
+      ur = ur && board[ur.x][ur.y].piece?.color !== opponentColor ? null : ur;
+      dl = dl && board[dl.x][dl.y].piece?.color !== opponentColor ? null : dl;
     }
 
     const arr = [u, l, d, r, ul, ur, dl, dr];
