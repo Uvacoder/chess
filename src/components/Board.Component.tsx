@@ -65,8 +65,8 @@ export default function BoardComponent({ board }: { board: Board }) {
                         board.PieceClick(cell);
                         setState(!state);
                         if (board.sound.length > 0) {
-                          const sound = new Audio(board.sound);
-                          sound.play();
+                          // const sound = new Audio(board.sound);
+                          // sound.play();
                         }
                       }}
                     >
