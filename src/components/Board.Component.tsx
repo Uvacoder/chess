@@ -74,8 +74,6 @@ export default function BoardComponent({ board }: { board: Board }) {
                         else if (board.sound.check) sounds.check.play();
                         else if (board.sound.castle) sounds.castle.play();
                         else if (board.sound.move) sounds.move.play();
-                        // const sound = new Audio(board.sound);
-                        // sound.play();
                       }}
                     >
                       {/* <div className="absolute">
