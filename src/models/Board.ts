@@ -237,8 +237,6 @@ export default class Board {
     }
 
     this.m_currPiece.validLocations = validLocations;
-
-    console.log(this.m_currPiece.piece);
   }
 
   public PieceClick(cell: Cell) {
@@ -565,7 +563,13 @@ export default class Board {
           };
           // left diagonal
         }
-      } else return returnData;
+      } else
+        return {
+          direction: {
+            ...returnData.direction,
+          },
+          responsibleSquares: [attackerLocation],
+        };
     }
     const _responsibleSquares = attackerCells
       .map((attacker) => {
