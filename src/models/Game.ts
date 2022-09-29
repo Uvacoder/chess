@@ -17,6 +17,12 @@ export default class Game {
           checkInfo: {
             status: false,
             responsibleSquares: [],
+            direction: {
+              h: false,
+              v: false,
+              rd: false,
+              ld: false,
+            },
           },
         },
         [COLORS.BLACK]: {
@@ -24,6 +30,12 @@ export default class Game {
           checkInfo: {
             status: false,
             responsibleSquares: [],
+            direction: {
+              h: false,
+              v: false,
+              rd: false,
+              ld: false,
+            },
           },
         },
       };

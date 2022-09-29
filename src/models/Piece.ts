@@ -74,7 +74,7 @@ abstract class Piece {
   set hasMoved(hasMoved: boolean) {
     this.m_hasMoved = hasMoved;
   }
-  
+
   public static GenSlide(
     curLocation: TLocation,
     board: Cell[][],
@@ -126,7 +126,13 @@ export class King extends Piece {
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
-    board: Cell[][]
+    board: Cell[][],
+    checkDirection = {
+      v: false,
+      h: false,
+      rd: false,
+      ld: false,
+    }
   ): TLocation[] {
     const validMoves: TLocation[] = [];
     let u, d, l, r, ul, ur, dl, dr;
@@ -200,6 +206,25 @@ export class King extends Piece {
     if (ur && NeighbourIsKing(ur, srcLocation)) ur = null;
     if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
     if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
+
+    console.log(checkDirection);
+
+    if (checkDirection.h) {
+      u = null;
+      d = null;
+    }
+    if (checkDirection.v) {
+      l = null;
+      r = null;
+    }
+    if (checkDirection.ld) {
+      ul = null;
+      dr = null;
+    }
+    if (checkDirection.rd) {
+      ur = null;
+      dl = null;
+    }
 
     const arr = [u, l, d, r, ul, ur, dl, dr];
 

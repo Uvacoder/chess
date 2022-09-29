@@ -13,6 +13,12 @@ export default class Board {
       checkInfo: {
         status: boolean;
         responsibleSquares: TLocation[];
+        direction: {
+          h: boolean;
+          v: boolean;
+          rd: boolean;
+          ld: boolean;
+        };
       };
     };
   } = {
@@ -21,6 +27,12 @@ export default class Board {
       checkInfo: {
         status: false,
         responsibleSquares: [],
+        direction: {
+          h: false,
+          v: false,
+          rd: false,
+          ld: false,
+        },
       },
     },
     [COLORS.BLACK]: {
@@ -28,6 +40,12 @@ export default class Board {
       checkInfo: {
         status: false,
         responsibleSquares: [],
+        direction: {
+          h: false,
+          v: false,
+          rd: false,
+          ld: false,
+        },
       },
     },
   };
@@ -47,19 +65,6 @@ export default class Board {
   // setters
   set board(board: Cell[][]) {
     this.m_board = board;
-
-    // assign valid location to each piece when board is forst initialized
-    // this.m_board.forEach((cellRow, rIdx) => {
-    //   cellRow.forEach((cell, cIdx) => {
-    //     if (cell.piece) {
-    //       const validLocations = cell.piece.CalculateValidMoves(
-    //         { x: rIdx, y: cIdx },
-    //         this.m_board
-    //       );
-    //       cell.piece.validLocations = validLocations;
-    //     }
-    //   });
-    // });
   }
   // getters
   get board(): Cell[][] {
@@ -77,6 +82,12 @@ export default class Board {
       checkInfo: {
         status: boolean;
         responsibleSquares: TLocation[];
+        direction: {
+          h: boolean;
+          v: boolean;
+          rd: boolean;
+          ld: boolean;
+        };
       };
     };
   }) {
@@ -143,15 +154,25 @@ export default class Board {
     this.m_currPiece.piece.ResetPinnedStatus();
     this.CurrPiecePinned();
 
-    let validLocations = this.m_currPiece.piece.CalculateValidMoves(
-      cell.location,
-      this.m_board
-    );
+    const currKing = this.m_kings[this.m_currPiece.piece.color];
+    let validLocations = [] as TLocation[];
+
+    if (this.m_currPiece.piece instanceof King)
+      validLocations = this.m_currPiece.piece.CalculateValidMoves(
+        cell.location,
+        this.m_board,
+        currKing.checkInfo.direction
+      );
+    else
+      validLocations = this.m_currPiece.piece.CalculateValidMoves(
+        cell.location,
+        this.m_board
+      );
     //check if king of same color as the piece is in check
     // if yes, remove all the moves that don't get the king out of check, ie. filter those moves from valid moves that are not in responsible squares
-    const currKing = this.m_kings[this.m_currPiece.piece.color];
     if (this.m_currPiece.piece instanceof King) {
       //valid moves should contain location wthat is not in responsible squares, except if the responsible square has a piece of opposite color
+      console.log(this.m_currPiece.piece);
       validLocations = validLocations.filter((location) => {
         return !currKing.checkInfo.responsibleSquares
           .flat()
@@ -368,9 +389,19 @@ export default class Board {
 
     if (attackerCells.length === 0) return [];
     function FindResponsibleSquares(
-      attackerLocation: TLocation,
+      attackerLocation: TLocation | null,
       kingLocation: TLocation
     ) {
+      const returnData = {
+        direction: {
+          h: false,
+          v: false,
+          rd: false,
+          ld: false,
+        },
+        responsibleSquares: [] as TLocation[],
+      };
+      if (!attackerLocation) return returnData;
       // same row
       if (attackerLocation.x === kingLocation.x) {
         const responsibleSquares = [];
@@ -379,7 +410,17 @@ export default class Board {
         for (let i = start + 1; i < end; i++) {
           responsibleSquares.push({ x: attackerLocation.x, y: i });
         }
-        return [...responsibleSquares, kingLocation, attackerLocation];
+        return {
+          direction: {
+            ...returnData.direction,
+            h: true,
+          },
+          responsibleSquares: [
+            ...responsibleSquares,
+            kingLocation,
+            attackerLocation,
+          ],
+        };
       }
       // same column
       else if (attackerLocation.y === kingLocation.y) {
@@ -389,7 +430,17 @@ export default class Board {
         for (let i = start + 1; i < end; i++) {
           responsibleSquares.push({ x: i, y: attackerLocation.y });
         }
-        return [...responsibleSquares, kingLocation, attackerLocation];
+        return {
+          direction: {
+            ...returnData.direction,
+            v: true,
+          },
+          responsibleSquares: [
+            ...responsibleSquares,
+            kingLocation,
+            attackerLocation,
+          ],
+        };
       }
       // same diagonal
       else if (
@@ -428,7 +479,13 @@ export default class Board {
             kingLocation.x,
             kingLocation.y
           );
-          return [...responsibleSquares];
+          return {
+            direction: {
+              ...returnData.direction,
+              rd: true,
+            },
+            responsibleSquares,
+          };
           // right diagonal
         } else {
           function leftDiagonal(
@@ -460,14 +517,35 @@ export default class Board {
             kingLocation.x,
             kingLocation.y
           );
-          return [...responsibleSquares];
+          return {
+            direction: {
+              ...returnData.direction,
+              ld: true,
+            },
+            responsibleSquares,
+          };
           // left diagonal
         }
-      } else return attackerLocation;
+      } else return returnData;
     }
-    const _responsibleSquares = attackerCells.map((attacker) => {
-      if (attacker) return FindResponsibleSquares(attacker, kingLocation);
-    });
+    const _responsibleSquares = attackerCells
+      .map((attacker) => {
+        return FindResponsibleSquares(attacker, kingLocation);
+      })
+      .filter((sq) => {
+        if (this.m_kings[kingColor]) {
+          if (sq.direction.h)
+            this.m_kings[kingColor].checkInfo.direction.h = true;
+          if (sq.direction.v)
+            this.m_kings[kingColor].checkInfo.direction.v = true;
+          if (sq.direction.rd)
+            this.m_kings[kingColor].checkInfo.direction.rd = true;
+          if (sq.direction.ld)
+            this.m_kings[kingColor].checkInfo.direction.ld = true;
+        }
+        return sq.responsibleSquares.length > 0;
+      })
+      .map((sq) => sq.responsibleSquares);
 
     return [...responsibleSquares, ..._responsibleSquares];
   }
@@ -496,8 +574,7 @@ export default class Board {
     this.m_board[destLocation.x][destLocation.y].piece = this.m_currPiece.piece;
     this.m_board[srcLocation.x][srcLocation.y].piece = null;
 
-    const destCell = this.m_board[destLocation.x][destLocation.y];
-    this.AssignValidMovesToPiece(destCell);
+    // this.AssignValidMovesToPiece(destCell);
     this.m_currPiece.location = destLocation;
     const checkSquares = this.KingInCheck(
       this.m_board,
