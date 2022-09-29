@@ -6,7 +6,13 @@ import { King, Knight } from "./Piece";
 
 export default class Board {
   private m_board: Cell[][] = [];
-  private m_sound_src = "";
+  private m_sound_type = {
+    castle: false,
+    check: false,
+    checkmate: false,
+    capture: false,
+    move: true,
+  };
   private m_kings: {
     [key in COLORS]: {
       location: TLocation;
@@ -70,11 +76,23 @@ export default class Board {
   get board(): Cell[][] {
     return this.m_board;
   }
-  get sound(): string {
-    return this.m_sound_src;
+  get sound(): {
+    castle: boolean;
+    check: boolean;
+    checkmate: boolean;
+    capture: boolean;
+    move: boolean;
+  } {
+    return this.m_sound_type;
   }
-  set sound(src: string) {
-    this.m_sound_src = src;
+  set sound(src: {
+    castle: boolean;
+    check: boolean;
+    checkmate: boolean;
+    capture: boolean;
+    move: boolean;
+  }) {
+    this.m_sound_type = src;
   }
   set kings(kings: {
     [key in COLORS]: {
@@ -139,12 +157,30 @@ export default class Board {
   public ResetCheck() {
     this.m_kings[COLORS.BLACK].checkInfo.status = false;
     this.m_kings[COLORS.BLACK].checkInfo.responsibleSquares = [];
+    this.m_kings[COLORS.BLACK].checkInfo.direction = {
+      h: false,
+      v: false,
+      rd: false,
+      ld: false,
+    };
     this.m_kings[COLORS.WHITE].checkInfo.status = false;
+    this.m_kings[COLORS.WHITE].checkInfo.direction = {
+      h: false,
+      v: false,
+      rd: false,
+      ld: false,
+    };
     this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
     this.ResetCheckMarkers();
   }
   private ResetSound() {
-    this.sound = "";
+    this.sound = {
+      castle: false,
+      check: false,
+      checkmate: false,
+      capture: false,
+      move: false,
+    };
   }
   private AssignValidMovesToPiece(cell: Cell) {
     // check if piece is pinned
@@ -157,22 +193,23 @@ export default class Board {
     const currKing = this.m_kings[this.m_currPiece.piece.color];
     let validLocations = [] as TLocation[];
 
+    //if current piece is king, set valid locations to all squares seperately as they check check directions if any
     if (this.m_currPiece.piece instanceof King)
       validLocations = this.m_currPiece.piece.CalculateValidMoves(
         cell.location,
         this.m_board,
         currKing.checkInfo.direction
       );
+    // for very other piece, find valid move normally
     else
       validLocations = this.m_currPiece.piece.CalculateValidMoves(
         cell.location,
         this.m_board
       );
-    //check if king of same color as the piece is in check
-    // if yes, remove all the moves that don't get the king out of check, ie. filter those moves from valid moves that are not in responsible squares
+
     if (this.m_currPiece.piece instanceof King) {
-      //valid moves should contain location wthat is not in responsible squares, except if the responsible square has a piece of opposite color
-      console.log(this.m_currPiece.piece);
+      //valid moves should contain location wthat is not in responsible squares,
+      // except if the responsible square has a piece of opposite color
       validLocations = validLocations.filter((location) => {
         return !currKing.checkInfo.responsibleSquares
           .flat()
@@ -186,7 +223,9 @@ export default class Board {
               );
           });
       });
+      // from location, find all coverage and see if that location will bring king in check. if it does, remove it from valid locations
     } else if (currKing.checkInfo.status === true) {
+      // ifking is in check, for any other piece filter out all locations that dont bring king out of check
       const responsibleSquares = currKing.checkInfo.responsibleSquares;
       if (responsibleSquares.length === 1) {
         validLocations = validLocations.filter((cell) => {
@@ -569,8 +608,22 @@ export default class Board {
 
     const pieceAtDestination =
       this.m_board[destLocation.x][destLocation.y].piece;
-    if (pieceAtDestination) this.sound = "/assets/sounds/capture.mp3";
-    else this.sound = "/assets/sounds/move-self.mp3";
+    if (pieceAtDestination)
+      this.sound = {
+        move: false,
+        capture: true,
+        check: false,
+        castle: false,
+        checkmate: false,
+      };
+    else
+      this.sound = {
+        move: true,
+        capture: false,
+        check: false,
+        castle: false,
+        checkmate: false,
+      };
     this.m_board[destLocation.x][destLocation.y].piece = this.m_currPiece.piece;
     this.m_board[srcLocation.x][srcLocation.y].piece = null;
 
@@ -587,7 +640,13 @@ export default class Board {
       this.m_kings[opponentColor]!.checkInfo.status = true;
       this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
         checkSquares as TLocation[];
-      this.sound = "/assets/sounds/check.mp3";
+      this.sound = {
+        move: false,
+        capture: false,
+        check: true,
+        castle: false,
+        checkmate: false,
+      };
       this.MarkCheckSquares(opponentColor);
     }
 

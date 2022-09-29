@@ -13,6 +13,12 @@ import Piece from "./Piece";
 
 export default function BoardComponent({ board }: { board: Board }) {
   const [state, setState] = useState(false);
+  const [sounds, setSounds] = useState({
+    move: new Audio("/assets/sounds/move.mp3"),
+    capture: new Audio("/assets/sounds/capture.mp3"),
+    check: new Audio("/assets/sounds/check.mp3"),
+    castle: new Audio("/assets/sounds/castle.mp3"),
+  });
   return !board ? (
     <div>Loading...</div>
   ) : (
@@ -64,10 +70,12 @@ export default function BoardComponent({ board }: { board: Board }) {
                       onMouseDown={() => {
                         board.PieceClick(cell);
                         setState(!state);
-                        if (board.sound.length > 0) {
-                          const sound = new Audio(board.sound);
-                          sound.play();
-                        }
+                        if (board.sound.capture) sounds.capture.play();
+                        else if (board.sound.check) sounds.check.play();
+                        else if (board.sound.castle) sounds.castle.play();
+                        else if (board.sound.move) sounds.move.play();
+                        // const sound = new Audio(board.sound);
+                        // sound.play();
                       }}
                     >
                       {/* <div className="absolute">
