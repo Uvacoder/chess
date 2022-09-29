@@ -63,11 +63,11 @@ export default function BoardComponent({ board }: { board: Board }) {
                       {...provided.droppableProps}
                       onMouseDown={() => {
                         board.PieceClick(cell);
+                        setState(!state);
                         if (board.sound.length > 0) {
                           const sound = new Audio(board.sound);
                           sound.play();
                         }
-                        setState(!state);
                       }}
                     >
                       {/* <div className="absolute">
