@@ -25,6 +25,7 @@
 |      Pinned Piece      |        ✔️         |
 | Restrict Move on Check |        ✔️         |
 |         Castle         |        ✔️         |
+|     Pawn Promotion     |        ⏳         |
 |       En Passant       |        ✖️         |
 |       Checkmate        |        ✖️         |
 |      Resignation       |        ✖️         |
