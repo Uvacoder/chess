@@ -2,7 +2,7 @@ import { DropResult } from "react-beautiful-dnd";
 import { TLocation, TPiece } from "../@types";
 import { COLORS, ConvertIdxToLocation } from "../utils/Constants";
 import Cell from "./Cell";
-import { King, Knight } from "./Piece";
+import { King, Knight, Pawn, Queen } from "./Piece";
 
 type TBoardKing = {
   [key in COLORS]: {
@@ -201,6 +201,14 @@ export default class Board {
     this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
     this.ResetCheckMarkers();
   }
+  private ResetEnPassant(color: COLORS) {
+    this.m_board.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell.piece instanceof Pawn && cell.piece.color === color)
+          cell.piece.enPassantEligible = false;
+      });
+    });
+  }
   private ResetSound() {
     this.sound = {
       castle: false,
@@ -307,6 +315,11 @@ export default class Board {
           });
       }
     }
+    // else if (this.m_currPiece.piece instanceof Pawn) {
+    /**
+     * If current piece is pawn, see if it can capture by enpassant. If it can, add the location to validLocations
+     */
+    // }
     // for very other piece, find valid move normally
     else
       validLocations = this.m_currPiece.piece.CalculateValidMoves(
@@ -730,10 +743,11 @@ export default class Board {
   ) {
     if (board[destLocation.x][destLocation.y].piece instanceof King) return;
 
+    let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
+
     if (board[srcLocation.x][srcLocation.y].piece instanceof King) {
       const kingColor = board[srcLocation.x][srcLocation.y].piece!.color;
       boardKing[kingColor].location = destLocation;
-
       if (destLocation.y == srcLocation.y + 2) {
         this.CastleKing(board, srcLocation, "ks");
         console.log("KS");
@@ -742,9 +756,22 @@ export default class Board {
         this.CastleKing(board, srcLocation, "qs");
         return;
       }
+    } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
+      const pawn = board[srcLocation.x][srcLocation.y].piece;
+      const pawnColor = pawn!.color;
+
+      const offset = pawnColor === "white" ? -2 : 2;
+      if (destLocation.x === srcLocation.x + offset)
+        (pawn as Pawn).enPassantEligible = true;
+
+      const promotionRow = pawnColor === "white" ? 0 : 7;
+      if (destLocation.x === promotionRow) {
+        finalPieceAtDestination = new Queen(pawnColor);
+      }
     }
-    board[destLocation.x][destLocation.y].piece =
-      board[srcLocation.x][srcLocation.y].piece;
+    // board[destLocation.x][destLocation.y].piece =
+    //   board[srcLocation.x][srcLocation.y].piece;
+    board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
   }
   public MoveAction(
@@ -752,11 +779,12 @@ export default class Board {
     srcLocation: TLocation,
     destLocation: TLocation
   ) {
-    this.ResetCheck();
-
     const playerColor = this.m_currPiece.piece!.color;
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    this.ResetCheck();
+    this.ResetEnPassant(playerColor);
 
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];
