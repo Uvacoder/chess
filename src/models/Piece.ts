@@ -289,7 +289,6 @@ export class King extends Piece {
     return coverage;
   }
   public CanCastle(board: Cell[][], currentLocation: TLocation) {
-    console.log("CASTLE");
     if (this.hasMoved) this.m_castle = { ks: false, qs: false };
     else {
       function CastleStatus(rookCol: number, squaresBetween: Cell[]) {

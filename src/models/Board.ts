@@ -254,18 +254,8 @@ export default class Board {
                 );
             });
         });
+
       this.m_currPiece.piece.CanCastle(this.m_board, cell.location);
-      if (this.m_currPiece.piece.castle.ks)
-        validLocations.push({
-          x: cell.location.x,
-          y: cell.location.y + 2,
-        });
-      if (this.m_currPiece.piece.castle.qs) {
-        validLocations.push({
-          x: cell.location.x,
-          y: cell.location.y - 2,
-        });
-      }
       validLocations = validLocations.filter((location) => {
         const newBoard = this.CopyBoard();
         const playerColor = this.m_currPiece.piece!.color;
@@ -288,8 +278,34 @@ export default class Board {
           );
         });
       });
-
-      // check if king can castle
+      if (
+        currKing.checkInfo.status === false &&
+        this.m_currPiece.piece.castle.ks
+      ) {
+        if (
+          validLocations.find(
+            (loc) => loc.x === cell.location.x && loc.y === cell.location.y + 1
+          ) !== undefined
+        )
+          validLocations.push({
+            x: cell.location.x,
+            y: cell.location.y + 2,
+          });
+      }
+      if (
+        currKing.checkInfo.status === false &&
+        this.m_currPiece.piece.castle.qs
+      ) {
+        if (
+          validLocations.find(
+            (loc) => loc.x === cell.location.x && loc.y === cell.location.y - 1
+          ) !== undefined
+        )
+          validLocations.push({
+            x: cell.location.x,
+            y: cell.location.y - 2,
+          });
+      }
     }
     // for very other piece, find valid move normally
     else

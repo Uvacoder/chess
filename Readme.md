@@ -24,7 +24,7 @@
 |    Discovered Check    |        ✔️         |
 |      Pinned Piece      |        ✔️         |
 | Restrict Move on Check |        ✔️         |
-|         Castle         |        ✖️         |
+|         Castle         |        ✔️         |
 |       En Passant       |        ✖️         |
 |       Checkmate        |        ✖️         |
 |      Resignation       |        ✖️         |
