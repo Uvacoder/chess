@@ -428,8 +428,50 @@ export class Knight extends Piece {
   }
 }
 export class Pawn extends Piece {
+  private m_enPassantEligible: boolean = false;
+  private m_enpassantCapture = {
+    left: false,
+    right: false,
+  };
   constructor(color: COLORS) {
     super(color, PIECES.PAWN);
+  }
+  get enPassantEligible() {
+    return this.m_enPassantEligible;
+  }
+  set enPassantEligible(val: boolean) {
+    this.m_enPassantEligible = val;
+  }
+  public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
+    const left = board[currLocation.x - 1][currLocation.y];
+    const right = board[currLocation.x + 1][currLocation.y];
+    let leftPiece = null,
+      rightPiece = null;
+    if (!Cell.OutOfBounds(left.location)) leftPiece = left.piece;
+    if (!Cell.OutOfBounds(right.location)) rightPiece = right.piece;
+    const playerColor = this.color;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+    if (
+      leftPiece &&
+      leftPiece instanceof Pawn === true &&
+      leftPiece.color === opponentColor &&
+      leftPiece
+    ) {
+      if ((leftPiece as Pawn).enPassantEligible) {
+        this.m_enpassantCapture.left = true;
+      }
+    }
+    if (
+      rightPiece &&
+      rightPiece instanceof Pawn === true &&
+      rightPiece.color === opponentColor &&
+      rightPiece
+    ) {
+      if ((rightPiece as Pawn).enPassantEligible) {
+        this.m_enpassantCapture.right = true;
+      }
+    }
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
