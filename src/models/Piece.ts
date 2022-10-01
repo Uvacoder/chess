@@ -75,32 +75,6 @@ abstract class Piece {
     this.m_hasMoved = hasMoved;
   }
 
-  public static GenSlide(
-    curLocation: TLocation,
-    board: Cell[][],
-    xOffset: number,
-    yOffset: number,
-    checkOccupancy = true
-  ) {
-    const slide: Array<TLocation> = [];
-    let x = curLocation.x + xOffset;
-    let y = curLocation.y + yOffset;
-
-    while (!Cell.OutOfBounds({ x, y })) {
-      if (
-        checkOccupancy &&
-        board[x][y].piece?.color ===
-          board[curLocation.x][curLocation.y].piece?.color
-      )
-        break;
-      slide.push({ x, y });
-      if (checkOccupancy && Cell.Occupied(board, { x, y })) break;
-      x += xOffset;
-      y += yOffset;
-    }
-    return slide;
-  }
-
   protected FilterOccupancy(board: Cell[][], arr: (TLocation | null)[]) {
     return arr.filter((loc) => {
       if (loc === null) return false;
@@ -124,6 +98,14 @@ export class King extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.KING);
   }
+  private m_castle = {
+    ks: false,
+    qs: false,
+  };
+  get castle() {
+    return this.m_castle;
+  }
+
   public CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][],
@@ -134,7 +116,6 @@ export class King extends Piece {
       ld: false,
     }
   ): TLocation[] {
-    const validMoves: TLocation[] = [];
     let u, d, l, r, ul, ur, dl, dr;
     u = { x: srcLocation.x, y: srcLocation.y - 1 };
     d = { x: srcLocation.x, y: srcLocation.y + 1 };
@@ -232,61 +213,63 @@ export class King extends Piece {
 
     const arr = [u, l, d, r, ul, ur, dl, dr];
 
-    return this.FilterOccupancy(board, arr);
+    const filteredOccupied = Cell.FilterOccupancy(board, arr, this.color);
+
+    return filteredOccupied;
   }
 
   public static CalculateBottomVerticalCoverage(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, 0, 1, true)];
+    return [...Cell.GenSlide(currentLocation, board, 0, 1, true)];
   }
   public static CalculateTopVerticalCoverage(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, 0, -1, true)];
+    return [...Cell.GenSlide(currentLocation, board, 0, -1, true)];
   }
   public static CalculateRightHorizontalCoverage(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, 1, 0, true)];
+    return [...Cell.GenSlide(currentLocation, board, 1, 0, true)];
   }
   public static CalculateLeftHorizontalCoverage(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, -1, 0, true)];
+    return [...Cell.GenSlide(currentLocation, board, -1, 0, true)];
   }
 
   public static CalculateTopLeftDiagonal(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, -1, -1, true)];
+    return [...Cell.GenSlide(currentLocation, board, -1, -1, true)];
   }
   public static CalculateBottomRightDiagonal(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, 1, 1, true)];
+    return [...Cell.GenSlide(currentLocation, board, 1, 1, true)];
   }
   public static CalculateTopRightDiagonal(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, -1, 1, true)];
+    return [...Cell.GenSlide(currentLocation, board, -1, 1, true)];
   }
   public static CalculateBottomLeftDiagonal(
     board: Cell[][],
     currentLocation: TLocation
   ) {
-    return [...Piece.GenSlide(currentLocation, board, 1, -1, true)];
+    return [...Cell.GenSlide(currentLocation, board, 1, -1, true)];
   }
 
   public static CalculateLShapeCoverage(currentLocation: TLocation) {
-    return Knight.GetKnightMoves(currentLocation).filter(
+    return Cell.GetLCoverage(currentLocation).filter(
       (l) => l !== null
     ) as TLocation[];
   }
@@ -305,7 +288,41 @@ export class King extends Piece {
     ];
     return coverage;
   }
+  public CanCastle(board: Cell[][], currentLocation: TLocation) {
+    console.log("CASTLE");
+    if (this.hasMoved) this.m_castle = { ks: false, qs: false };
+    else {
+      function CastleStatus(rookCol: number, squaresBetween: Cell[]) {
+        const rook = board[currentLocation.x][rookCol].piece;
+        if (!rook) {
+          return false;
+        } else if (rook instanceof Rook === false) {
+          return false;
+        } else if (rook.hasMoved === true) {
+          return false;
+        } else {
+          const isOccupied = squaresBetween.some((cell) => cell.piece !== null);
+          if (isOccupied) {
+            return false;
+          }
+          return true;
+        }
+      }
+      const ksSquares = [
+        board[currentLocation.x][currentLocation.y + 1],
+        board[currentLocation.x][currentLocation.y + 2],
+      ];
+      const qsSquares = [
+        board[currentLocation.x][currentLocation.y - 1],
+        board[currentLocation.x][currentLocation.y - 2],
+        board[currentLocation.x][currentLocation.y - 3],
+      ];
+      this.m_castle.ks = CastleStatus(7, ksSquares);
+      this.m_castle.qs = CastleStatus(0, qsSquares);
+    }
+  }
 }
+
 export class Queen extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.QUEEN);
@@ -314,14 +331,14 @@ export class Queen extends Piece {
     srcLocation: TLocation,
     board: Cell[][]
   ): TLocation[] {
-    const u = Piece.GenSlide(srcLocation, board, 0, -1, true);
-    const d = Piece.GenSlide(srcLocation, board, 0, 1, true);
-    const l = Piece.GenSlide(srcLocation, board, -1, 0, true);
-    const r = Piece.GenSlide(srcLocation, board, 1, 0, true);
-    const ul = Piece.GenSlide(srcLocation, board, -1, -1, true);
-    const ur = Piece.GenSlide(srcLocation, board, 1, -1, true);
-    const dl = Piece.GenSlide(srcLocation, board, -1, 1, true);
-    const dr = Piece.GenSlide(srcLocation, board, 1, 1, true);
+    const u = Cell.GenSlide(srcLocation, board, 0, -1, true);
+    const d = Cell.GenSlide(srcLocation, board, 0, 1, true);
+    const l = Cell.GenSlide(srcLocation, board, -1, 0, true);
+    const r = Cell.GenSlide(srcLocation, board, 1, 0, true);
+    const ul = Cell.GenSlide(srcLocation, board, -1, -1, true);
+    const ur = Cell.GenSlide(srcLocation, board, 1, -1, true);
+    const dl = Cell.GenSlide(srcLocation, board, -1, 1, true);
+    const dr = Cell.GenSlide(srcLocation, board, 1, 1, true);
 
     const vPin = this.pinned.vertical;
     const hPin = this.pinned.horizontal;
@@ -355,10 +372,10 @@ export class Rook extends Piece {
     srcLocation: TLocation,
     board: Cell[][]
   ): TLocation[] {
-    const u = Piece.GenSlide(srcLocation, board, 0, -1, true);
-    const d = Piece.GenSlide(srcLocation, board, 0, 1, true);
-    const l = Piece.GenSlide(srcLocation, board, -1, 0, true);
-    const r = Piece.GenSlide(srcLocation, board, 1, 0, true);
+    const u = Cell.GenSlide(srcLocation, board, 0, -1, true);
+    const d = Cell.GenSlide(srcLocation, board, 0, 1, true);
+    const l = Cell.GenSlide(srcLocation, board, -1, 0, true);
+    const r = Cell.GenSlide(srcLocation, board, 1, 0, true);
 
     const coverageSquares = [];
 
@@ -379,10 +396,10 @@ export class Bishop extends Piece {
     srcLocation: TLocation,
     board: Cell[][]
   ): TLocation[] {
-    const ul = Piece.GenSlide(srcLocation, board, -1, -1, true);
-    const ur = Piece.GenSlide(srcLocation, board, 1, -1, true);
-    const dl = Piece.GenSlide(srcLocation, board, -1, 1, true);
-    const dr = Piece.GenSlide(srcLocation, board, 1, 1, true);
+    const ul = Cell.GenSlide(srcLocation, board, -1, -1, true);
+    const ur = Cell.GenSlide(srcLocation, board, 1, -1, true);
+    const dl = Cell.GenSlide(srcLocation, board, -1, 1, true);
+    const dr = Cell.GenSlide(srcLocation, board, 1, 1, true);
 
     const coverageSquares = [];
 
@@ -401,38 +418,14 @@ export class Knight extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.KNIGHT);
   }
-  public static GetKnightMoves(srcLocation: TLocation) {
-    let uul, uur, ddl, ddr;
-    let rru, rrd, llu, lld;
-    uul = { x: srcLocation.x - 2, y: srcLocation.y - 1 };
-    uur = { x: srcLocation.x - 2, y: srcLocation.y + 1 };
-    ddl = { x: srcLocation.x + 2, y: srcLocation.y - 1 };
-    ddr = { x: srcLocation.x + 2, y: srcLocation.y + 1 };
-    rru = { x: srcLocation.x - 1, y: srcLocation.y - 2 };
-    rrd = { x: srcLocation.x + 1, y: srcLocation.y - 2 };
-    llu = { x: srcLocation.x - 1, y: srcLocation.y + 2 };
-    lld = { x: srcLocation.x + 1, y: srcLocation.y + 2 };
-    if (Cell.OutOfBounds(uul)) uul = null;
-    if (Cell.OutOfBounds(uur)) uur = null;
-    if (Cell.OutOfBounds(ddl)) ddl = null;
-    if (Cell.OutOfBounds(ddr)) ddr = null;
 
-    if (Cell.OutOfBounds(rru)) rru = null;
-    if (Cell.OutOfBounds(rrd)) rrd = null;
-    if (Cell.OutOfBounds(llu)) llu = null;
-    if (Cell.OutOfBounds(lld)) lld = null;
-
-    return [uul, uur, ddl, ddr, rru, rrd, llu, lld];
-  }
   public CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][]
   ): TLocation[] {
-    const arr = Knight.GetKnightMoves(srcLocation);
-
+    const arr = Cell.GetLCoverage(srcLocation);
     if (this.pinned.horizontal || this.pinned.vertical) return [];
-
-    return this.FilterOccupancy(board, arr);
+    return Cell.FilterOccupancy(board, arr, this.color);
   }
 }
 export class Pawn extends Piece {

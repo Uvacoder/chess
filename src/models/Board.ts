@@ -225,9 +225,10 @@ export default class Board {
     let validLocations = [] as TLocation[];
 
     /**
-     * if current piece is king, set valid locations to all squares seperately as they check check directions if any
+     * if current piece is king, set valid locations to all squares seperately as they check the directions for check if any
      * valid moves should contain location wthat is not in responsible squares,
      * except if the responsible square has a piece of opposite color
+     * Find If King can castle, ie if king and rook has moved. If not, add them to valid locations
      * from location, find all coverage and see if that location will bring king in check.
      * ie. find king coverage from that location for king of curent player color.
      * if location exists, remove it from valid locations
@@ -252,34 +253,43 @@ export default class Board {
                   responsibleLocation.y === location.y
                 );
             });
-        })
-        .filter((location) => {
-          const newBoard = this.CopyBoard();
-          const playerColor = this.m_currPiece.piece!.color;
-          const opponentColor =
-            playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-          // move king from current location to location and find king in check
-
-          this.MovePiece(
-            newBoard.board,
-            newBoard.kings,
-            cell.location,
-            location
-          );
-          const checks = this.KingInCheck(
-            newBoard.board,
-            playerColor,
-            opponentColor,
-            newBoard.kings,
-            King.CalculateCoverage
-          ).flat();
-          // return locations that are note in checks array
-          return !checks.find((checkLocation) => {
-            return (
-              checkLocation.x === location.x && checkLocation.y === location.y
-            );
-          });
         });
+      this.m_currPiece.piece.CanCastle(this.m_board, cell.location);
+      if (this.m_currPiece.piece.castle.ks)
+        validLocations.push({
+          x: cell.location.x,
+          y: cell.location.y + 2,
+        });
+      if (this.m_currPiece.piece.castle.qs) {
+        validLocations.push({
+          x: cell.location.x,
+          y: cell.location.y - 2,
+        });
+      }
+      validLocations = validLocations.filter((location) => {
+        const newBoard = this.CopyBoard();
+        const playerColor = this.m_currPiece.piece!.color;
+        const opponentColor =
+          playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+        // move king from current location to location and find king in check
+
+        this.MovePiece(newBoard.board, newBoard.kings, cell.location, location);
+        const checks = this.KingInCheck(
+          newBoard.board,
+          playerColor,
+          opponentColor,
+          newBoard.kings,
+          King.CalculateCoverage
+        ).flat();
+        // return locations that are note in checks array
+        return !checks.find((checkLocation) => {
+          return (
+            checkLocation.x === location.x && checkLocation.y === location.y
+          );
+        });
+      });
+
+      // check if king can castle
     }
     // for very other piece, find valid move normally
     else
@@ -668,6 +678,34 @@ export default class Board {
     return [...responsibleSquares, ..._responsibleSquares];
   }
 
+  private CastleKing(
+    board: Cell[][],
+    srcLocation: TLocation,
+    side: "ks" | "qs"
+  ) {
+    const kingLoc = board[srcLocation.x][srcLocation.y].location;
+    let rookLoc = board[srcLocation.x][side === "ks" ? 7 : 0].location;
+
+    let newKingLoc = {
+      x: kingLoc.x,
+      y: kingLoc.y,
+    };
+    let newRookLoc = {
+      x: rookLoc.x,
+      y: rookLoc.y,
+    };
+    if (side === "ks") {
+      newKingLoc.y += 2;
+      newRookLoc.y -= 2;
+    } else if (side === "qs") {
+      newKingLoc.y -= 2;
+      newRookLoc.y += 3;
+    }
+    board[newKingLoc.x][newKingLoc.y].piece = board[kingLoc.x][kingLoc.y].piece;
+    board[newRookLoc.x][newRookLoc.y].piece = board[rookLoc.x][rookLoc.y].piece;
+    board[kingLoc.x][kingLoc.y].piece = null;
+    board[rookLoc.x][rookLoc.y].piece = null;
+  }
   public MovePiece(
     board: Cell[][],
     boardKing: TBoardKing,
@@ -679,8 +717,16 @@ export default class Board {
     if (board[srcLocation.x][srcLocation.y].piece instanceof King) {
       const kingColor = board[srcLocation.x][srcLocation.y].piece!.color;
       boardKing[kingColor].location = destLocation;
-    }
 
+      if (destLocation.y == srcLocation.y + 2) {
+        this.CastleKing(board, srcLocation, "ks");
+        console.log("KS");
+        return;
+      } else if (destLocation.y == srcLocation.y - 2) {
+        this.CastleKing(board, srcLocation, "qs");
+        return;
+      }
+    }
     board[destLocation.x][destLocation.y].piece =
       board[srcLocation.x][srcLocation.y].piece;
     board[srcLocation.x][srcLocation.y].piece = null;
@@ -719,6 +765,7 @@ export default class Board {
 
     this.MovePiece(board, this.m_kings, srcLocation, destLocation);
 
+    if (this.m_currPiece.piece) this.m_currPiece.piece.hasMoved = true;
     this.m_currPiece.location = destLocation;
 
     const checkSquares = this.KingInCheck(
