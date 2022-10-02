@@ -188,6 +188,10 @@ export class King extends Piece {
     if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
     if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
 
+    /**
+     * If king is attacked from one direction, it should not be able to travel in that direction
+     * If King is attacked from down, it cannot move up as well and same goes to left/right and diagonal directions
+     */
     const kingColor = this.color;
     const opponentColor =
       kingColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;

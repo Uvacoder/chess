@@ -262,29 +262,13 @@ export default class Board {
                 );
             });
         });
-
       this.m_currPiece.piece.CanCastle(this.m_board, cell.location);
       validLocations = validLocations.filter((location) => {
-        const newBoard = this.CopyBoard();
-        const playerColor = this.m_currPiece.piece!.color;
-        const opponentColor =
-          playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-        // move king from current location to location and find king in check
-
-        this.MovePiece(newBoard.board, newBoard.kings, cell.location, location);
-        const checks = this.KingInCheck(
-          newBoard.board,
-          playerColor,
-          opponentColor,
-          newBoard.kings,
-          King.CalculateCoverage
-        ).flat();
-        // return locations that are note in checks array
-        return !checks.find((checkLocation) => {
-          return (
-            checkLocation.x === location.x && checkLocation.y === location.y
-          );
-        });
+        return !Cell.CellIsAttacked(
+          this.m_board,
+          location,
+          this.m_currPiece.piece!.color
+        );
       });
       if (
         currKing.checkInfo.status === false &&
@@ -294,11 +278,18 @@ export default class Board {
           validLocations.find(
             (loc) => loc.x === cell.location.x && loc.y === cell.location.y + 1
           ) !== undefined
-        )
-          validLocations.push({
+        ) {
+          const castleLocation = {
             x: cell.location.x,
             y: cell.location.y + 2,
-          });
+          };
+          const castleCellIsAttacked = Cell.CellIsAttacked(
+            this.m_board,
+            castleLocation,
+            this.m_currPiece.piece.color
+          );
+          if (!castleCellIsAttacked) validLocations.push(castleLocation);
+        }
       }
       if (
         currKing.checkInfo.status === false &&
@@ -308,11 +299,18 @@ export default class Board {
           validLocations.find(
             (loc) => loc.x === cell.location.x && loc.y === cell.location.y - 1
           ) !== undefined
-        )
-          validLocations.push({
+        ) {
+          const castleLocation = {
             x: cell.location.x,
             y: cell.location.y - 2,
-          });
+          };
+          const castleCellIsAttacked = Cell.CellIsAttacked(
+            this.m_board,
+            castleLocation,
+            this.m_currPiece.piece.color
+          );
+          if (!castleCellIsAttacked) validLocations.push(castleLocation);
+        }
       }
     }
     // else if (this.m_currPiece.piece instanceof Pawn) {

@@ -91,6 +91,32 @@ export default class Cell {
     }
     return slide;
   }
+  public static GenSlideNew(
+    curLocation: TLocation,
+    opponentColor: string,
+    board: Cell[][],
+    xOffset: number,
+    yOffset: number
+  ) {
+    const slide: Array<TLocation> = [];
+    let x = curLocation.x + xOffset;
+    let y = curLocation.y + yOffset;
+    while (!Cell.OutOfBounds({ x, y })) {
+      const newX = x + xOffset;
+      const newY = y + yOffset;
+
+      if (board[x][y].piece === null) slide.push({ x, y });
+      else if (board[x][y].piece !== null) {
+        if (board[x][y].piece?.color === opponentColor) {
+          slide.push({ x, y });
+          break;
+        } else break;
+      }
+      x = newX;
+      y = newY;
+    }
+    return slide;
+  }
   public static GetLCoverage(srcLocation: TLocation) {
     let uul, uur, ddl, ddr;
     let rru, rrd, llu, lld;
@@ -136,24 +162,22 @@ export default class Cell {
     board: Cell[][],
     playerColor: COLORS
   ) {
-    const location = { x: 0, y: 5 };
-    const arr = [
-      ...Cell.GenSlide(location, board, 0, 1, true), //right
-      ...Cell.GenSlide(location, board, 0, -1, true), //left
-      ...Cell.GenSlide(location, board, 1, 0, true), //bottom
-      ...Cell.GenSlide(location, board, -1, 0, true), //top
-      ...Cell.GenSlide(location, board, -1, -1, true), //top left
-      ...Cell.GenSlide(location, board, 1, 1, true), //bottom right
-      ...Cell.GenSlide(location, board, -1, 1, true), //top right
-      ...Cell.GenSlide(location, board, 1, -1, true), //bottom left
-      // ...Cell.GetLCoverage(currentLocation).filter(
-      //   (m) => m && board[m.x][m.y].piece !== null
-      // ),
-    ];
-    console.log(currentLocation, arr);
-    const data = Cell.FilterOccupancy(board, arr, playerColor);
-    // console.log(currentLocation, arr, data);
+    const location = currentLocation;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
+    const arr = [
+      ...Cell.GenSlideNew(location, opponentColor, board, 0, 1), //right
+      ...Cell.GenSlideNew(location, opponentColor, board, 0, -1), //left
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, 0), //bottom
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, 0), //top
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, -1), //top left
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, 1), //bottom right
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, 1), //top right
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, -1), //bottom left
+      ...Cell.GetLCoverage(currentLocation).filter((m) => m !== null),
+    ];
+    const data = Cell.FilterOccupancy(board, arr, playerColor);
     return data;
   }
   public static CellIsAttacked(
@@ -162,7 +186,6 @@ export default class Cell {
     playerColor: COLORS
   ) {
     const coverage = Cell.GenAllCoverage(location, board, playerColor);
-    console.log(coverage);
     return coverage.some((loc) => {
       const piece = board[loc.x][loc.y].piece;
       if (piece === null) return false;
