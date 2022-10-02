@@ -766,6 +766,13 @@ export default class Board {
     board[newRookLoc.x][newRookLoc.y].piece = board[rookLoc.x][rookLoc.y].piece;
     board[kingLoc.x][kingLoc.y].piece = null;
     board[rookLoc.x][rookLoc.y].piece = null;
+    this.sound = {
+      capture: false,
+      castle: true,
+      check: false,
+      checkmate: false,
+      move: false,
+    };
   }
   public MovePiece(
     board: Cell[][],
