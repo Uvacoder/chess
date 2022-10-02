@@ -2,7 +2,7 @@ import { DropResult } from "react-beautiful-dnd";
 import { TLocation, TPiece } from "../@types";
 import { COLORS, ConvertIdxToLocation } from "../utils/Constants";
 import Cell from "./Cell";
-import { King, Knight, Pawn, Queen } from "./Piece";
+import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 
 type TBoardKing = {
   [key in COLORS]: {
@@ -707,6 +707,40 @@ export default class Board {
     return [...responsibleSquares, ..._responsibleSquares];
   }
 
+  public PromotePawn(
+    cell: Cell,
+    pieceName: "queen" | "rook" | "bishop" | "knight"
+  ) {
+    const location = cell.location;
+    const board = this.m_board;
+    const piece = board[location.x][location.y].piece;
+    if (piece === null) return;
+    const color = piece.color;
+
+    if (piece instanceof Pawn === false) return;
+    let newPiece = null;
+    switch (pieceName) {
+      case "queen":
+        newPiece = new Queen(color);
+        break;
+      case "rook":
+        newPiece = new Rook(color);
+        break;
+      case "bishop":
+        newPiece = new Bishop(color);
+        break;
+      case "knight":
+        newPiece = new Knight(color);
+        break;
+      default:
+        break;
+    }
+    if (newPiece === null) return;
+    else {
+      cell.piece = newPiece;
+    }
+  }
+
   private CastleKing(
     board: Cell[][],
     srcLocation: TLocation,
@@ -750,7 +784,6 @@ export default class Board {
       boardKing[kingColor].location = destLocation;
       if (destLocation.y == srcLocation.y + 2) {
         this.CastleKing(board, srcLocation, "ks");
-        console.log("KS");
         return;
       } else if (destLocation.y == srcLocation.y - 2) {
         this.CastleKing(board, srcLocation, "qs");
