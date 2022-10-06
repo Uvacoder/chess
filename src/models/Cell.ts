@@ -180,21 +180,37 @@ export default class Cell {
     const data = Cell.FilterOccupancy(board, arr, playerColor);
     return data;
   }
+
+  private CellAttackerSquares() {}
+
   public static CellIsAttacked(
     board: Cell[][],
     location: TLocation,
     playerColor: COLORS
   ) {
     const coverage = Cell.GenAllCoverage(location, board, playerColor);
-    return coverage.some((loc) => {
-      const piece = board[loc.x][loc.y].piece;
-      if (piece === null) return false;
-      else {
-        const validMoves = piece.CalculateValidMoves(loc, board);
-        return validMoves.some((move) => {
-          return move.x === location.x && move.y === location.y;
-        });
-      }
-    });
+    const attackerColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+    const attackers = coverage
+      .filter((loc) => {
+        const piece = board[loc.x][loc.y].piece;
+        if (piece === null) return null;
+        if (piece.color !== attackerColor) return null;
+        else {
+          const validMoves = piece.CalculateValidMoves(loc, board);
+          const findMove = validMoves.find((m) => {
+            return m.x === location.x && m.y === location.y;
+          });
+          if (!findMove) return null;
+          return location;
+        }
+      })
+      .filter((attackers) => attackers !== null);
+    if (attackers.length > 0)
+      return {
+        status: true,
+        attackers,
+      };
+    else return { status: false, attackers };
   }
 }

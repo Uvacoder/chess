@@ -264,11 +264,12 @@ export default class Board {
         });
       this.m_currPiece.piece.CanCastle(this.m_board, cell.location);
       validLocations = validLocations.filter((location) => {
-        return !Cell.CellIsAttacked(
+        const isAttacked = Cell.CellIsAttacked(
           this.m_board,
           location,
           this.m_currPiece.piece!.color
         );
+        return !isAttacked.status;
       });
       if (
         currKing.checkInfo.status === false &&
@@ -288,7 +289,7 @@ export default class Board {
             castleLocation,
             this.m_currPiece.piece.color
           );
-          if (!castleCellIsAttacked) validLocations.push(castleLocation);
+          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
         }
       }
       if (
@@ -309,7 +310,7 @@ export default class Board {
             castleLocation,
             this.m_currPiece.piece.color
           );
-          if (!castleCellIsAttacked) validLocations.push(castleLocation);
+          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
         }
       }
     }
@@ -341,6 +342,7 @@ export default class Board {
     ) {
       const responsibleSquares = currKing.checkInfo.responsibleSquares;
       if (responsibleSquares.length === 1) {
+        console.log(validLocations);
         validLocations = validLocations.filter((cell) => {
           return responsibleSquares.flat().find((sq) => {
             return sq.x == cell.x && sq.y == cell.y;
@@ -382,11 +384,7 @@ export default class Board {
     if (!this.m_currPiece.piece || this.m_currPiece.piece instanceof King)
       return;
     const playerColor = this.m_currPiece.piece.color;
-    const opponentColor =
-      this.m_currPiece.piece.color === COLORS.WHITE
-        ? COLORS.BLACK
-        : COLORS.WHITE;
-    // check if piece is pinned
+
     const playerKing = this.m_kings[this.m_currPiece.piece.color];
 
     const tempBoard = this.CopyBoard().board;
@@ -397,7 +395,6 @@ export default class Board {
     kingChecks = this.KingInCheck(
       tempBoard,
       playerColor,
-      opponentColor,
       this.kings,
       King.CalculateCoverage
     ).flat();
@@ -512,33 +509,21 @@ export default class Board {
   public KingInCheck(
     board: Cell[][],
     kingColor: COLORS,
-    attackerColor: COLORS,
     boardKing: TBoardKing,
     coverageFunction: (board: Cell[][], location: TLocation) => TLocation[]
   ) {
     const responsibleSquares: TLocation[] = [];
     const kingLocation = boardKing[kingColor]!.location;
-    // const kingCoverage = (king as King)!.CalculateCoverage(board, kingLocation);
-    const kingCoverage = coverageFunction(board, kingLocation);
+    const { status, attackers } = Cell.CellIsAttacked(
+      board,
+      kingLocation,
+      kingColor
+    );
 
-    const attackers = kingCoverage.map((location) => {
-      const piece = board[location.x][location.y].piece;
-      if (piece === null) return null;
-      if (piece.color !== attackerColor) return null;
-      const pieceValidMoves = piece.CalculateValidMoves(location, board);
-      const kingInValidMoves = pieceValidMoves.find(
-        (location) =>
-          location.x === kingLocation.x && location.y === kingLocation.y
-      );
+    if (!status) return [];
 
-      if (kingInValidMoves) return location;
-      else return null;
-    });
-    const attackerCells = attackers
-      .filter((attacker) => attacker !== null)
-      .flat();
+    const attackerCells = attackers.flat();
 
-    if (attackerCells.length === 0) return [];
     function FindResponsibleSquares(
       attackerLocation: TLocation | null,
       kingLocation: TLocation
@@ -853,7 +838,6 @@ export default class Board {
     const checkSquares = this.KingInCheck(
       this.m_board,
       opponentColor,
-      playerColor,
       this.kings,
       King.CalculateCoverage
     );
