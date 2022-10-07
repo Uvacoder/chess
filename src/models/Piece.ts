@@ -88,6 +88,7 @@ abstract class Piece {
       }
     }) as TLocation[];
   }
+
   public abstract CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][]
@@ -482,7 +483,6 @@ export class Pawn extends Piece {
     board: Cell[][]
   ): TLocation[] {
     let f, fl, fr;
-
     f = {
       x: srcLocation.x + (this.color === COLORS.WHITE ? -1 : 1),
       y: srcLocation.y,
@@ -526,9 +526,23 @@ export class Pawn extends Piece {
     if (!f) ff = null;
     if (ff && Cell.Occupied(board, ff)) ff = null;
 
-    return [f, fl, fr, ff].filter((loc) => {
+    const finalLocationFront = [f, ff].filter((loc) => {
       if (this.pinned.vertical === true) return false;
       else return loc !== null;
-    }) as TLocation[];
+    });
+
+    const finalLocationLD = [fl].filter((loc) => {
+      if (this.pinned.topLeft === true) return false;
+      else return loc !== null;
+    });
+    const finalLocationLR = [fr].filter((loc) => {
+      if (this.pinned.topLeft === true) return false;
+      else return loc !== null;
+    });
+    return [
+      ...finalLocationFront,
+      ...finalLocationLD,
+      ...finalLocationLR,
+    ].filter((m) => m !== null) as TLocation[];
   }
 }

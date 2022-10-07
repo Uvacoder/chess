@@ -341,7 +341,6 @@ export default class Board {
     ) {
       const responsibleSquares = currKing.checkInfo.responsibleSquares;
       if (responsibleSquares.length === 1) {
-        console.log(validLocations);
         validLocations = validLocations.filter((cell) => {
           return responsibleSquares.flat().find((sq) => {
             return sq.x == cell.x && sq.y == cell.y;

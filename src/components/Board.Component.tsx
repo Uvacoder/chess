@@ -45,6 +45,7 @@ export default function BoardComponent({ board }: { board: Board }) {
           };
           return (
             <div
+              key={x + y}
               className={`w-[75px] h-[75px] text-black font-bold relative overflow-hidden ${
                 cell.piece !== null && "cursor-grab hover:opacity-80"
               }`}
