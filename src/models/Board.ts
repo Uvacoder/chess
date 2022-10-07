@@ -392,12 +392,7 @@ export default class Board {
     tempBoard[currLocation.x][currLocation.y].piece = null;
     let kingChecks = [];
 
-    kingChecks = this.KingInCheck(
-      tempBoard,
-      playerColor,
-      this.kings,
-      King.CalculateCoverage
-    ).flat();
+    kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
     // if king is in same row as the active piece
     if (playerKing.location.x === this.m_currPiece.location.x) {
       this.m_currPiece.piece.pinned.horizontal = false;
@@ -509,8 +504,7 @@ export default class Board {
   public KingInCheck(
     board: Cell[][],
     kingColor: COLORS,
-    boardKing: TBoardKing,
-    coverageFunction: (board: Cell[][], location: TLocation) => TLocation[]
+    boardKing: TBoardKing
   ) {
     const responsibleSquares: TLocation[] = [];
     const kingLocation = boardKing[kingColor]!.location;
@@ -522,157 +516,9 @@ export default class Board {
 
     if (!status) return [];
 
-    const attackerCells = attackers.flat();
-
-    function FindResponsibleSquares(
-      attackerLocation: TLocation | null,
-      kingLocation: TLocation
-    ) {
-      const returnData = {
-        direction: {
-          h: false,
-          v: false,
-          rd: false,
-          ld: false,
-        },
-        responsibleSquares: [] as TLocation[],
-      };
-      if (!attackerLocation) return returnData;
-      // same row
-      if (attackerLocation.x === kingLocation.x) {
-        const responsibleSquares = [];
-        const start = Math.min(attackerLocation.y, kingLocation.y);
-        const end = Math.max(attackerLocation.y, kingLocation.y);
-        for (let i = start + 1; i < end; i++) {
-          responsibleSquares.push({ x: attackerLocation.x, y: i });
-        }
-        return {
-          direction: {
-            ...returnData.direction,
-            h: true,
-          },
-          responsibleSquares: [
-            ...responsibleSquares,
-            kingLocation,
-            attackerLocation,
-          ],
-        };
-      }
-      // same column
-      else if (attackerLocation.y === kingLocation.y) {
-        const responsibleSquares = [];
-        const start = Math.min(attackerLocation.x, kingLocation.x);
-        const end = Math.max(attackerLocation.x, kingLocation.x);
-        for (let i = start + 1; i < end; i++) {
-          responsibleSquares.push({ x: i, y: attackerLocation.y });
-        }
-        return {
-          direction: {
-            ...returnData.direction,
-            v: true,
-          },
-          responsibleSquares: [
-            ...responsibleSquares,
-            kingLocation,
-            attackerLocation,
-          ],
-        };
-      }
-      // same diagonal
-      else if (
-        Math.abs(attackerLocation.x - kingLocation.x) ===
-        Math.abs(attackerLocation.y - kingLocation.y)
-      ) {
-        if (
-          attackerLocation.x + attackerLocation.y ===
-          kingLocation.x + kingLocation.y
-        ) {
-          function rightDiagonal(
-            sx: number,
-            sy: number,
-            ex: number,
-            ey: number
-          ) {
-            const m = [];
-            const _sx = Math.min(sx, ex);
-            const _sy = Math.max(sy, ey);
-            const _ex = Math.max(sx, ex);
-            const _ey = Math.min(sy, ey);
-
-            let col = _sy;
-            for (let i = _sx; i <= _ex; i++) {
-              for (let j = col; j >= _ey; j++) {
-                m.push({ x: i, y: j });
-                col--;
-                break;
-              }
-            }
-            return m;
-          }
-          const responsibleSquares = rightDiagonal(
-            attackerLocation.x,
-            attackerLocation.y,
-            kingLocation.x,
-            kingLocation.y
-          );
-          return {
-            direction: {
-              ...returnData.direction,
-              rd: true,
-            },
-            responsibleSquares,
-          };
-          // right diagonal
-        } else {
-          function leftDiagonal(
-            sx: number,
-            sy: number,
-            ex: number,
-            ey: number
-          ) {
-            const m = [];
-            const _sx = Math.min(sx, ex);
-            const _sy = Math.min(sy, ey);
-            const _ex = Math.max(sx, ex);
-            const _ey = Math.max(sy, ey);
-
-            let col = _sy;
-
-            for (let i = _sx; i <= _ex; i++) {
-              for (let j = col; j <= _ey; j++) {
-                m.push({ x: i, y: j });
-                col++;
-                break;
-              }
-            }
-            return m;
-          }
-          const responsibleSquares = leftDiagonal(
-            attackerLocation.x,
-            attackerLocation.y,
-            kingLocation.x,
-            kingLocation.y
-          );
-          return {
-            direction: {
-              ...returnData.direction,
-              ld: true,
-            },
-            responsibleSquares,
-          };
-          // left diagonal
-        }
-      } else
-        return {
-          direction: {
-            ...returnData.direction,
-          },
-          responsibleSquares: [attackerLocation],
-        };
-    }
-    const _responsibleSquares = attackerCells
+    const _responsibleSquares = attackers
       .map((attacker) => {
-        return FindResponsibleSquares(attacker, kingLocation);
+        return Cell.FindResponsibleSquares(attacker, kingLocation);
       })
       .filter((sq) => {
         if (boardKing[kingColor]) {
@@ -838,8 +684,7 @@ export default class Board {
     const checkSquares = this.KingInCheck(
       this.m_board,
       opponentColor,
-      this.kings,
-      King.CalculateCoverage
+      this.kings
     );
 
     if (checkSquares.length > 0) {
