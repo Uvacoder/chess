@@ -200,11 +200,10 @@ export default class Board {
     this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
     this.ResetCheckMarkers();
   }
-  private ResetEnPassant(color: COLORS) {
+  private ResetEnPassant() {
     this.m_board.forEach((row) => {
       row.forEach((cell) => {
-        if (cell.piece instanceof Pawn && cell.piece.color === color)
-          cell.piece.enPassantEligible = false;
+        if (cell.piece instanceof Pawn) cell.piece.enPassantEligible = false;
       });
     });
   }
@@ -312,23 +311,18 @@ export default class Board {
           if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
         }
       }
-    }
-    // else if (this.m_currPiece.piece instanceof Pawn) {
-    /**
-     * If current piece is pawn, see if it can capture by enpassant. If it can, add the location to validLocations
-     */
-    // }
-    // for very other piece, find valid move normally
-    else
+    } else {
       validLocations = this.m_currPiece.piece.CalculateValidMoves(
         cell.location,
         this.m_board
       );
+    }
 
     /**
-     * As a King cant block check, this block of code should not run if the current piece is a king
+     * If Current King is in Check,
+     * If Current Piece is a King, this block of code should not run As a King cant block check
      * Otherwise, see how many squares are responsible for check. If there are more than one,
-     * this means that king is in check by 2 pieces.
+     * this means that king is in check by 2 pieces. (In Regular Chess, no more than 2 pieces can Check the king at one time)
      * If king is in check by 2 pieces, then the only valid move for king is to move out of check.
      * Finding out the squares for king is not done here as we already did it in above block of code while calculating
      * valid moves for king
@@ -624,12 +618,28 @@ export default class Board {
         return;
       }
     } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
-      const pawn = board[srcLocation.x][srcLocation.y].piece;
+      const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
 
-      const offset = pawnColor === "white" ? -2 : 2;
-      if (destLocation.x === srcLocation.x + offset)
+      const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
+      if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
         (pawn as Pawn).enPassantEligible = true;
+
+      // see if move is enpassant move
+      const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
+      if (
+        pawn.enPassantCapture.left === true &&
+        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
+        destLocation.y === srcLocation.y - 1
+      ) {
+        board[srcLocation.x][srcLocation.y - 1].piece = null;
+      } else if (
+        pawn.enPassantCapture.right === true &&
+        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
+        destLocation.y === srcLocation.y + 1
+      ) {
+        board[srcLocation.x][srcLocation.y + 1].piece = null;
+      }
 
       const promotionRow = pawnColor === "white" ? 0 : 7;
       if (destLocation.x === promotionRow) {
@@ -650,7 +660,7 @@ export default class Board {
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
     this.ResetCheck();
-    this.ResetEnPassant(playerColor);
+    this.ResetEnPassant();
 
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];

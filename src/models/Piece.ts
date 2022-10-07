@@ -444,19 +444,26 @@ export class Pawn extends Piece {
   get enPassantEligible() {
     return this.m_enPassantEligible;
   }
+  get enPassantCapture() {
+    return this.m_enpassantCapture;
+  }
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
-    const left = board[currLocation.x - 1][currLocation.y];
-    const right = board[currLocation.x + 1][currLocation.y];
+    const left = board[currLocation.x][currLocation.y - 1];
+    const right = board[currLocation.x][currLocation.y + 1];
     let leftPiece = null,
       rightPiece = null;
-    if (!Cell.OutOfBounds(left.location)) leftPiece = left.piece;
-    if (!Cell.OutOfBounds(right.location)) rightPiece = right.piece;
+    if (left == null) leftPiece == null;
+    if (right == null) rightPiece == null;
+    if (left && !Cell.OutOfBounds(left.location)) leftPiece = left.piece;
+    if (right && !Cell.OutOfBounds(right.location)) rightPiece = right.piece;
     const playerColor = this.color;
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    console.log(leftPiece, rightPiece);
     if (
       leftPiece &&
       leftPiece instanceof Pawn === true &&
@@ -547,10 +554,40 @@ export class Pawn extends Piece {
       if (pinnedDir) return false;
       else return loc !== null;
     });
-    return [
+    const normalValidMoves = [
       ...finalLocationFront,
       ...finalLocationLD,
       ...finalLocationLR,
     ].filter((m) => m !== null) as TLocation[];
+    // check for enpassant
+    console.log("HERE");
+    this.CanCaptureEnpassant(board, srcLocation);
+
+    console.log(this.m_enpassantCapture);
+    if (this.m_enpassantCapture.left) {
+      const yLocation = srcLocation.y - 1;
+      const xLocation =
+        this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
+
+      const enpassantLoc = {
+        x: xLocation,
+        y: yLocation,
+      };
+      console.log(enpassantLoc);
+      normalValidMoves.push(enpassantLoc);
+    }
+    if (this.m_enpassantCapture.right) {
+      const yLocation = srcLocation.y + 1;
+      const xLocation =
+        this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
+
+      const enpassantLoc = {
+        x: xLocation,
+        y: yLocation,
+      };
+      normalValidMoves.push(enpassantLoc);
+    }
+    console.log(normalValidMoves);
+    return normalValidMoves;
   }
 }
