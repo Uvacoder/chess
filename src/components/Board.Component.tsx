@@ -24,22 +24,22 @@ export default function BoardComponent({ board }: { board: Board }) {
             if (cell.validSq)
               return {
                 background: "#D6C407",
-                border: "2px solid #2a2a2a",
+                border: "1px solid #2a2a2a",
               };
             else if (cell.activeSq && cell.piece !== null)
               return {
                 background: "#D6A707",
-                border: "2px solid #2a2a2a",
+                border: "1px solid #2a2a2a",
               };
             else if (cell.validSq)
               return {
                 background: "pink",
-                border: "2px solid #2a2a2a",
+                border: "1px solid #2a2a2a",
               };
             else if (cell.checkSq)
               return {
                 background: "red",
-                border: "2px solid #2a2a2a",
+                border: "1px solid #2a2a2a",
               };
             else return { background: color };
           };

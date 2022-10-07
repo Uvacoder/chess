@@ -532,11 +532,19 @@ export class Pawn extends Piece {
     });
 
     const finalLocationLD = [fl].filter((loc) => {
-      if (this.pinned.topLeft === true) return false;
+      const pinnedDir =
+        this.color === COLORS.WHITE
+          ? this.pinned.topLeft
+          : this.pinned.bottomLeft;
+      if (pinnedDir) return false;
       else return loc !== null;
     });
     const finalLocationLR = [fr].filter((loc) => {
-      if (this.pinned.topLeft === true) return false;
+      const pinnedDir =
+        this.color === COLORS.WHITE
+          ? this.pinned.topRight
+          : this.pinned.bottomRight;
+      if (pinnedDir) return false;
       else return loc !== null;
     });
     return [
