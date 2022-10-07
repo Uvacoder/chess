@@ -88,6 +88,7 @@ abstract class Piece {
       }
     }) as TLocation[];
   }
+
   public abstract CalculateValidMoves(
     srcLocation: TLocation,
     board: Cell[][]
@@ -188,6 +189,10 @@ export class King extends Piece {
     if (dl && NeighbourIsKing(dl, srcLocation)) dl = null;
     if (dr && NeighbourIsKing(dr, srcLocation)) dr = null;
 
+    /**
+     * If king is attacked from one direction, it should not be able to travel in that direction
+     * If King is attacked from down, it cannot move up as well and same goes to left/right and diagonal directions
+     */
     const kingColor = this.color;
     const opponentColor =
       kingColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
@@ -439,19 +444,26 @@ export class Pawn extends Piece {
   get enPassantEligible() {
     return this.m_enPassantEligible;
   }
+  get enPassantCapture() {
+    return this.m_enpassantCapture;
+  }
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
-    const left = board[currLocation.x - 1][currLocation.y];
-    const right = board[currLocation.x + 1][currLocation.y];
+    const left = board[currLocation.x][currLocation.y - 1];
+    const right = board[currLocation.x][currLocation.y + 1];
     let leftPiece = null,
       rightPiece = null;
-    if (!Cell.OutOfBounds(left.location)) leftPiece = left.piece;
-    if (!Cell.OutOfBounds(right.location)) rightPiece = right.piece;
+    if (left == null) leftPiece == null;
+    if (right == null) rightPiece == null;
+    if (left && !Cell.OutOfBounds(left.location)) leftPiece = left.piece;
+    if (right && !Cell.OutOfBounds(right.location)) rightPiece = right.piece;
     const playerColor = this.color;
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    console.log(leftPiece, rightPiece);
     if (
       leftPiece &&
       leftPiece instanceof Pawn === true &&
@@ -478,7 +490,6 @@ export class Pawn extends Piece {
     board: Cell[][]
   ): TLocation[] {
     let f, fl, fr;
-
     f = {
       x: srcLocation.x + (this.color === COLORS.WHITE ? -1 : 1),
       y: srcLocation.y,
@@ -522,9 +533,61 @@ export class Pawn extends Piece {
     if (!f) ff = null;
     if (ff && Cell.Occupied(board, ff)) ff = null;
 
-    return [f, fl, fr, ff].filter((loc) => {
+    const finalLocationFront = [f, ff].filter((loc) => {
       if (this.pinned.vertical === true) return false;
       else return loc !== null;
-    }) as TLocation[];
+    });
+
+    const finalLocationLD = [fl].filter((loc) => {
+      const pinnedDir =
+        this.color === COLORS.WHITE
+          ? this.pinned.topLeft
+          : this.pinned.bottomLeft;
+      if (pinnedDir) return false;
+      else return loc !== null;
+    });
+    const finalLocationLR = [fr].filter((loc) => {
+      const pinnedDir =
+        this.color === COLORS.WHITE
+          ? this.pinned.topRight
+          : this.pinned.bottomRight;
+      if (pinnedDir) return false;
+      else return loc !== null;
+    });
+    const normalValidMoves = [
+      ...finalLocationFront,
+      ...finalLocationLD,
+      ...finalLocationLR,
+    ].filter((m) => m !== null) as TLocation[];
+    // check for enpassant
+    console.log("HERE");
+    this.CanCaptureEnpassant(board, srcLocation);
+
+    console.log(this.m_enpassantCapture);
+    if (this.m_enpassantCapture.left) {
+      const yLocation = srcLocation.y - 1;
+      const xLocation =
+        this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
+
+      const enpassantLoc = {
+        x: xLocation,
+        y: yLocation,
+      };
+      console.log(enpassantLoc);
+      normalValidMoves.push(enpassantLoc);
+    }
+    if (this.m_enpassantCapture.right) {
+      const yLocation = srcLocation.y + 1;
+      const xLocation =
+        this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
+
+      const enpassantLoc = {
+        x: xLocation,
+        y: yLocation,
+      };
+      normalValidMoves.push(enpassantLoc);
+    }
+    console.log(normalValidMoves);
+    return normalValidMoves;
   }
 }

@@ -91,6 +91,32 @@ export default class Cell {
     }
     return slide;
   }
+  public static GenSlideNew(
+    curLocation: TLocation,
+    opponentColor: string,
+    board: Cell[][],
+    xOffset: number,
+    yOffset: number
+  ) {
+    const slide: Array<TLocation> = [];
+    let x = curLocation.x + xOffset;
+    let y = curLocation.y + yOffset;
+    while (!Cell.OutOfBounds({ x, y })) {
+      const newX = x + xOffset;
+      const newY = y + yOffset;
+
+      if (board[x][y].piece === null) slide.push({ x, y });
+      else if (board[x][y].piece !== null) {
+        if (board[x][y].piece?.color === opponentColor) {
+          slide.push({ x, y });
+          break;
+        } else break;
+      }
+      x = newX;
+      y = newY;
+    }
+    return slide;
+  }
   public static GetLCoverage(srcLocation: TLocation) {
     let uul, uur, ddl, ddr;
     let rru, rrd, llu, lld;
@@ -136,42 +162,193 @@ export default class Cell {
     board: Cell[][],
     playerColor: COLORS
   ) {
-    const location = { x: 0, y: 5 };
-    const arr = [
-      ...Cell.GenSlide(location, board, 0, 1, true), //right
-      ...Cell.GenSlide(location, board, 0, -1, true), //left
-      ...Cell.GenSlide(location, board, 1, 0, true), //bottom
-      ...Cell.GenSlide(location, board, -1, 0, true), //top
-      ...Cell.GenSlide(location, board, -1, -1, true), //top left
-      ...Cell.GenSlide(location, board, 1, 1, true), //bottom right
-      ...Cell.GenSlide(location, board, -1, 1, true), //top right
-      ...Cell.GenSlide(location, board, 1, -1, true), //bottom left
-      // ...Cell.GetLCoverage(currentLocation).filter(
-      //   (m) => m && board[m.x][m.y].piece !== null
-      // ),
-    ];
-    console.log(currentLocation, arr);
-    const data = Cell.FilterOccupancy(board, arr, playerColor);
-    // console.log(currentLocation, arr, data);
+    const location = currentLocation;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
+    const arr = [
+      ...Cell.GenSlideNew(location, opponentColor, board, 0, 1), //right
+      ...Cell.GenSlideNew(location, opponentColor, board, 0, -1), //left
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, 0), //bottom
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, 0), //top
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, -1), //top left
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, 1), //bottom right
+      ...Cell.GenSlideNew(location, opponentColor, board, -1, 1), //top right
+      ...Cell.GenSlideNew(location, opponentColor, board, 1, -1), //bottom left
+      ...Cell.GetLCoverage(currentLocation).filter((m) => m !== null),
+    ];
+    const data = Cell.FilterOccupancy(board, arr, playerColor);
     return data;
+  }
+
+  public static FindResponsibleSquares(
+    attackerLocation: TLocation | null,
+    defenderLocation: TLocation
+  ) {
+    const returnData = {
+      direction: {
+        h: false,
+        v: false,
+        rd: false,
+        ld: false,
+      },
+      responsibleSquares: [] as TLocation[],
+    };
+    if (!attackerLocation) return returnData;
+    // same row
+    if (attackerLocation.x === defenderLocation.x) {
+      const responsibleSquares = [];
+      const start = Math.min(attackerLocation.y, defenderLocation.y);
+      const end = Math.max(attackerLocation.y, defenderLocation.y);
+      for (let i = start + 1; i < end; i++) {
+        responsibleSquares.push({ x: attackerLocation.x, y: i });
+      }
+      return {
+        direction: {
+          ...returnData.direction,
+          h: true,
+        },
+        responsibleSquares: [
+          ...responsibleSquares,
+          defenderLocation,
+          attackerLocation,
+        ],
+      };
+    }
+    // same column
+    else if (attackerLocation.y === defenderLocation.y) {
+      const responsibleSquares = [];
+      const start = Math.min(attackerLocation.x, defenderLocation.x);
+      const end = Math.max(attackerLocation.x, defenderLocation.x);
+      for (let i = start + 1; i < end; i++) {
+        responsibleSquares.push({ x: i, y: attackerLocation.y });
+      }
+      return {
+        direction: {
+          ...returnData.direction,
+          v: true,
+        },
+        responsibleSquares: [
+          ...responsibleSquares,
+          defenderLocation,
+          attackerLocation,
+        ],
+      };
+    }
+    // same diagonal
+    else if (
+      Math.abs(attackerLocation.x - defenderLocation.x) ===
+      Math.abs(attackerLocation.y - defenderLocation.y)
+    ) {
+      if (
+        attackerLocation.x + attackerLocation.y ===
+        defenderLocation.x + defenderLocation.y
+      ) {
+        function rightDiagonal(sx: number, sy: number, ex: number, ey: number) {
+          const m = [];
+          const _sx = Math.min(sx, ex);
+          const _sy = Math.max(sy, ey);
+          const _ex = Math.max(sx, ex);
+          const _ey = Math.min(sy, ey);
+
+          let col = _sy;
+          for (let i = _sx; i <= _ex; i++) {
+            for (let j = col; j >= _ey; j++) {
+              m.push({ x: i, y: j });
+              col--;
+              break;
+            }
+          }
+          return m;
+        }
+        const responsibleSquares = rightDiagonal(
+          attackerLocation.x,
+          attackerLocation.y,
+          defenderLocation.x,
+          defenderLocation.y
+        );
+        return {
+          direction: {
+            ...returnData.direction,
+            rd: true,
+          },
+          responsibleSquares,
+        };
+        // right diagonal
+      } else {
+        function leftDiagonal(sx: number, sy: number, ex: number, ey: number) {
+          const m = [];
+          const _sx = Math.min(sx, ex);
+          const _sy = Math.min(sy, ey);
+          const _ex = Math.max(sx, ex);
+          const _ey = Math.max(sy, ey);
+
+          let col = _sy;
+
+          for (let i = _sx; i <= _ex; i++) {
+            for (let j = col; j <= _ey; j++) {
+              m.push({ x: i, y: j });
+              col++;
+              break;
+            }
+          }
+          return m;
+        }
+        const responsibleSquares = leftDiagonal(
+          attackerLocation.x,
+          attackerLocation.y,
+          defenderLocation.x,
+          defenderLocation.y
+        );
+        return {
+          direction: {
+            ...returnData.direction,
+            ld: true,
+          },
+          responsibleSquares,
+        };
+        // left diagonal
+      }
+    } else
+      return {
+        direction: {
+          ...returnData.direction,
+        },
+        responsibleSquares: [attackerLocation],
+      };
   }
   public static CellIsAttacked(
     board: Cell[][],
     location: TLocation,
     playerColor: COLORS
   ) {
+    const returnData = {
+      status: false,
+      attackers: [] as TLocation[],
+    };
     const coverage = Cell.GenAllCoverage(location, board, playerColor);
-    console.log(coverage);
-    return coverage.some((loc) => {
-      const piece = board[loc.x][loc.y].piece;
-      if (piece === null) return false;
-      else {
-        const validMoves = piece.CalculateValidMoves(loc, board);
-        return validMoves.some((move) => {
-          return move.x === location.x && move.y === location.y;
-        });
-      }
-    });
+    const attackerColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+    const attackers = coverage
+      .filter((loc) => {
+        const piece = board[loc.x][loc.y].piece;
+        if (piece === null) return null;
+        if (piece.color !== attackerColor) return null;
+        else {
+          const validMoves = piece.CalculateValidMoves(loc, board);
+          const findMove = validMoves.find((m) => {
+            return m.x === location.x && m.y === location.y;
+          });
+          if (!findMove) return null;
+          return location;
+        }
+      })
+      .filter((attackers) => attackers !== null);
+    if (attackers.length <= 0) return returnData;
+    return {
+      ...returnData,
+      status: true,
+      attackers,
+    };
   }
 }

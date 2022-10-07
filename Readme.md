@@ -17,16 +17,16 @@
 |          FEN           |        ✔️         |
 |      Basic Moves       |        ✔️         |
 |     Click to Move      |        ✔️         |
-|      Drag to Move      |        ⚠️         |
 |    Click to Capture    |        ✔️         |
-|    Drag to Capture     |        ⚠️         |
 |    Check Detection     |        ✔️         |
 |    Discovered Check    |        ✔️         |
 |      Pinned Piece      |        ✔️         |
 | Restrict Move on Check |        ✔️         |
 |         Castle         |        ✔️         |
+|       En Passant       |        ✔️         |
+|      Drag to Move      |        ✖️         |
+|    Drag to Capture     |        ✖️         |
 |     Pawn Promotion     |        ⏳         |
-|       En Passant       |        ✖️         |
 |       Checkmate        |        ✖️         |
 |      Resignation       |        ✖️         |
 |        Time Up         |        ✖️         |

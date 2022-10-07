@@ -1,4 +1,3 @@
-import { DropResult } from "react-beautiful-dnd";
 import { TLocation, TPiece } from "../@types";
 import { COLORS, ConvertIdxToLocation } from "../utils/Constants";
 import Cell from "./Cell";
@@ -201,11 +200,10 @@ export default class Board {
     this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
     this.ResetCheckMarkers();
   }
-  private ResetEnPassant(color: COLORS) {
+  private ResetEnPassant() {
     this.m_board.forEach((row) => {
       row.forEach((cell) => {
-        if (cell.piece instanceof Pawn && cell.piece.color === color)
-          cell.piece.enPassantEligible = false;
+        if (cell.piece instanceof Pawn) cell.piece.enPassantEligible = false;
       });
     });
   }
@@ -262,29 +260,14 @@ export default class Board {
                 );
             });
         });
-
       this.m_currPiece.piece.CanCastle(this.m_board, cell.location);
       validLocations = validLocations.filter((location) => {
-        const newBoard = this.CopyBoard();
-        const playerColor = this.m_currPiece.piece!.color;
-        const opponentColor =
-          playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-        // move king from current location to location and find king in check
-
-        this.MovePiece(newBoard.board, newBoard.kings, cell.location, location);
-        const checks = this.KingInCheck(
-          newBoard.board,
-          playerColor,
-          opponentColor,
-          newBoard.kings,
-          King.CalculateCoverage
-        ).flat();
-        // return locations that are note in checks array
-        return !checks.find((checkLocation) => {
-          return (
-            checkLocation.x === location.x && checkLocation.y === location.y
-          );
-        });
+        const isAttacked = Cell.CellIsAttacked(
+          this.m_board,
+          location,
+          this.m_currPiece.piece!.color
+        );
+        return !isAttacked.status;
       });
       if (
         currKing.checkInfo.status === false &&
@@ -294,11 +277,18 @@ export default class Board {
           validLocations.find(
             (loc) => loc.x === cell.location.x && loc.y === cell.location.y + 1
           ) !== undefined
-        )
-          validLocations.push({
+        ) {
+          const castleLocation = {
             x: cell.location.x,
             y: cell.location.y + 2,
-          });
+          };
+          const castleCellIsAttacked = Cell.CellIsAttacked(
+            this.m_board,
+            castleLocation,
+            this.m_currPiece.piece.color
+          );
+          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        }
       }
       if (
         currKing.checkInfo.status === false &&
@@ -308,29 +298,31 @@ export default class Board {
           validLocations.find(
             (loc) => loc.x === cell.location.x && loc.y === cell.location.y - 1
           ) !== undefined
-        )
-          validLocations.push({
+        ) {
+          const castleLocation = {
             x: cell.location.x,
             y: cell.location.y - 2,
-          });
+          };
+          const castleCellIsAttacked = Cell.CellIsAttacked(
+            this.m_board,
+            castleLocation,
+            this.m_currPiece.piece.color
+          );
+          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        }
       }
-    }
-    // else if (this.m_currPiece.piece instanceof Pawn) {
-    /**
-     * If current piece is pawn, see if it can capture by enpassant. If it can, add the location to validLocations
-     */
-    // }
-    // for very other piece, find valid move normally
-    else
+    } else {
       validLocations = this.m_currPiece.piece.CalculateValidMoves(
         cell.location,
         this.m_board
       );
+    }
 
     /**
-     * As a King cant block check, this block of code should not run if the current piece is a king
+     * If Current King is in Check,
+     * If Current Piece is a King, this block of code should not run As a King cant block check
      * Otherwise, see how many squares are responsible for check. If there are more than one,
-     * this means that king is in check by 2 pieces.
+     * this means that king is in check by 2 pieces. (In Regular Chess, no more than 2 pieces can Check the king at one time)
      * If king is in check by 2 pieces, then the only valid move for king is to move out of check.
      * Finding out the squares for king is not done here as we already did it in above block of code while calculating
      * valid moves for king
@@ -384,11 +376,7 @@ export default class Board {
     if (!this.m_currPiece.piece || this.m_currPiece.piece instanceof King)
       return;
     const playerColor = this.m_currPiece.piece.color;
-    const opponentColor =
-      this.m_currPiece.piece.color === COLORS.WHITE
-        ? COLORS.BLACK
-        : COLORS.WHITE;
-    // check if piece is pinned
+
     const playerKing = this.m_kings[this.m_currPiece.piece.color];
 
     const tempBoard = this.CopyBoard().board;
@@ -396,13 +384,7 @@ export default class Board {
     tempBoard[currLocation.x][currLocation.y].piece = null;
     let kingChecks = [];
 
-    kingChecks = this.KingInCheck(
-      tempBoard,
-      playerColor,
-      opponentColor,
-      this.kings,
-      King.CalculateCoverage
-    ).flat();
+    kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
     // if king is in same row as the active piece
     if (playerKing.location.x === this.m_currPiece.location.x) {
       this.m_currPiece.piece.pinned.horizontal = false;
@@ -514,182 +496,21 @@ export default class Board {
   public KingInCheck(
     board: Cell[][],
     kingColor: COLORS,
-    attackerColor: COLORS,
-    boardKing: TBoardKing,
-    coverageFunction: (board: Cell[][], location: TLocation) => TLocation[]
+    boardKing: TBoardKing
   ) {
     const responsibleSquares: TLocation[] = [];
     const kingLocation = boardKing[kingColor]!.location;
-    // const kingCoverage = (king as King)!.CalculateCoverage(board, kingLocation);
-    const kingCoverage = coverageFunction(board, kingLocation);
+    const { status, attackers } = Cell.CellIsAttacked(
+      board,
+      kingLocation,
+      kingColor
+    );
 
-    const attackers = kingCoverage.map((location) => {
-      const piece = board[location.x][location.y].piece;
-      if (piece === null) return null;
-      if (piece.color !== attackerColor) return null;
-      const pieceValidMoves = piece.CalculateValidMoves(location, board);
-      const kingInValidMoves = pieceValidMoves.find(
-        (location) =>
-          location.x === kingLocation.x && location.y === kingLocation.y
-      );
+    if (!status) return [];
 
-      if (kingInValidMoves) return location;
-      else return null;
-    });
-    const attackerCells = attackers
-      .filter((attacker) => attacker !== null)
-      .flat();
-
-    if (attackerCells.length === 0) return [];
-    function FindResponsibleSquares(
-      attackerLocation: TLocation | null,
-      kingLocation: TLocation
-    ) {
-      const returnData = {
-        direction: {
-          h: false,
-          v: false,
-          rd: false,
-          ld: false,
-        },
-        responsibleSquares: [] as TLocation[],
-      };
-      if (!attackerLocation) return returnData;
-      // same row
-      if (attackerLocation.x === kingLocation.x) {
-        const responsibleSquares = [];
-        const start = Math.min(attackerLocation.y, kingLocation.y);
-        const end = Math.max(attackerLocation.y, kingLocation.y);
-        for (let i = start + 1; i < end; i++) {
-          responsibleSquares.push({ x: attackerLocation.x, y: i });
-        }
-        return {
-          direction: {
-            ...returnData.direction,
-            h: true,
-          },
-          responsibleSquares: [
-            ...responsibleSquares,
-            kingLocation,
-            attackerLocation,
-          ],
-        };
-      }
-      // same column
-      else if (attackerLocation.y === kingLocation.y) {
-        const responsibleSquares = [];
-        const start = Math.min(attackerLocation.x, kingLocation.x);
-        const end = Math.max(attackerLocation.x, kingLocation.x);
-        for (let i = start + 1; i < end; i++) {
-          responsibleSquares.push({ x: i, y: attackerLocation.y });
-        }
-        return {
-          direction: {
-            ...returnData.direction,
-            v: true,
-          },
-          responsibleSquares: [
-            ...responsibleSquares,
-            kingLocation,
-            attackerLocation,
-          ],
-        };
-      }
-      // same diagonal
-      else if (
-        Math.abs(attackerLocation.x - kingLocation.x) ===
-        Math.abs(attackerLocation.y - kingLocation.y)
-      ) {
-        if (
-          attackerLocation.x + attackerLocation.y ===
-          kingLocation.x + kingLocation.y
-        ) {
-          function rightDiagonal(
-            sx: number,
-            sy: number,
-            ex: number,
-            ey: number
-          ) {
-            const m = [];
-            const _sx = Math.min(sx, ex);
-            const _sy = Math.max(sy, ey);
-            const _ex = Math.max(sx, ex);
-            const _ey = Math.min(sy, ey);
-
-            let col = _sy;
-            for (let i = _sx; i <= _ex; i++) {
-              for (let j = col; j >= _ey; j++) {
-                m.push({ x: i, y: j });
-                col--;
-                break;
-              }
-            }
-            return m;
-          }
-          const responsibleSquares = rightDiagonal(
-            attackerLocation.x,
-            attackerLocation.y,
-            kingLocation.x,
-            kingLocation.y
-          );
-          return {
-            direction: {
-              ...returnData.direction,
-              rd: true,
-            },
-            responsibleSquares,
-          };
-          // right diagonal
-        } else {
-          function leftDiagonal(
-            sx: number,
-            sy: number,
-            ex: number,
-            ey: number
-          ) {
-            const m = [];
-            const _sx = Math.min(sx, ex);
-            const _sy = Math.min(sy, ey);
-            const _ex = Math.max(sx, ex);
-            const _ey = Math.max(sy, ey);
-
-            let col = _sy;
-
-            for (let i = _sx; i <= _ex; i++) {
-              for (let j = col; j <= _ey; j++) {
-                m.push({ x: i, y: j });
-                col++;
-                break;
-              }
-            }
-            return m;
-          }
-          const responsibleSquares = leftDiagonal(
-            attackerLocation.x,
-            attackerLocation.y,
-            kingLocation.x,
-            kingLocation.y
-          );
-          return {
-            direction: {
-              ...returnData.direction,
-              ld: true,
-            },
-            responsibleSquares,
-          };
-          // left diagonal
-        }
-      } else
-        return {
-          direction: {
-            ...returnData.direction,
-          },
-          responsibleSquares: [attackerLocation],
-        };
-    }
-    const _responsibleSquares = attackerCells
+    const _responsibleSquares = attackers
       .map((attacker) => {
-        return FindResponsibleSquares(attacker, kingLocation);
+        return Cell.FindResponsibleSquares(attacker, kingLocation);
       })
       .filter((sq) => {
         if (boardKing[kingColor]) {
@@ -768,6 +589,13 @@ export default class Board {
     board[newRookLoc.x][newRookLoc.y].piece = board[rookLoc.x][rookLoc.y].piece;
     board[kingLoc.x][kingLoc.y].piece = null;
     board[rookLoc.x][rookLoc.y].piece = null;
+    this.sound = {
+      capture: false,
+      castle: true,
+      check: false,
+      checkmate: false,
+      move: false,
+    };
   }
   public MovePiece(
     board: Cell[][],
@@ -790,20 +618,35 @@ export default class Board {
         return;
       }
     } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
-      const pawn = board[srcLocation.x][srcLocation.y].piece;
+      const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
 
-      const offset = pawnColor === "white" ? -2 : 2;
-      if (destLocation.x === srcLocation.x + offset)
+      const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
+      if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
         (pawn as Pawn).enPassantEligible = true;
+
+      // see if move is enpassant move
+      const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
+      if (
+        pawn.enPassantCapture.left === true &&
+        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
+        destLocation.y === srcLocation.y - 1
+      ) {
+        board[srcLocation.x][srcLocation.y - 1].piece = null;
+      } else if (
+        pawn.enPassantCapture.right === true &&
+        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
+        destLocation.y === srcLocation.y + 1
+      ) {
+        board[srcLocation.x][srcLocation.y + 1].piece = null;
+      }
 
       const promotionRow = pawnColor === "white" ? 0 : 7;
       if (destLocation.x === promotionRow) {
         finalPieceAtDestination = new Queen(pawnColor);
       }
     }
-    // board[destLocation.x][destLocation.y].piece =
-    //   board[srcLocation.x][srcLocation.y].piece;
+
     board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
   }
@@ -817,7 +660,7 @@ export default class Board {
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
     this.ResetCheck();
-    this.ResetEnPassant(playerColor);
+    this.ResetEnPassant();
 
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];
@@ -848,9 +691,7 @@ export default class Board {
     const checkSquares = this.KingInCheck(
       this.m_board,
       opponentColor,
-      playerColor,
-      this.kings,
-      King.CalculateCoverage
+      this.kings
     );
 
     if (checkSquares.length > 0) {
@@ -868,30 +709,5 @@ export default class Board {
     }
 
     this.ResetCurrPiece();
-  }
-
-  public PieceDragEnd(dropResult: DropResult) {
-    if (dropResult.destination === undefined || dropResult.source === undefined)
-      return;
-    const destIdx = dropResult.destination.index;
-    const srcIdx = dropResult.source.index;
-    if (destIdx === srcIdx) return;
-    const destLocation = ConvertIdxToLocation(destIdx);
-    const srcLocation = ConvertIdxToLocation(srcIdx);
-
-    const destInValidMove = this.m_currPiece.validLocations.find(
-      (location) =>
-        location.x === destLocation.x && location.y === destLocation.y
-    );
-    if (destInValidMove === undefined) return;
-    else {
-      const pieceAtNewLoc = this.m_board[destLocation.x][destLocation.y].piece;
-      if (pieceAtNewLoc && pieceAtNewLoc instanceof King) {
-        return;
-      } else {
-        this.MoveAction(this.m_board, srcLocation, destLocation);
-      }
-    }
-    this.ResetBoardMarkers();
   }
 }

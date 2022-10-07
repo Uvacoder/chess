@@ -19,6 +19,7 @@ export const AVAILABLE_FENS = [
   "8/8/8/4q1K1/2k1Q3/8/8/8 b - - 0 1",
   "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1",
   "r3k2r/pppp3p/6bb/8/2B5/BP2P3/P1PP1PPP/R3K1NR w KQkq - 0 1",
+  "r3k2r/pppp3p/4N3/8/2B5/8/P1PP1PPP/R3K1NR w KQkq - 0 1",
 ];
 export const START_POSITION = AVAILABLE_FENS[0];
 
