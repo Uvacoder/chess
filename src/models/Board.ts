@@ -200,10 +200,24 @@ export default class Board {
     this.m_kings[COLORS.WHITE].checkInfo.responsibleSquares = [];
     this.ResetCheckMarkers();
   }
-  private ResetEnPassant() {
+  private ResetEnPassantEligible() {
     this.m_board.forEach((row) => {
       row.forEach((cell) => {
-        if (cell.piece instanceof Pawn) cell.piece.enPassantEligible = false;
+        if (cell.piece instanceof Pawn) {
+          cell.piece.enPassantEligible = false;
+        }
+      });
+    });
+  }
+  private ResetEnPassantCapture() {
+    this.m_board.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell.piece instanceof Pawn) {
+          cell.piece.enPassantCapture = {
+            left: false,
+            right: false,
+          };
+        }
       });
     });
   }
@@ -633,12 +647,21 @@ export default class Board {
         destLocation.y === srcLocation.y - 1
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
+        this.sound = {
+          capture: true,
+          castle: false,
+          check: false,
+          checkmate: false,
+          move: false,
+        };
+        this.ResetEnPassantCapture();
       } else if (
         pawn.enPassantCapture.right === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y + 1
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
+        this.ResetEnPassantCapture();
         this.sound = {
           capture: true,
           castle: false,
@@ -667,7 +690,7 @@ export default class Board {
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
     this.ResetCheck();
-    this.ResetEnPassant();
+    this.ResetEnPassantEligible();
 
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];
