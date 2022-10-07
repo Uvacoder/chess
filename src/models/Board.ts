@@ -1,4 +1,3 @@
-import { DropResult } from "react-beautiful-dnd";
 import { TLocation, TPiece } from "../@types";
 import { COLORS, ConvertIdxToLocation } from "../utils/Constants";
 import Cell from "./Cell";
@@ -638,8 +637,7 @@ export default class Board {
         finalPieceAtDestination = new Queen(pawnColor);
       }
     }
-    // board[destLocation.x][destLocation.y].piece =
-    //   board[srcLocation.x][srcLocation.y].piece;
+
     board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
   }
@@ -702,30 +700,5 @@ export default class Board {
     }
 
     this.ResetCurrPiece();
-  }
-
-  public PieceDragEnd(dropResult: DropResult) {
-    if (dropResult.destination === undefined || dropResult.source === undefined)
-      return;
-    const destIdx = dropResult.destination.index;
-    const srcIdx = dropResult.source.index;
-    if (destIdx === srcIdx) return;
-    const destLocation = ConvertIdxToLocation(destIdx);
-    const srcLocation = ConvertIdxToLocation(srcIdx);
-
-    const destInValidMove = this.m_currPiece.validLocations.find(
-      (location) =>
-        location.x === destLocation.x && location.y === destLocation.y
-    );
-    if (destInValidMove === undefined) return;
-    else {
-      const pieceAtNewLoc = this.m_board[destLocation.x][destLocation.y].piece;
-      if (pieceAtNewLoc && pieceAtNewLoc instanceof King) {
-        return;
-      } else {
-        this.MoveAction(this.m_board, srcLocation, destLocation);
-      }
-    }
-    this.ResetBoardMarkers();
   }
 }
