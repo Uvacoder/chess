@@ -639,6 +639,13 @@ export default class Board {
         destLocation.y === srcLocation.y + 1
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
+        this.sound = {
+          capture: true,
+          castle: false,
+          check: false,
+          checkmate: false,
+          move: false,
+        };
       }
 
       const promotionRow = pawnColor === "white" ? 0 : 7;
