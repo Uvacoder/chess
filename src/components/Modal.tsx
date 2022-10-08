@@ -24,11 +24,11 @@ export default function ModalComponent({
               </p>
               <div
                 className={`p-2 bg-${
-                  winner === COLORS.WHITE ? "black" : "white"
+                  winner === COLORS.WHITE ? "white" : "black"
                 } rounded`}
               >
                 <Chess
-                  color={`${winner === COLORS.WHITE ? "white" : "black"}`}
+                  color={`${winner === COLORS.WHITE ? "black" : "white"}`}
                 />
               </div>
             </div>
