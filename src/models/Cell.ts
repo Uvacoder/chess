@@ -1,6 +1,6 @@
 import { TLocation, TPiece } from "../@types";
 import { COLORS } from "../utils/Constants";
-import { King, Pawn } from "./Piece";
+import { Bishop, King, Pawn, Queen, Rook } from "./Piece";
 import Direction from "./Direction";
 export default class Cell {
   private m_validSq = false;
@@ -195,6 +195,7 @@ export default class Cell {
       responsibleSquares: [] as TLocation[],
     };
     if (!attackerLocation) return returnData;
+
     // same row
     if (Direction.SameRow(attackerLocation, defenderLocation)) {
       const responsibleSquares = [];
@@ -216,7 +217,7 @@ export default class Cell {
       };
     }
     // same column
-    else if (Direction.SameRow(attackerLocation, defenderLocation)) {
+    else if (Direction.SameCol(attackerLocation, defenderLocation)) {
       const responsibleSquares = [];
       const start = Math.min(attackerLocation.x, defenderLocation.x);
       const end = Math.max(attackerLocation.x, defenderLocation.x);
@@ -281,9 +282,6 @@ export default class Cell {
     location: TLocation,
     playerColor: COLORS
   ) {
-    console.log("***");
-
-    console.log(location);
     const returnData = {
       status: false,
       attackers: [] as TLocation[],
@@ -298,7 +296,6 @@ export default class Cell {
         if (attackingPiece.color !== attackerColor) return null;
         else {
           const validMoves = attackingPiece.CalculateValidMoves(loc, board);
-          console.log(attackingPiece, loc, validMoves);
           if (attackingPiece instanceof Pawn) {
             /**
              * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
@@ -320,7 +317,33 @@ export default class Cell {
             const findMove = validMoves.find((m) => {
               return m.x === location.x && m.y === location.y;
             });
-            if (!findMove) return null;
+            if (!findMove) {
+              /**
+               * if the move is not in validLocations,
+               * see if attacking piece is a sliding piece.
+               * If attacker is a sliding piece,
+               * see if attackingPiece and the coverageLoc are in same row, col or diagonal
+               * If no, return null
+               */
+              if (attackingPiece.slidingPiece === false) {
+                return null;
+              } else {
+                const sameRow = Direction.SameRow(loc, location);
+                const sameCol = Direction.SameCol(loc, location);
+                const sameDiagonal = Direction.SameDiagonal(loc, location);
+                if (
+                  attackingPiece instanceof Queen &&
+                  !sameRow &&
+                  !sameCol &&
+                  !sameDiagonal
+                )
+                  return null;
+                else if (attackingPiece instanceof Rook && !sameRow && !sameCol)
+                  return null;
+                else if (attackingPiece instanceof Bishop && !sameDiagonal)
+                  return null;
+              }
+            }
           }
           return location;
         }
@@ -331,7 +354,6 @@ export default class Cell {
       status: true,
       attackers,
     };
-    console.log(finalRetData);
     if (attackers.length <= 0) return returnData;
     return finalRetData;
   }
