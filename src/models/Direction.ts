@@ -41,7 +41,6 @@ export default class Direction {
     const _sy = Math.max(sy, ey);
     const _ex = Math.max(sx, ex);
     const _ey = Math.min(sy, ey);
-    console.log(_sx, _sy, _ex, _ey);
 
     let col = _sy;
     for (let i = _sx; i <= _ex; i++) {

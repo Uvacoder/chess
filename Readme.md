@@ -25,10 +25,10 @@
 |         Castle         |        ✔️         |
 |       En Passant       |        ✔️         |
 |     Turn Wise Play     |        ✔️         |
+|       Checkmate        |        ✔️         |
 |     Pawn Promotion     |        ⏳         |
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
-|       Checkmate        |        ✖️         |
 |      Resignation       |        ✖️         |
 |        Time Up         |        ✖️         |
 | Insufficient Material  |        ✖️         |
