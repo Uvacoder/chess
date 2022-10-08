@@ -6,6 +6,7 @@ import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 
 export default class Board {
   private m_board: Cell[][] = [];
+  private m_turn = COLORS.WHITE;
   private m_sound_type = {
     castle: false,
     check: false,
@@ -55,6 +56,14 @@ export default class Board {
   };
   constructor() {}
   // setters
+  public SwitchTurn() {
+    this.m_turn = this.m_turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+  }
+
+  get turn(): COLORS {
+    return this.m_turn;
+  }
+
   set board(board: Cell[][]) {
     this.m_board = board;
   }
@@ -345,9 +354,11 @@ export default class Board {
     this.m_currPiece.validLocations = validLocations;
   }
 
-  public PieceClick(cell: Cell) {
-    this.ResetBoardMarkers();
+  public PieceClick(cell: Cell, turn: COLORS) {
     this.ResetSound();
+    this.ResetBoardMarkers();
+    if (cell.piece && cell.piece.color !== turn) return;
+
     const cellInValidMoves = this.m_currPiece.validLocations.find(
       (location) =>
         location.x === cell.location.x && location.y === cell.location.y
@@ -359,6 +370,7 @@ export default class Board {
       )
         return;
       this.MoveAction(this.m_board, this.m_currPiece.location, cell.location);
+      this.SwitchTurn();
       this.ResetBoardMarkers();
     } else if (cell.piece === null) {
       this.ResetCurrPiece();

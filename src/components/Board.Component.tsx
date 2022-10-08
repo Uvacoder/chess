@@ -55,7 +55,7 @@ export default function BoardComponent({ board }: { board: Board }) {
                 ...cellStyle(),
               }}
               onMouseDown={() => {
-                board.PieceClick(cell);
+                board.PieceClick(cell, board.turn);
                 setState(!state);
                 if (board.sound.capture) sounds.capture.play();
                 else if (board.sound.check) sounds.check.play();
