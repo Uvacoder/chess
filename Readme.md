@@ -24,15 +24,15 @@
 | Restrict Move on Check |        ✔️         |
 |         Castle         |        ✔️         |
 |       En Passant       |        ✔️         |
+|     Turn Wise Play     |        ✔️         |
+|     Pawn Promotion     |        ⏳         |
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
-|     Pawn Promotion     |        ⏳         |
 |       Checkmate        |        ✖️         |
 |      Resignation       |        ✖️         |
 |        Time Up         |        ✖️         |
 | Insufficient Material  |        ✖️         |
 |       Stalemate        |        ✖️         |
-|     Turn Wise Play     |        ✖️         |
 
 ---
 
