@@ -4,6 +4,7 @@ import Cell from "./Cell";
 abstract class Piece {
   private m_sprite: string;
   private m_hasMoved = false;
+  protected m_slidingPiece = false;
   private m_pinned = {
     horizontal: false,
     vertical: false,
@@ -17,6 +18,10 @@ abstract class Piece {
   }
 
   // getters
+  get slidingPiece() {
+    return this.m_slidingPiece;
+  }
+
   get pinned(): {
     horizontal: boolean;
     vertical: boolean;
@@ -98,6 +103,7 @@ abstract class Piece {
 export class King extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.KING);
+    this.m_slidingPiece = false;
   }
   private m_castle = {
     ks: false,
@@ -330,6 +336,7 @@ export class King extends Piece {
 export class Queen extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.QUEEN);
+    this.m_slidingPiece = true;
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -371,6 +378,7 @@ export class Queen extends Piece {
 export class Rook extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.ROOK);
+    this.m_slidingPiece = true;
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -395,6 +403,7 @@ export class Rook extends Piece {
 export class Bishop extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.BISHOP);
+    this.m_slidingPiece = true;
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -421,6 +430,7 @@ export class Bishop extends Piece {
 export class Knight extends Piece {
   constructor(color: COLORS) {
     super(color, PIECES.KNIGHT);
+    this.m_slidingPiece = false;
   }
 
   public CalculateValidMoves(
@@ -440,6 +450,7 @@ export class Pawn extends Piece {
   };
   constructor(color: COLORS) {
     super(color, PIECES.PAWN);
+    this.m_slidingPiece = false;
   }
   get enPassantEligible() {
     return this.m_enPassantEligible;

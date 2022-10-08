@@ -5,16 +5,16 @@ export default class Direction {
     return loc1.x === loc2.x;
   }
   public static Left(loc1: TLocation, loc2: TLocation) {
-    return loc1.y > loc2.y;
-  }
-  public static Right(loc1: TLocation, loc2: TLocation) {
     return loc1.y < loc2.y;
   }
+  public static Right(loc1: TLocation, loc2: TLocation) {
+    return loc1.y > loc2.y;
+  }
   public static Top(loc1: TLocation, loc2: TLocation) {
-    return loc1.x > loc2.x;
+    return loc1.x < loc2.x;
   }
   public static Bottom(loc1: TLocation, loc2: TLocation) {
-    return loc1.x < loc2.x;
+    return loc1.x > loc2.x;
   }
   public static TopLeft(loc1: TLocation, loc2: TLocation) {
     return Direction.Top(loc1, loc2) && Direction.Left(loc1, loc2);
@@ -29,10 +29,10 @@ export default class Direction {
     return Direction.Bottom(loc1, loc2) && Direction.Right(loc1, loc2);
   }
   public static LeftDiagonal(loc1: TLocation, loc2: TLocation) {
-    return Direction.TopLeft(loc1, loc2) && Direction.BottomRight(loc1, loc2);
+    return Direction.TopLeft(loc1, loc2) || Direction.BottomRight(loc1, loc2);
   }
   public static RightDiagonal(loc1: TLocation, loc2: TLocation) {
-    return Direction.TopRight(loc1, loc2) && Direction.BottomLeft(loc1, loc2);
+    return Direction.TopRight(loc1, loc2) || Direction.BottomLeft(loc1, loc2);
   }
 
   public static RightDiagCoord(sx: number, sy: number, ex: number, ey: number) {
@@ -41,6 +41,7 @@ export default class Direction {
     const _sy = Math.max(sy, ey);
     const _ex = Math.max(sx, ex);
     const _ey = Math.min(sy, ey);
+    console.log(_sx, _sy, _ex, _ey);
 
     let col = _sy;
     for (let i = _sx; i <= _ex; i++) {

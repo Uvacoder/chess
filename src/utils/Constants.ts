@@ -70,12 +70,11 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "King Eats pawn but Has Queen to give Check",
-    fen: "rnbqkbnr/ppp1p1pp/8/8/8/3p4/PPP3PP/RNBQKBNR w KQkq - 0 1",
+    fen: "rnbqkbnr/ppp1p1pp/8/8/8/3p4/PPPK2PP/RNBQ1BNR w KQkq - 0 1",
   },
 ];
 
-export const START_POSITION =
-  AVAILABLE_FENS_LABLED[AVAILABLE_FENS_LABLED.length - 1].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
 
 export enum COLORS {
   WHITE = "white",
