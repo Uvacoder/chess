@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Board from "../models/Board";
 import Cell from "../models/Cell";
 import { COLORS } from "../utils/Constants";
 import Piece from "./Piece";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-export default function BoardComponent({ board }: { board: Board }) {
+export default function BoardComponent({
+  board,
+  setGameOver,
+}: {
+  board: Board;
+  setGameOver: Function;
+}) {
   const [parent] = useAutoAnimate<HTMLDivElement>(/* optional config */);
   const [state, setState] = useState(false);
   const [sounds, setSounds] = useState({
@@ -14,6 +20,11 @@ export default function BoardComponent({ board }: { board: Board }) {
     check: new Audio("/assets/sounds/check.mp3"),
     castle: new Audio("/assets/sounds/castle.mp3"),
   });
+  useEffect(() => {
+    if (board.game.gameOverStatus) {
+      setGameOver(true);
+    } else setGameOver(false);
+  }, [state]);
   return !board ? (
     <div>Loading...</div>
   ) : (
@@ -63,9 +74,9 @@ export default function BoardComponent({ board }: { board: Board }) {
                 else if (board.sound.move) sounds.move.play();
               }}
             >
-              {/* <div className="absolute">
+              <div className="absolute">
                 {x}, {y}
-              </div> */}
+              </div>
               <div className="w-[100%] h-[100%] overflow-hidden">
                 <Piece sprite={cell.piece?.sprite} />
               </div>

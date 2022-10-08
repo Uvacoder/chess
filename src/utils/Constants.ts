@@ -72,9 +72,14 @@ export const AVAILABLE_FENS_LABLED = [
     name: "King Eats pawn but Has Queen to give Check",
     fen: "rnbqkbnr/ppp1p1pp/8/8/8/3p4/PPPK2PP/RNBQ1BNR w KQkq - 0 1",
   },
+  {
+    name: "Ladder Checkmate - 1",
+    fen: "4k3/Q7/8/8/1Q6/8/8/4K3 b - - 0 1",
+  },
 ];
 
-export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
+export const START_POSITION =
+  AVAILABLE_FENS_LABLED[AVAILABLE_FENS_LABLED.length - 1].fen;
 
 export enum COLORS {
   WHITE = "white",
@@ -88,7 +93,9 @@ export enum PIECES {
   ROOK = "R",
   PAWN = "P",
 }
-
+export enum GAME_STATE {
+  GAME_OVER = "GAME_OVER",
+}
 export const ConvertIdxToLocation = (idx: number) => {
   const row = Math.floor(idx / 8);
   const col = idx % 8;

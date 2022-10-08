@@ -1,12 +1,14 @@
 import FenParser from "@chess-fu/fen-parser";
-import { COLORS, PIECES, START_POSITION } from "../utils/Constants";
+import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
 import Cell from "./Cell";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 export default class Game {
   constructor() {}
-  private m_board: Board = new Board();
+  private m_gameOver = false;
+  private m_winner: COLORS | "DRAW" | null = null;
+  private m_board: Board = new Board(this);
   public NewGame(fenString?: string) {
     try {
       const parser = new FenParser(fenString || START_POSITION);
@@ -71,7 +73,7 @@ export default class Game {
           return new Cell({ x: row, y: col }, cellColor, pieceObj);
         });
       });
-      const board = new Board();
+      const board = new Board(this);
       board.board = boardData;
 
       this.m_board = board;
@@ -80,10 +82,24 @@ export default class Game {
       throw e;
     }
   }
-  // getters
-
-  public GameOver() {}
-  get board(): Board {
+  set board(board: Board) {
+    this.m_board = board;
+  }
+  get board() {
     return this.m_board;
   }
+  set gameOverStatus(status: boolean) {
+    this.m_gameOver = status;
+  }
+  get gameOverStatus() {
+    return this.m_gameOver;
+  }
+  set winner(color: COLORS | "DRAW" | null) {
+    this.m_winner = color;
+  }
+  get winner() {
+    return this.m_winner;
+  }
+
+  // getters
 }
