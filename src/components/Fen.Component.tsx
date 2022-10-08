@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AVAILABLE_FENS_LABLED, START_POSITION } from "../utils/Constants";
-import { toast } from "react-toastify";
+import InfoButtons from "./InfoButtons";
 function FenComponent({
   updateFen,
   invalidFen,
@@ -11,7 +11,7 @@ function FenComponent({
   const [fenString, setFenString] = useState(START_POSITION);
 
   return (
-    <div className="grid w-[320px]">
+    <div className="grid relative w-[320px]">
       <div className="p-5 bg-neutral-900 rounded-lg">
         <div>
           <h2 className="font-bold mb-3 text-lg">
@@ -24,7 +24,6 @@ function FenComponent({
               What is Fen?
             </a>
           </h2>
-
           <div>
             <label htmlFor="fen-text">Enter Fen String</label>
             <textarea
@@ -79,6 +78,7 @@ function FenComponent({
             </button>
           </div>
         </div>
+        <InfoButtons />
       </div>
     </div>
   );

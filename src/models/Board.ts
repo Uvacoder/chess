@@ -357,7 +357,6 @@ export default class Board {
   public PieceClick(cell: Cell, turn: COLORS) {
     this.ResetSound();
     this.ResetBoardMarkers();
-    if (cell.piece && cell.piece.color !== turn) return;
 
     const cellInValidMoves = this.m_currPiece.validLocations.find(
       (location) =>
@@ -369,12 +368,14 @@ export default class Board {
         cell.location.y === this.m_currPiece.location.y
       )
         return;
+
       this.MoveAction(this.m_board, this.m_currPiece.location, cell.location);
       this.SwitchTurn();
       this.ResetBoardMarkers();
     } else if (cell.piece === null) {
       this.ResetCurrPiece();
     } else {
+      if (cell.piece.color !== turn) return;
       cell.activeSq = true;
       this.m_currPiece.piece = cell.piece;
       this.m_currPiece.location = cell.location;
