@@ -62,9 +62,9 @@ export default function BoardComponent({ board }: { board: Board }) {
                 else if (board.sound.move) sounds.move.play();
               }}
             >
-              <div className="absolute">
+              {/* <div className="absolute">
                 {x}, {y}
-              </div>
+              </div> */}
               <div className="w-[100%] h-[100%] overflow-hidden">
                 <Piece sprite={cell.piece?.sprite} />
               </div>
