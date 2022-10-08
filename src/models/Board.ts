@@ -1,23 +1,8 @@
-import { TLocation, TPiece } from "../@types";
-import { COLORS, ConvertIdxToLocation } from "../utils/Constants";
+import { TBoardKing, TLocation, TPiece } from "../@types";
+import { COLORS } from "../utils/Constants";
 import Cell from "./Cell";
+import Direction from "./Direction";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
-
-type TBoardKing = {
-  [key in COLORS]: {
-    location: TLocation;
-    checkInfo: {
-      status: boolean;
-      responsibleSquares: TLocation[];
-      direction: {
-        h: boolean;
-        v: boolean;
-        rd: boolean;
-        ld: boolean;
-      };
-    };
-  };
-};
 
 export default class Board {
   private m_board: Cell[][] = [];
@@ -400,7 +385,7 @@ export default class Board {
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
     // if king is in same row as the active piece
-    if (playerKing.location.x === this.m_currPiece.location.x) {
+    if (Direction.SameRow(playerKing.location, this.m_currPiece.location)) {
       this.m_currPiece.piece.pinned.horizontal = false;
       this.m_currPiece.piece.pinned.topLeft = true;
       this.m_currPiece.piece.pinned.bottomLeft = true;
@@ -422,7 +407,9 @@ export default class Board {
         this.m_currPiece.piece.pinned.topRight = false;
         this.m_currPiece.piece.pinned.bottomRight = false;
       }
-    } else if (playerKing.location.y === this.m_currPiece.location.y) {
+    } else if (
+      Direction.SameCol(playerKing.location, this.m_currPiece.location)
+    ) {
       this.m_currPiece.piece.pinned.vertical = false;
       this.m_currPiece.piece.pinned.topLeft = true;
       this.m_currPiece.piece.pinned.bottomLeft = true;
@@ -445,8 +432,7 @@ export default class Board {
         this.m_currPiece.piece.pinned.bottomRight = false;
       }
     } else if (
-      Math.abs(playerKing.location.x - this.m_currPiece.location.x) ===
-      Math.abs(playerKing.location.y - this.m_currPiece.location.y)
+      Direction.SameDiagonal(playerKing.location, this.m_currPiece.location)
     ) {
       this.m_currPiece.piece.pinned.topLeft = true;
       this.m_currPiece.piece.pinned.topRight = true;
@@ -465,29 +451,25 @@ export default class Board {
       }
       if (
         pieceLocationInChecks &&
-        playerKing.location.x > this.m_currPiece.location.x &&
-        playerKing.location.y > this.m_currPiece.location.y
+        Direction.TopLeft(playerKing.location, this.m_currPiece.location)
       ) {
         this.m_currPiece.piece.pinned.topLeft = false;
         this.m_currPiece.piece.pinned.bottomRight = false;
       } else if (
         pieceLocationInChecks &&
-        playerKing.location.x > this.m_currPiece.location.x &&
-        playerKing.location.y < this.m_currPiece.location.y
+        Direction.TopRight(playerKing.location, this.m_currPiece.location)
       ) {
         this.m_currPiece.piece.pinned.topRight = false;
         this.m_currPiece.piece.pinned.bottomLeft = false;
       } else if (
         pieceLocationInChecks &&
-        playerKing.location.x < this.m_currPiece.location.x &&
-        playerKing.location.y > this.m_currPiece.location.y
+        Direction.BottomLeft(playerKing.location, this.m_currPiece.location)
       ) {
         this.m_currPiece.piece.pinned.topRight = false;
         this.m_currPiece.piece.pinned.bottomLeft = false;
       } else if (
         pieceLocationInChecks &&
-        playerKing.location.x < this.m_currPiece.location.x &&
-        playerKing.location.y < this.m_currPiece.location.y
+        Direction.BottomRight(playerKing.location, this.m_currPiece.location)
       ) {
         this.m_currPiece.piece.pinned.topLeft = false;
         this.m_currPiece.piece.pinned.bottomRight = false;
@@ -736,6 +718,7 @@ export default class Board {
         checkmate: false,
       };
       this.MarkCheckSquares(opponentColor);
+      // check if it is checkmate
     }
 
     this.ResetCurrPiece();

@@ -82,9 +82,7 @@ export default class Game {
   }
   // getters
 
-  public GameOver() {
-    console.log("Game End");
-  }
+  public GameOver() {}
   get board(): Board {
     return this.m_board;
   }

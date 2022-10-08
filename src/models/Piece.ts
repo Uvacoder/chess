@@ -466,7 +466,6 @@ export class Pawn extends Piece {
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
-    console.log(leftPiece, rightPiece);
     if (
       leftPiece &&
       leftPiece instanceof Pawn === true &&
@@ -563,10 +562,9 @@ export class Pawn extends Piece {
       ...finalLocationLR,
     ].filter((m) => m !== null) as TLocation[];
     // check for enpassant
-    console.log("HERE");
+
     this.CanCaptureEnpassant(board, srcLocation);
 
-    console.log(this.m_enpassantCapture);
     if (this.m_enpassantCapture.left) {
       const yLocation = srcLocation.y - 1;
       const xLocation =
@@ -576,7 +574,7 @@ export class Pawn extends Piece {
         x: xLocation,
         y: yLocation,
       };
-      console.log(enpassantLoc);
+
       normalValidMoves.push(enpassantLoc);
     }
     if (this.m_enpassantCapture.right) {
@@ -590,7 +588,7 @@ export class Pawn extends Piece {
       };
       normalValidMoves.push(enpassantLoc);
     }
-    console.log(normalValidMoves);
+
     return normalValidMoves;
   }
 }

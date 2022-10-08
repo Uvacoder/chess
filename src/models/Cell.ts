@@ -1,7 +1,7 @@
 import { TLocation, TPiece } from "../@types";
 import { COLORS } from "../utils/Constants";
-import { King } from "./Piece";
-
+import { King, Pawn } from "./Piece";
+import Direction from "./Direction";
 export default class Cell {
   private m_validSq = false;
   private m_activeSq = false;
@@ -196,7 +196,7 @@ export default class Cell {
     };
     if (!attackerLocation) return returnData;
     // same row
-    if (attackerLocation.x === defenderLocation.x) {
+    if (Direction.SameRow(attackerLocation, defenderLocation)) {
       const responsibleSquares = [];
       const start = Math.min(attackerLocation.y, defenderLocation.y);
       const end = Math.max(attackerLocation.y, defenderLocation.y);
@@ -216,7 +216,7 @@ export default class Cell {
       };
     }
     // same column
-    else if (attackerLocation.y === defenderLocation.y) {
+    else if (Direction.SameRow(attackerLocation, defenderLocation)) {
       const responsibleSquares = [];
       const start = Math.min(attackerLocation.x, defenderLocation.x);
       const end = Math.max(attackerLocation.x, defenderLocation.x);
@@ -236,32 +236,9 @@ export default class Cell {
       };
     }
     // same diagonal
-    else if (
-      Math.abs(attackerLocation.x - defenderLocation.x) ===
-      Math.abs(attackerLocation.y - defenderLocation.y)
-    ) {
-      if (
-        attackerLocation.x + attackerLocation.y ===
-        defenderLocation.x + defenderLocation.y
-      ) {
-        function rightDiagonal(sx: number, sy: number, ex: number, ey: number) {
-          const m = [];
-          const _sx = Math.min(sx, ex);
-          const _sy = Math.max(sy, ey);
-          const _ex = Math.max(sx, ex);
-          const _ey = Math.min(sy, ey);
-
-          let col = _sy;
-          for (let i = _sx; i <= _ex; i++) {
-            for (let j = col; j >= _ey; j++) {
-              m.push({ x: i, y: j });
-              col--;
-              break;
-            }
-          }
-          return m;
-        }
-        const responsibleSquares = rightDiagonal(
+    else if (Direction.SameDiagonal(attackerLocation, defenderLocation)) {
+      if (Direction.RightDiagonal(attackerLocation, defenderLocation)) {
+        const responsibleSquares = Direction.RightDiagCoord(
           attackerLocation.x,
           attackerLocation.y,
           defenderLocation.x,
@@ -276,25 +253,7 @@ export default class Cell {
         };
         // right diagonal
       } else {
-        function leftDiagonal(sx: number, sy: number, ex: number, ey: number) {
-          const m = [];
-          const _sx = Math.min(sx, ex);
-          const _sy = Math.min(sy, ey);
-          const _ex = Math.max(sx, ex);
-          const _ey = Math.max(sy, ey);
-
-          let col = _sy;
-
-          for (let i = _sx; i <= _ex; i++) {
-            for (let j = col; j <= _ey; j++) {
-              m.push({ x: i, y: j });
-              col++;
-              break;
-            }
-          }
-          return m;
-        }
-        const responsibleSquares = leftDiagonal(
+        const responsibleSquares = Direction.LeftDiagCoord(
           attackerLocation.x,
           attackerLocation.y,
           defenderLocation.x,
@@ -322,6 +281,9 @@ export default class Cell {
     location: TLocation,
     playerColor: COLORS
   ) {
+    console.log("***");
+
+    console.log(location);
     const returnData = {
       status: false,
       attackers: [] as TLocation[],
@@ -331,24 +293,46 @@ export default class Cell {
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
     const attackers = coverage
       .filter((loc) => {
-        const piece = board[loc.x][loc.y].piece;
-        if (piece === null) return null;
-        if (piece.color !== attackerColor) return null;
+        const attackingPiece = board[loc.x][loc.y].piece;
+        if (attackingPiece === null) return null;
+        if (attackingPiece.color !== attackerColor) return null;
         else {
-          const validMoves = piece.CalculateValidMoves(loc, board);
-          const findMove = validMoves.find((m) => {
-            return m.x === location.x && m.y === location.y;
-          });
-          if (!findMove) return null;
+          const validMoves = attackingPiece.CalculateValidMoves(loc, board);
+          console.log(attackingPiece, loc, validMoves);
+          if (attackingPiece instanceof Pawn) {
+            /**
+             * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
+             * If pawn is white, check top left and right diagonals for king. If black, check bottom left and right diagonals for king.
+             */
+            const attackerLD: TLocation = {
+              x: attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
+              y: loc.y - 1,
+            };
+            const attackerRD: TLocation = {
+              x: attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
+              y: loc.y + 1,
+            };
+            const findMove = [attackerLD, attackerRD].find((m) => {
+              return m.x === location.x && m.y === location.y;
+            });
+            if (!findMove) return null;
+          } else {
+            const findMove = validMoves.find((m) => {
+              return m.x === location.x && m.y === location.y;
+            });
+            if (!findMove) return null;
+          }
           return location;
         }
       })
       .filter((attackers) => attackers !== null);
-    if (attackers.length <= 0) return returnData;
-    return {
+    const finalRetData = {
       ...returnData,
       status: true,
       attackers,
     };
+    console.log(finalRetData);
+    if (attackers.length <= 0) return returnData;
+    return finalRetData;
   }
 }
