@@ -7,6 +7,7 @@ import Game from "../models/Game";
 
 export default function GamePage() {
   const [board, setBoard] = useState<Board>();
+  const [fenError, setFenError] = useState<boolean>(false);
 
   useEffect(() => {
     const game = new Game();
@@ -17,11 +18,13 @@ export default function GamePage() {
 
   function ChangeFenString(fen: string) {
     try {
+      setFenError(false);
       const game = new Game();
       game.NewGame(fen);
       const b = game.board;
       setBoard(b);
     } catch (error) {
+      setFenError(true);
       console.error(error);
       toast.error("Invalid Fen String");
     }
@@ -31,7 +34,7 @@ export default function GamePage() {
     <div className="grid h-screen place-items-center">
       <div className="flex">
         {board && <BoardComponent board={board as Board} />}
-        <FenComponent updateFen={ChangeFenString} />
+        <FenComponent invalidFen={fenError} updateFen={ChangeFenString} />
       </div>
     </div>
   );

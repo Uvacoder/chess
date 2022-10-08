@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { AVAILABLE_FENS, START_POSITION } from "../utils/Constants";
+import { AVAILABLE_FENS_LABLED, START_POSITION } from "../utils/Constants";
 import { toast } from "react-toastify";
-function FenComponent({ updateFen }: { updateFen: Function }) {
+function FenComponent({
+  updateFen,
+  invalidFen,
+}: {
+  invalidFen: boolean;
+  updateFen: Function;
+}) {
   const [fenString, setFenString] = useState(START_POSITION);
 
   return (
@@ -23,7 +29,10 @@ function FenComponent({ updateFen }: { updateFen: Function }) {
             <label htmlFor="fen-text">Enter Fen String</label>
             <textarea
               rows={6}
-              className={`resize-none  appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-2`}
+              className={`border-2 resize-none appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+                invalidFen &&
+                "animate-[shake_0.5s_ease-in-out_1] bg-rose-100 border-[2px] border-rose-500"
+              }`}
               name="fen-text"
               id="fen-text"
               value={fenString}
@@ -31,9 +40,9 @@ function FenComponent({ updateFen }: { updateFen: Function }) {
               placeholder="Enter Valid FEN String"
             />
           </div>
-          <p>OR</p>
+          <p className="text-center my-3">-OR-</p>
           <div>
-            <label htmlFor="fen-select">Select From Available Games</label>
+            <label htmlFor="fen-select">Select From Available Positions</label>
             <select
               name="fen-select"
               id="fen-select"
@@ -41,10 +50,10 @@ function FenComponent({ updateFen }: { updateFen: Function }) {
               onChange={(e) => setFenString(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 outline-none cursor-pointer"
             >
-              {AVAILABLE_FENS.map((fen, idx) => {
+              {AVAILABLE_FENS_LABLED.map((fen, idx) => {
                 return (
-                  <option value={fen} key={`fen-${idx}`}>
-                    Fen {idx}
+                  <option value={fen.fen} key={`fen-${idx}`}>
+                    {fen.name}
                   </option>
                 );
               })}
