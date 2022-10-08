@@ -4,8 +4,9 @@ import Board from "../models/Board";
 import Cell from "../models/Cell";
 import { COLORS } from "../utils/Constants";
 import Piece from "./Piece";
-
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 export default function BoardComponent({ board }: { board: Board }) {
+  const [parent] = useAutoAnimate<HTMLDivElement>(/* optional config */);
   const [state, setState] = useState(false);
   const [sounds, setSounds] = useState({
     move: new Audio("/assets/sounds/move.mp3"),
@@ -16,7 +17,7 @@ export default function BoardComponent({ board }: { board: Board }) {
   return !board ? (
     <div>Loading...</div>
   ) : (
-    <div className="grid w-[600px] grid-rows-8 grid-cols-8">
+    <div ref={parent} className="grid w-[600px] grid-rows-8 grid-cols-8">
       {board.board.map((rank: Cell[], x) => {
         return rank.map((cell: Cell, y) => {
           const color = cell.color === COLORS.WHITE ? "#EBECD0" : "#769556";
