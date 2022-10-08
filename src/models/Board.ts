@@ -271,7 +271,6 @@ export default class Board {
                 );
             });
         });
-      console.log(validLocations);
       piece.CanCastle(this.m_board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(
@@ -317,7 +316,6 @@ export default class Board {
           if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
         }
       }
-      console.log(validLocations);
     } else {
       validLocations = piece.CalculateValidMoves(cell.location, this.m_board);
     }
@@ -345,6 +343,7 @@ export default class Board {
         } else validLocations = [];
       }
     }
+    if (piece instanceof King) console.log(validLocations);
     return validLocations;
   }
 
@@ -754,25 +753,19 @@ export default class Board {
     const cell = this.m_board[location.x][location.y];
     const king = this.m_board[location.x][location.y].piece as King;
     const validMoves = this.GetValidMoves(king, cell);
-    console.log(validMoves);
-    // console.log(this.m_currPiece.validLocations);
     if (validMoves.length > 0) return false;
     // else {
     // for each responsible square, see if it has attacker. If yes, return false
     const playerColor =
       opponentColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+    const kingIdx = responsibleSquares.findIndex(
+      (sq) => sq.x === location.x && sq.y === location.y
+    );
+    responsibleSquares.splice(kingIdx, 1);
 
-    const canBlock = responsibleSquares.flat().some((sq) => {
-      //   //   console.log(sq);
-      const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
-      if (CellIsAttacked.attackers.length <= 0) return false;
-      if (CellIsAttacked.attackers.length > 0) {
-        const attackersWithoutKing = CellIsAttacked.attackers.filter((loc) => {
-          return this.m_board[loc.x][loc.y].piece instanceof King === false;
-        });
-        return attackersWithoutKing.length > 0;
-      }
-    });
+    const canBlock = responsibleSquares
+      .flat()
+      .some((sq) => Cell.CellIsAttacked(board, sq, playerColor).status);
 
     return !canBlock;
   }

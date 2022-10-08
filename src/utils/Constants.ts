@@ -78,8 +78,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
 ];
 
-export const START_POSITION =
-  AVAILABLE_FENS_LABLED[AVAILABLE_FENS_LABLED.length - 1].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
 
 export enum COLORS {
   WHITE = "white",
