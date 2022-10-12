@@ -74,6 +74,10 @@ export default class Board {
     this.m_turn = this.m_turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
   }
 
+  get moveCount() {
+    return this.m_moveCount;
+  }
+
   get turn(): COLORS {
     return this.m_turn;
   }
@@ -731,6 +735,8 @@ export default class Board {
     if (pieceAtDestination !== null) this.m_moveCount = 0;
     board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
+
+    console.log(this.m_moveCount);
   }
   public MoveAction(
     board: Cell[][],
@@ -863,7 +869,6 @@ export default class Board {
     //if only kings remain
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
     const playerPieceLocations = this.m_piecesLocation[playerColor];
-    console.log(this.m_piecesLocation);
     if (
       opponentPieceLocations.length === 1 &&
       playerPieceLocations.length === 1

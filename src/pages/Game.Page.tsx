@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import BoardComponent from "../components/Board.Component";
-import FenComponent from "../components/Fen.Component";
+import SidebarComponent from "../components/Sidebar.Component";
 import Board from "../models/Board";
 import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
@@ -99,7 +99,7 @@ export default function GamePage() {
             )}
           </div>
         )}
-        <FenComponent invalidFen={fenError} updateFen={ChangeFenString} />
+        <SidebarComponent invalidFen={fenError} updateFen={ChangeFenString} />
       </div>
     </div>
   );

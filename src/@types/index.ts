@@ -29,7 +29,7 @@ export type TPieceMap = {
 export enum DRAW_REASONS {
   STALEMATE = "Stalemate",
   INSUFFICIENT_MATERIAL = "Insufficient Material",
-  FIFTY_MOVE_RULE = "Fifty Move Rule",
+  FIFTY_MOVE_RULE = "50 Move Rule",
   THREEFOLD_REPETITION = "Three Fold Repeteation",
   AGREEMENT = "Agreement",
 }
