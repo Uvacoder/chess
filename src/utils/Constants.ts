@@ -121,3 +121,7 @@ export function Flip(arr: Cell[][]) {
 export function Capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+export function CopyTextToClipBoard(text: string) {
+  navigator.clipboard.writeText(text);
+}

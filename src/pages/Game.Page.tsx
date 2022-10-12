@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import BoardComponent from "../components/Board.Component";
 import SidebarComponent from "../components/Sidebar.Component";
@@ -6,7 +6,13 @@ import Board from "../models/Board";
 import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
 import { TGameOverInfo } from "../@types";
+import GameContext, { useFen } from "../hooks/GameContext";
+import { START_POSITION } from "../utils/Constants";
 export default function GamePage() {
+  const { fen, setFen } = useFen();
+
+  console.log(fen);
+
   const [board, setBoard] = useState<Board>();
   const [fenError, setFenError] = useState<boolean>(false);
 
@@ -25,8 +31,9 @@ export default function GamePage() {
   });
 
   useEffect(() => {
+    setFen(START_POSITION);
     const game = new Game();
-    game.NewGame();
+    game.NewGame(fen);
     setGameOver({
       status: false,
       reason: {
@@ -61,6 +68,7 @@ export default function GamePage() {
   function ChangeFenString(fen: string) {
     try {
       setFenError(false);
+      setFen(fen);
       const game = new Game();
       game.NewGame(fen);
       const b = game.board;

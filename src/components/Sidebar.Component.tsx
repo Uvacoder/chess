@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { AVAILABLE_FENS_LABLED, START_POSITION } from "../utils/Constants";
+import { toast } from "react-toastify";
+import { Copy } from "tabler-icons-react";
+import { useFen } from "../hooks/GameContext";
+import {
+  AVAILABLE_FENS_LABLED,
+  CopyTextToClipBoard,
+  START_POSITION,
+} from "../utils/Constants";
 import InfoButtons from "./InfoButtons";
 export default function SideBar({
   updateFen,
@@ -8,11 +15,31 @@ export default function SideBar({
   invalidFen: boolean;
   updateFen: Function;
 }) {
+  const { fen } = useFen();
   return (
-    <div className="grid relative w-[320px]">
+    <div className="grid relative w-[400px]">
       <div className="p-5 bg-neutral-900 rounded-lg">
         <div className="mb-5">
           <h2 className="text-lg font-bold">Game Info</h2>
+          <hr />
+          <div className="mt-2 flex items-center gap-3">
+            <p className="text-sm font-bold">Board FEN</p>
+            <p className="text-sm w-fit px-2 py-1 bg-red-900 rounded-full">
+              {fen?.slice(0, 25) + "..."}
+            </p>
+            <div>
+              <button
+                className="p-1 bg-neutral-600 rounded-full hover:opacity-80"
+                title="Copy Fen"
+                onClick={() => {
+                  CopyTextToClipBoard(fen);
+                  toast.success("FEN Copied to Clipboard");
+                }}
+              >
+                <Copy size={20} />
+              </button>
+            </div>
+          </div>
         </div>
         <hr />
         <FenComponent updateFen={updateFen} invalidFen={invalidFen} />

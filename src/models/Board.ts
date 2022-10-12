@@ -817,10 +817,7 @@ export default class Board {
 
     const currBoardFen = Fen.GenerateFen(
       board,
-      false,
-      false,
-      false,
-      false,
+      this.m_kings,
       opponentColor,
       this.m_totalMoves,
       this.m_halfTurnMoves
