@@ -8,7 +8,7 @@ export default function ModalComponent({
 }: {
   openStatus: boolean;
   setOpen: any;
-  winner: COLORS | "DRAW" | null;
+  winner: COLORS | "DRAW" | "STALEMATE" | null;
 }) {
   const primaryColor = winner === COLORS.WHITE ? "white" : "black";
   const secondaryColor = winner === COLORS.WHITE ? "black" : "white";
