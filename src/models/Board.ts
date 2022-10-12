@@ -1,4 +1,4 @@
-import { TBoardKing, TLocation, TPiece } from "../@types";
+import { TBoardKing, TLocation, TPiece, TPieceMap } from "../@types";
 import { COLORS, GAME_STATE } from "../utils/Constants";
 import Cell from "./Cell";
 import Direction from "./Direction";
@@ -7,6 +7,10 @@ import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 
 export default class Board {
   private m_board: Cell[][] = [];
+  private m_piecesLocation: TPieceMap = {
+    [COLORS.WHITE]: [],
+    [COLORS.BLACK]: [],
+  };
 
   private m_turn = COLORS.WHITE;
   private m_sound_type = {
@@ -90,6 +94,11 @@ export default class Board {
   } {
     return this.m_sound_type;
   }
+
+  set pieceLocation(val: TPieceMap) {
+    this.m_piecesLocation = val;
+  }
+
   set sound(src: {
     castle: boolean;
     check: boolean;
@@ -229,7 +238,7 @@ export default class Board {
       move: false,
     };
   }
-  private GetValidMoves(piece: TPiece, cell: Cell) {
+  private GetValidMoves(board: Cell[][], piece: TPiece, cell: Cell) {
     // calculating Valid Locations for the piece that is clicked or that is active
 
     // Reset the Pinned status oif current iece
@@ -252,18 +261,13 @@ export default class Board {
      */
     if (piece instanceof King) {
       validLocations = piece
-        .CalculateValidMoves(
-          cell.location,
-          this.m_board,
-          currKing.checkInfo.direction
-        )
+        .CalculateValidMoves(cell.location, board, currKing.checkInfo.direction)
         .filter((location) => {
           return !currKing.checkInfo.responsibleSquares
             .flat()
             .find((responsibleLocation) => {
               const pieceAtLocation =
-                this.m_board[responsibleLocation.x][responsibleLocation.y]
-                  .piece;
+                board[responsibleLocation.x][responsibleLocation.y].piece;
               if (pieceAtLocation === null)
                 return (
                   responsibleLocation.x === location.x &&
@@ -271,13 +275,9 @@ export default class Board {
                 );
             });
         });
-      piece.CanCastle(this.m_board, cell.location);
+      piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
-        const isAttacked = Cell.CellIsAttacked(
-          this.m_board,
-          location,
-          piece.color
-        );
+        const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
         return !isAttacked.status;
       });
       if (currKing.checkInfo.status === false && piece.castle.ks) {
@@ -291,7 +291,7 @@ export default class Board {
             y: cell.location.y + 2,
           };
           const castleCellIsAttacked = Cell.CellIsAttacked(
-            this.m_board,
+            board,
             castleLocation,
             piece.color
           );
@@ -309,7 +309,7 @@ export default class Board {
             y: cell.location.y - 2,
           };
           const castleCellIsAttacked = Cell.CellIsAttacked(
-            this.m_board,
+            board,
             castleLocation,
             piece.color
           );
@@ -317,7 +317,7 @@ export default class Board {
         }
       }
     } else {
-      validLocations = piece.CalculateValidMoves(cell.location, this.m_board);
+      validLocations = piece.CalculateValidMoves(cell.location, board);
     }
 
     /**
@@ -343,7 +343,6 @@ export default class Board {
         } else validLocations = [];
       }
     }
-    if (piece instanceof King) console.log(validLocations);
     return validLocations;
   }
 
@@ -363,7 +362,7 @@ export default class Board {
         return;
 
       this.MoveAction(this.m_board, this.m_currPiece.location, cell.location);
-      this.SwitchTurn();
+
       this.ResetBoardMarkers();
     } else if (cell.piece === null) {
       this.ResetCurrPiece();
@@ -373,6 +372,7 @@ export default class Board {
       this.m_currPiece.piece = cell.piece;
       this.m_currPiece.location = cell.location;
       this.m_currPiece.validLocations = this.GetValidMoves(
+        this.m_board,
         this.m_currPiece.piece,
         cell
       );
@@ -680,6 +680,13 @@ export default class Board {
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
+    const getCurrPieceLocationIdx = this.m_piecesLocation[
+      playerColor
+    ].findIndex((l) => l.x === srcLocation.x && l.y === srcLocation.y);
+    if (getCurrPieceLocationIdx !== -1)
+      this.m_piecesLocation[playerColor][getCurrPieceLocationIdx] =
+        destLocation;
+    else this.m_piecesLocation[playerColor].push(destLocation);
     this.ResetCheck();
     this.ResetEnPassantEligible();
 
@@ -742,6 +749,14 @@ export default class Board {
         return;
       }
     }
+    // else if (this.IsStalemate(board, opponentColor)) {
+    //   // this.m_game.gameOverStatus = true;
+    //   // this.m_game.winner = "STALEMATE";
+    // } else if (this.IsDraw()) {
+    // } else {
+    // }
+    // check for draw
+    this.SwitchTurn();
 
     this.ResetCurrPiece();
   }
@@ -750,9 +765,9 @@ export default class Board {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
     const responsibleSquares = opponentKing.checkInfo.responsibleSquares;
-    const cell = this.m_board[location.x][location.y];
-    const king = this.m_board[location.x][location.y].piece as King;
-    const validMoves = this.GetValidMoves(king, cell);
+    const cell = board[location.x][location.y];
+    const king = board[location.x][location.y].piece as King;
+    const validMoves = this.GetValidMoves(board, king, cell);
     if (validMoves.length > 0) return false;
     // else {
     // for each responsible square, see if it has attacker. If yes, return false
@@ -769,6 +784,19 @@ export default class Board {
 
     return !canBlock;
   }
-  public IsStaleMate() {}
-  public IsDraw() {}
+  public IsStalemate(board: Cell[][], opponentColor: COLORS) {
+    const opponentPieceLocations = this.m_piecesLocation[opponentColor];
+    console.log(opponentPieceLocations);
+    const isStalemate = opponentPieceLocations.some((loc) => {
+      const piece = board[loc.x][loc.y].piece;
+      if (piece === null) return false;
+      const validMoves = this.GetValidMoves(board, piece, board[loc.x][loc.y]);
+      return validMoves.length <= 0;
+    });
+    console.log(isStalemate);
+    return isStalemate;
+  }
+  public IsDraw() {
+    return false;
+  }
 }

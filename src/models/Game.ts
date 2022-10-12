@@ -1,4 +1,5 @@
 import FenParser from "@chess-fu/fen-parser";
+import { TPieceMap } from "../@types";
 import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
@@ -7,7 +8,7 @@ import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 export default class Game {
   constructor() {}
   private m_gameOver = false;
-  private m_winner: COLORS | "DRAW" | null = null;
+  private m_winner: COLORS | "DRAW" | "STALEMATE" | null = null;
   private m_board: Board = new Board(this);
   public NewGame(fenString?: string) {
     try {
@@ -41,12 +42,17 @@ export default class Game {
           },
         },
       };
+      const pieces: TPieceMap = {
+        [COLORS.BLACK]: [],
+        [COLORS.WHITE]: [],
+      };
       const boardData = parser.ranks.map((rank, row) => {
         return rank.split("").map((piece, col) => {
           let pieceObj = null;
           if (piece !== "" && piece !== "-") {
             const color =
               piece === piece.toUpperCase() ? COLORS.WHITE : COLORS.BLACK;
+            pieces[color].push({ x: row, y: col });
             switch (piece.toUpperCase()) {
               case PIECES.KING:
                 pieceObj = new King(color);
@@ -77,6 +83,7 @@ export default class Game {
       board.board = boardData;
 
       this.m_board = board;
+      this.m_board.pieceLocation = pieces;
       this.m_board.kings = kings;
     } catch (e) {
       throw e;
@@ -94,7 +101,7 @@ export default class Game {
   get gameOverStatus() {
     return this.m_gameOver;
   }
-  set winner(color: COLORS | "DRAW" | null) {
+  set winner(color: COLORS | "DRAW" | "STALEMATE" | null) {
     this.m_winner = color;
   }
   get winner() {
