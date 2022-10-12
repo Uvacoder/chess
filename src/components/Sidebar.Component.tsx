@@ -30,6 +30,7 @@ function FenComponent({
   updateFen: Function;
 }) {
   const [fenString, setFenString] = useState(START_POSITION);
+
   return (
     <div className="mt-5">
       <h2 className="font-bold mb-3 text-lg">
@@ -47,13 +48,18 @@ function FenComponent({
         <textarea
           rows={6}
           className={`border-2 resize-none appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-            invalidFen &&
-            "animate-[shake_0.5s_ease-in-out_1] bg-rose-100 border-[2px] border-rose-500"
+            invalidFen && "animate-[shake_0.5s_ease-in-out_1]"
+          } ${
+            invalidFen
+              ? " bg-rose-100 border-[2px] border-rose-500"
+              : "bg-neutral-800 border-neutral-700 text-white"
           }`}
           name="fen-text"
           id="fen-text"
           value={fenString}
-          onChange={(e) => setFenString(e.target.value)}
+          onChange={(e) => {
+            setFenString(e.target.value);
+          }}
           placeholder="Enter Valid FEN String"
         />
       </div>
@@ -64,8 +70,10 @@ function FenComponent({
           name="fen-select"
           id="fen-select"
           value={fenString}
-          onChange={(e) => setFenString(e.target.value)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 outline-none cursor-pointer"
+          onChange={(e) => {
+            setFenString(e.target.value);
+          }}
+          className="bg-neutral-800 border-neutral-700 text-white text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 outline-none cursor-pointer"
         >
           {AVAILABLE_FENS_LABLED.map((fen, idx) => {
             return (

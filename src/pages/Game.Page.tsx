@@ -40,7 +40,7 @@ export default function GamePage() {
         },
       },
     });
-
+    setFenError(false);
     const b = game.board;
     setBoard(b);
     setGameOver({
@@ -60,6 +60,7 @@ export default function GamePage() {
 
   function ChangeFenString(fen: string) {
     try {
+      setFenError(false);
       const game = new Game();
       game.NewGame(fen);
       const b = game.board;
@@ -77,6 +78,7 @@ export default function GamePage() {
           },
         },
       });
+      toast.success("Position Updated on the Board");
     } catch (error) {
       setFenError(true);
       console.error(error);
