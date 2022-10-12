@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 
 import Board from "../models/Board";
 import Cell from "../models/Cell";
-import { COLORS, Flip } from "../utils/Constants";
+import { COLORS, Flip, START_POSITION } from "../utils/Constants";
 import Piece from "./Piece";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useFen } from "../hooks/GameContext";
 export default function BoardComponent({
   board,
   setGameOver,
@@ -12,8 +13,10 @@ export default function BoardComponent({
   board: Board;
   setGameOver: Function;
 }) {
+  const { setFen } = useFen();
   const [state, setState] = useState(false);
   useEffect(() => {
+    setFen(board.fen || START_POSITION);
     setGameOver(board.game.gameOverInfo);
   }, [state]);
 
@@ -78,9 +81,9 @@ export default function BoardComponent({
                 else if (board.sound.draw) sounds.draw.play();
               }}
             >
-              <div className="absolute">
+              {/* <div className="absolute">
                 {x}, {y}
-              </div>
+              </div> */}
               <div className="w-[100%] h-[100%] overflow-hidden">
                 <Piece sprite={cell.piece?.sprite} />
               </div>
