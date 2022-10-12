@@ -8,11 +8,14 @@ import {
 import { COLORS, GAME_STATE } from "../utils/Constants";
 import Cell from "./Cell";
 import Direction from "./Direction";
+import Fen from "./Fen";
 import Game from "./Game";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 
 export default class Board {
-  private m_moveCount = 0;
+  private m_currFen = "";
+  private m_halfTurnMoves = 0;
+  private m_totalMoves = 0;
   private m_board: Cell[][] = [];
   private m_piecesLocation: TPieceMap = {
     [COLORS.WHITE]: [],
@@ -75,7 +78,7 @@ export default class Board {
   }
 
   get moveCount() {
-    return this.m_moveCount;
+    return this.m_halfTurnMoves;
   }
 
   get turn(): COLORS {
@@ -89,6 +92,9 @@ export default class Board {
     this.m_turn = val;
   }
   // getters
+  get fen() {
+    return this.m_currFen;
+  }
   get board(): Cell[][] {
     return this.m_board;
   }
@@ -680,7 +686,8 @@ export default class Board {
     srcLocation: TLocation,
     destLocation: TLocation
   ) {
-    this.m_moveCount++;
+    this.m_halfTurnMoves++;
+    this.m_totalMoves++;
 
     if (board[destLocation.x][destLocation.y].piece instanceof King) return;
 
@@ -697,7 +704,7 @@ export default class Board {
         return;
       }
     } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
-      this.m_moveCount = 0;
+      this.m_halfTurnMoves = 0;
       const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
 
@@ -732,11 +739,9 @@ export default class Board {
     }
 
     const pieceAtDestination = board[destLocation.x][destLocation.y].piece;
-    if (pieceAtDestination !== null) this.m_moveCount = 0;
+    if (pieceAtDestination !== null) this.m_halfTurnMoves = 0;
     board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
-
-    console.log(this.m_moveCount);
   }
   public MoveAction(
     board: Cell[][],
@@ -809,6 +814,20 @@ export default class Board {
         },
       };
     }
+
+    const currBoardFen = Fen.GenerateFen(
+      board,
+      false,
+      false,
+      false,
+      false,
+      opponentColor,
+      this.m_totalMoves,
+      this.m_halfTurnMoves
+    );
+
+    this.m_currFen = currBoardFen;
+    console.log(currBoardFen);
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {
       this.AssignSound("draw");
@@ -820,8 +839,7 @@ export default class Board {
         },
       };
     }
-    // }
-    // check for draw
+
     this.SwitchTurn();
     this.ResetCurrPiece();
   }
@@ -860,8 +878,9 @@ export default class Board {
     return !isNotStalemate;
   }
   public IsDraw(board: Cell[][], opponentColor: COLORS) {
-    if (this.m_moveCount >= 50)
-      return { status: true, reason: DRAW_REASONS.FIFTY_MOVE_RULE };
+    if (this.m_halfTurnMoves >= 50)
+      if (this.m_halfTurnMoves >= 50)
+        return { status: true, reason: DRAW_REASONS.FIFTY_MOVE_RULE };
 
     const playerColor =
       opponentColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;

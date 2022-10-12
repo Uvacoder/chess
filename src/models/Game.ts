@@ -8,6 +8,7 @@ import Fen from "./Fen";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 export default class Game {
   constructor() {}
+  private m_boardPositions: Array<string> = [];
   private m_gameOver = false;
   private m_gameOverInfo: TGameOverInfo = {
     status: false,
@@ -107,10 +108,26 @@ export default class Game {
   set board(board: Board) {
     this.m_board = board;
   }
+
+  get boardPositions() {
+    return this.m_boardPositions;
+  }
+
   get board() {
     return this.m_board;
   }
 
+  public PositionCount(position: string) {
+    let count = 0;
+    this.m_boardPositions.forEach((pos) => {
+      if (pos === position) count++;
+    });
+    return count;
+  }
+
+  public AddToBoardPositions(position: string) {
+    this.m_boardPositions.push(position);
+  }
   set gameOverInfo(val: TGameOverInfo) {
     this.m_gameOverInfo = val;
   }
