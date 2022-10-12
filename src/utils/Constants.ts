@@ -2,6 +2,8 @@
 // "8/3K4/2P4P/p3r3/2p3p1/1PkNnPB1/6p1/n2R4 w - - 0 1";
 // "8/8/8/4q1K1/2k1R3/8/8/8 b - - 0 1";
 
+import Cell from "../models/Cell";
+
 export const AVAILABLE_FENS_LABLED = [
   {
     name: "Start Position",
@@ -76,9 +78,15 @@ export const AVAILABLE_FENS_LABLED = [
     name: "Ladder Checkmate - 1",
     fen: "4k3/Q7/8/8/1Q6/8/8/4K3 b - - 0 1",
   },
+  {
+    name: "Stalemate",
+    fen: "4k3/4P3/3K4/8/8/8/8/8 w - - 0 1",
+  },
 ];
 
-export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
+const st = 0;
+const end = AVAILABLE_FENS_LABLED.length - 1;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end - 1].fen;
 
 export enum COLORS {
   WHITE = "white",
@@ -100,3 +108,9 @@ export const ConvertIdxToLocation = (idx: number) => {
   const col = idx % 8;
   return { x: row, y: col };
 };
+
+export function Flip(arr: Cell[][]) {
+  return arr.reverse().map(function (item) {
+    return item.reverse();
+  });
+}

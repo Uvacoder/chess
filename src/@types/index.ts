@@ -22,4 +22,8 @@ export type TBoardKing = {
   };
 };
 
+export type TPieceMap = {
+  [key in COLORS]: Array<TLocation>;
+};
+
 export type TPiece = King | Queen | Rook | Bishop | Knight | Pawn;

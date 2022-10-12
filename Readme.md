@@ -30,7 +30,7 @@
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
 |      Resignation       |        ✖️         |
-|        Time Up         |        ✖️         |
+|       Time Up ✖️       |
 | Insufficient Material  |        ✖️         |
 |       Stalemate        |        ✖️         |
 
