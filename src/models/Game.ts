@@ -4,6 +4,7 @@ import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
 import Cell from "./Cell";
+import Fen from "./Fen";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 export default class Game {
   constructor() {}
@@ -25,7 +26,7 @@ export default class Game {
   private m_board: Board = new Board(this);
   public NewGame(fenString?: string) {
     try {
-      const parser = new FenParser(fenString || START_POSITION);
+      const parser = new Fen(fenString || START_POSITION);
       if (!parser.isValid) throw new Error("Invalid FEN String");
       const kings = {
         [COLORS.WHITE]: {
