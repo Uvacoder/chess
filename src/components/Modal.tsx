@@ -1,40 +1,55 @@
 import { Chess } from "tabler-icons-react";
-import { COLORS } from "../utils/Constants";
+import { TGameOverInfo } from "../@types";
+import { Capitalize, COLORS } from "../utils/Constants";
 
 export default function ModalComponent({
   openStatus,
   setOpen,
-  winner = "DRAW",
+  gameOverInfo,
 }: {
   openStatus: boolean;
   setOpen: any;
-  winner: COLORS | "DRAW" | "STALEMATE" | null;
+  gameOverInfo: TGameOverInfo;
 }) {
-  const primaryColor = winner === COLORS.WHITE ? "white" : "black";
-  const secondaryColor = winner === COLORS.WHITE ? "black" : "white";
   return (
     <div className="absolute z-[999999999999] top-0 w-full h-full backdrop-blur-sm bg-white/90 grid place-items-center">
       <div className="flex flex-col gap-5">
         <h2 className=" text-center text-lg overflow-hidden font-black text-black">
           Game Over!
         </h2>
-        <h2 className=" text-center text-[2rem] font-black text-black">
-          {winner && winner !== "DRAW" && (
-            <div className="flex items-center text-center gap-5">
-              <p className="text-center overflow-hidden">
-                {winner[0].toUpperCase() + winner.slice(1, winner.length)} Won!
+        <h2 className="text-center text-[2rem] font-black text-black">
+          {gameOverInfo.reason.won.status === true && (
+            <div className="flex items-center gap-3">
+              <p className="overflow-hidden">
+                {Capitalize(gameOverInfo.reason.won.reason as string)} Won!
               </p>
-              <div className={`p-2 bg-${primaryColor} rounded`}>
-                <>
-                  {console.log(winner)}
-                  <Chess color={secondaryColor} />
-                </>
+              <div
+                className={`p-2 rounded shadow-sm border-[3px] ${
+                  gameOverInfo.reason.won.reason === "white"
+                    ? "bg-white"
+                    : "bg-black"
+                }`}
+              >
+                <Chess
+                  color={
+                    gameOverInfo.reason.won.reason === "white"
+                      ? COLORS.BLACK
+                      : COLORS.WHITE
+                  }
+                />
               </div>
             </div>
           )}
-          {winner === "DRAW" && (
-            <div className="overflow-hidden flex items-center text-center ">
-              Draw!
+          {gameOverInfo.reason.draw.status === true && (
+            <div className="flex items-center gap-3">
+              <p className="overflow-hidden">Game Drawn!</p>
+              <p className="overflow-hidden">
+                {gameOverInfo.reason.draw.reason &&
+                  gameOverInfo.reason.draw.reason[0] +
+                    gameOverInfo.reason.draw.reason
+                      .slice(1, gameOverInfo.reason.draw.reason.length)
+                      .toLowerCase()}
+              </p>
             </div>
           )}
         </h2>

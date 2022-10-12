@@ -1,11 +1,21 @@
-import { TBoardKing, TLocation, TPiece, TPieceMap } from "../@types";
+import {
+  DRAW_REASONS,
+  TBoardKing,
+  TLocation,
+  TPiece,
+  TPieceMap,
+} from "../@types";
 import { COLORS, GAME_STATE } from "../utils/Constants";
 import Cell from "./Cell";
 import Direction from "./Direction";
+import Fen from "./Fen";
 import Game from "./Game";
 import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 
 export default class Board {
+  private m_currFen = "";
+  private m_halfTurnMoves = 0;
+  private m_totalMoves = 0;
   private m_board: Cell[][] = [];
   private m_piecesLocation: TPieceMap = {
     [COLORS.WHITE]: [],
@@ -19,6 +29,7 @@ export default class Board {
     checkmate: false,
     capture: false,
     move: true,
+    draw: false,
   };
   private m_kings: TBoardKing = {
     [COLORS.WHITE]: {
@@ -66,6 +77,10 @@ export default class Board {
     this.m_turn = this.m_turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
   }
 
+  get moveCount() {
+    return this.m_halfTurnMoves;
+  }
+
   get turn(): COLORS {
     return this.m_turn;
   }
@@ -73,7 +88,13 @@ export default class Board {
   set board(board: Cell[][]) {
     this.m_board = board;
   }
+  set turn(val: COLORS) {
+    this.m_turn = val;
+  }
   // getters
+  get fen() {
+    return this.m_currFen;
+  }
   get board(): Cell[][] {
     return this.m_board;
   }
@@ -91,6 +112,7 @@ export default class Board {
     checkmate: boolean;
     capture: boolean;
     move: boolean;
+    draw: boolean;
   } {
     return this.m_sound_type;
   }
@@ -105,6 +127,7 @@ export default class Board {
     checkmate: boolean;
     capture: boolean;
     move: boolean;
+    draw: boolean;
   }) {
     this.m_sound_type = src;
   }
@@ -236,6 +259,7 @@ export default class Board {
       checkmate: false,
       capture: false,
       move: false,
+      draw: false,
     };
   }
   private GetValidMoves(board: Cell[][], piece: TPiece, cell: Cell) {
@@ -533,6 +557,59 @@ export default class Board {
     return [...responsibleSquares, ..._responsibleSquares];
   }
 
+  private AssignSound(type: string) {
+    const soundType = {
+      castle: false,
+      check: false,
+      checkmate: false,
+      capture: false,
+      move: false,
+      draw: false,
+    };
+    switch (type) {
+      case "castle":
+        soundType.castle = true;
+        break;
+      case "check":
+        soundType.check = true;
+        break;
+      case "checkmate":
+        soundType.checkmate = true;
+        break;
+      case "draw":
+        soundType.draw = true;
+        break;
+      case "capture":
+        soundType.capture = true;
+        break;
+      default:
+        soundType.move = true;
+        break;
+    }
+
+    this.m_sound_type = soundType;
+  }
+  private RecordPiecesLocation(
+    srcLocation: TLocation,
+    destLocation: TLocation,
+    isCapture: boolean,
+    playerColor: COLORS,
+    opponentColor: COLORS
+  ) {
+    const curPieceLocIdx = this.m_piecesLocation[playerColor].findIndex(
+      (l) => l.x === srcLocation.x && l.y === srcLocation.y
+    );
+
+    if (curPieceLocIdx !== -1) {
+      if (isCapture) {
+        const oppPieceIdx = this.m_piecesLocation[opponentColor].findIndex(
+          (l) => l.x === destLocation.x && l.y === destLocation.y
+        );
+        this.m_piecesLocation[opponentColor].splice(oppPieceIdx, 1);
+      }
+      this.m_piecesLocation[playerColor][curPieceLocIdx] = destLocation;
+    }
+  }
   public PromotePawn(
     cell: Cell,
     pieceName: "queen" | "rook" | "bishop" | "knight"
@@ -600,6 +677,7 @@ export default class Board {
       check: false,
       checkmate: false,
       move: false,
+      draw: false,
     };
   }
   public MovePiece(
@@ -608,6 +686,9 @@ export default class Board {
     srcLocation: TLocation,
     destLocation: TLocation
   ) {
+    this.m_halfTurnMoves++;
+    this.m_totalMoves++;
+
     if (board[destLocation.x][destLocation.y].piece instanceof King) return;
 
     let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
@@ -623,6 +704,7 @@ export default class Board {
         return;
       }
     } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
+      this.m_halfTurnMoves = 0;
       const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
 
@@ -638,13 +720,7 @@ export default class Board {
         destLocation.y === srcLocation.y - 1
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
-        this.sound = {
-          capture: true,
-          castle: false,
-          check: false,
-          checkmate: false,
-          move: false,
-        };
+        this.AssignSound("capture");
         this.ResetEnPassantCapture();
       } else if (
         pawn.enPassantCapture.right === true &&
@@ -653,13 +729,7 @@ export default class Board {
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
         this.ResetEnPassantCapture();
-        this.sound = {
-          capture: true,
-          castle: false,
-          check: false,
-          checkmate: false,
-          move: false,
-        };
+        this.AssignSound("capture");
       }
 
       const promotionRow = pawnColor === "white" ? 0 : 7;
@@ -668,6 +738,8 @@ export default class Board {
       }
     }
 
+    const pieceAtDestination = board[destLocation.x][destLocation.y].piece;
+    if (pieceAtDestination !== null) this.m_halfTurnMoves = 0;
     board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
     board[srcLocation.x][srcLocation.y].piece = null;
   }
@@ -680,36 +752,23 @@ export default class Board {
     const opponentColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
 
-    const getCurrPieceLocationIdx = this.m_piecesLocation[
-      playerColor
-    ].findIndex((l) => l.x === srcLocation.x && l.y === srcLocation.y);
-    if (getCurrPieceLocationIdx !== -1)
-      this.m_piecesLocation[playerColor][getCurrPieceLocationIdx] =
-        destLocation;
-    else this.m_piecesLocation[playerColor].push(destLocation);
+    const oppPieceAtDestination = board[destLocation.x][destLocation.y].piece;
+
+    this.RecordPiecesLocation(
+      srcLocation,
+      destLocation,
+      oppPieceAtDestination !== null,
+      playerColor,
+      opponentColor
+    );
     this.ResetCheck();
     this.ResetEnPassantEligible();
 
     this.m_kings[playerColor].checkInfo.status = false;
     this.m_kings[playerColor].checkInfo.responsibleSquares = [];
 
-    const pieceAtDestination = board[destLocation.x][destLocation.y].piece;
-    if (pieceAtDestination)
-      this.sound = {
-        move: false,
-        capture: true,
-        check: false,
-        castle: false,
-        checkmate: false,
-      };
-    else
-      this.sound = {
-        move: true,
-        capture: false,
-        check: false,
-        castle: false,
-        checkmate: false,
-      };
+    if (oppPieceAtDestination) this.AssignSound("capture");
+    else this.AssignSound("move");
 
     this.MovePiece(board, this.m_kings, srcLocation, destLocation);
 
@@ -726,38 +785,59 @@ export default class Board {
       this.m_kings[opponentColor]!.checkInfo.status = true;
       this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
         checkSquares as TLocation[];
-      this.sound = {
-        move: false,
-        capture: false,
-        check: true,
-        castle: false,
-        checkmate: false,
-      };
+      this.AssignSound("check");
+
       this.MarkCheckSquares(opponentColor);
       // check if it is checkmate
       const checkMate = this.IsCheckmate(board, opponentColor);
       if (checkMate) {
-        this.sound = {
-          move: false,
-          capture: false,
-          check: false,
-          castle: false,
-          checkmate: true,
+        this.AssignSound("checkmate");
+
+        this.m_game.gameOverInfo = {
+          status: true,
+          reason: {
+            draw: { status: false, reason: null },
+            won: { status: true, reason: playerColor },
+          },
         };
         this.m_game.gameOverStatus = true;
         this.m_game.winner = playerColor;
         return;
       }
+    } else if (this.IsStalemate(board, opponentColor)) {
+      this.AssignSound("draw");
+      this.m_game.gameOverInfo = {
+        status: true,
+        reason: {
+          draw: { status: true, reason: DRAW_REASONS.STALEMATE },
+          won: { status: false, reason: null },
+        },
+      };
     }
-    // else if (this.IsStalemate(board, opponentColor)) {
-    //   // this.m_game.gameOverStatus = true;
-    //   // this.m_game.winner = "STALEMATE";
-    // } else if (this.IsDraw()) {
-    // } else {
-    // }
-    // check for draw
-    this.SwitchTurn();
 
+    const currBoardFen = Fen.GenerateFen(
+      board,
+      this.m_kings,
+      opponentColor,
+      this.m_totalMoves,
+      this.m_halfTurnMoves
+    );
+
+    this.m_currFen = currBoardFen;
+    console.log(currBoardFen);
+    const draw = this.IsDraw(board, opponentColor);
+    if (draw.status) {
+      this.AssignSound("draw");
+      this.m_game.gameOverInfo = {
+        status: true,
+        reason: {
+          draw: { status: true, reason: draw.reason },
+          won: { status: false, reason: null },
+        },
+      };
+    }
+
+    this.SwitchTurn();
     this.ResetCurrPiece();
   }
 
@@ -786,17 +866,57 @@ export default class Board {
   }
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
-    console.log(opponentPieceLocations);
-    const isStalemate = opponentPieceLocations.some((loc) => {
+    const isNotStalemate = opponentPieceLocations.some((loc) => {
       const piece = board[loc.x][loc.y].piece;
       if (piece === null) return false;
       const validMoves = this.GetValidMoves(board, piece, board[loc.x][loc.y]);
-      return validMoves.length <= 0;
+      return validMoves.length > 0;
     });
-    console.log(isStalemate);
-    return isStalemate;
+    return !isNotStalemate;
   }
-  public IsDraw() {
-    return false;
+  public IsDraw(board: Cell[][], opponentColor: COLORS) {
+    if (this.m_halfTurnMoves >= 50)
+      if (this.m_halfTurnMoves >= 50)
+        return { status: true, reason: DRAW_REASONS.FIFTY_MOVE_RULE };
+
+    const playerColor =
+      opponentColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    //if only kings remain
+    const opponentPieceLocations = this.m_piecesLocation[opponentColor];
+    const playerPieceLocations = this.m_piecesLocation[playerColor];
+    if (
+      opponentPieceLocations.length === 1 &&
+      playerPieceLocations.length === 1
+    ) {
+      const opLoc = opponentPieceLocations[0];
+      const plLoc = playerPieceLocations[0];
+      const opPiece = board[opLoc.x][opLoc.y].piece;
+      const plPiece = board[plLoc.x][plLoc.y].piece;
+      if (opPiece && plPiece) {
+        if (opPiece instanceof King && plPiece instanceof King) {
+          return {
+            status: true,
+            reason: DRAW_REASONS.INSUFFICIENT_MATERIAL,
+          };
+        }
+      }
+    }
+
+    // if opponent has a king and knight
+    if (opponentPieceLocations.length === 2) {
+      const loc1 = opponentPieceLocations[0];
+      const loc2 = opponentPieceLocations[1];
+      const p1 = board[loc1.x][loc1.y].piece;
+      const p2 = board[loc2.x][loc2.y].piece;
+      if (
+        (p1 instanceof King &&
+          (p2 instanceof Knight || p2 instanceof Bishop)) ||
+        (p2 instanceof King && (p1 instanceof Knight || p1 instanceof Bishop))
+      )
+        return { status: true, reason: DRAW_REASONS.INSUFFICIENT_MATERIAL };
+    }
+
+    return { status: false, reason: null };
   }
 }

@@ -1,31 +1,92 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import BoardComponent from "../components/Board.Component";
-import FenComponent from "../components/Fen.Component";
+import SidebarComponent from "../components/Sidebar.Component";
 import Board from "../models/Board";
 import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
+import { TGameOverInfo } from "../@types";
+import GameContext, { useFen } from "../hooks/GameContext";
+import { START_POSITION } from "../utils/Constants";
 export default function GamePage() {
+  const { fen, setFen } = useFen();
+
+  console.log(fen);
+
   const [board, setBoard] = useState<Board>();
   const [fenError, setFenError] = useState<boolean>(false);
-  const [gameOver, setGameOver] = useState<boolean>(false);
-  const [winner, setWinner] = useState<string | null>(null);
+
+  const [gameOver, setGameOver] = useState<TGameOverInfo>({
+    status: false,
+    reason: {
+      won: {
+        status: false,
+        reason: null,
+      },
+      draw: {
+        status: false,
+        reason: null,
+      },
+    },
+  });
+
   useEffect(() => {
-    setGameOver(false);
+    setFen(START_POSITION);
     const game = new Game();
-    game.NewGame();
+    game.NewGame(fen);
+    setGameOver({
+      status: false,
+      reason: {
+        won: {
+          status: false,
+          reason: null,
+        },
+        draw: {
+          status: false,
+          reason: null,
+        },
+      },
+    });
+    setFenError(false);
     const b = game.board;
     setBoard(b);
+    setGameOver({
+      status: false,
+      reason: {
+        won: {
+          status: false,
+          reason: null,
+        },
+        draw: {
+          status: false,
+          reason: null,
+        },
+      },
+    });
   }, []);
 
   function ChangeFenString(fen: string) {
     try {
-      setGameOver(false);
       setFenError(false);
+      setFen(fen);
       const game = new Game();
       game.NewGame(fen);
       const b = game.board;
       setBoard(b);
+      setGameOver({
+        status: false,
+        reason: {
+          won: {
+            status: false,
+            reason: null,
+          },
+          draw: {
+            status: false,
+            reason: null,
+          },
+        },
+      });
+      toast.success("Position Updated on the Board");
     } catch (error) {
       setFenError(true);
       console.error(error);
@@ -39,16 +100,16 @@ export default function GamePage() {
         {board && (
           <div className="relative">
             <BoardComponent setGameOver={setGameOver} board={board as Board} />
-            {gameOver && (
+            {gameOver.status && (
               <ModalComponent
-                winner={board.game.winner}
+                gameOverInfo={gameOver}
                 setOpen={() => {}}
                 openStatus={true}
               />
             )}
           </div>
         )}
-        <FenComponent invalidFen={fenError} updateFen={ChangeFenString} />
+        <SidebarComponent invalidFen={fenError} updateFen={ChangeFenString} />
       </div>
     </div>
   );

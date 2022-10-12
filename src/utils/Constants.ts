@@ -57,7 +57,10 @@ export const AVAILABLE_FENS_LABLED = [
     name: "Random",
     fen: "4B3/8/p2p1q2/1P2PP1p/1pk1bP2/P5p1/1K6/r7 w - - 0 1",
   },
-  { name: "King Queen Endgame", fen: "8/8/8/4q1K1/2k1Q3/8/8/8 b - - 0 1" },
+  {
+    name: "King Queen Endgame",
+    fen: "8/8/8/4qQK1/2k5/8/8/8 b - - 0 1",
+  },
   {
     name: "Valid Castle",
     fen: "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1",
@@ -86,7 +89,7 @@ export const AVAILABLE_FENS_LABLED = [
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[end - 1].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[st + 13].fen;
 
 export enum COLORS {
   WHITE = "white",
@@ -113,4 +116,12 @@ export function Flip(arr: Cell[][]) {
   return arr.reverse().map(function (item) {
     return item.reverse();
   });
+}
+
+export function Capitalize(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export function CopyTextToClipBoard(text: string) {
+  navigator.clipboard.writeText(text);
 }
