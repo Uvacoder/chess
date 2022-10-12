@@ -26,4 +26,25 @@ export type TPieceMap = {
   [key in COLORS]: Array<TLocation>;
 };
 
+export enum DRAW_REASONS {
+  STALEMATE = "Stalemate",
+  INSUFFICIENT_MATERIAL = "Insufficient Material",
+  FIFTY_MOVE_RULE = "Fifty Move Rule",
+  THREEFOLD_REPETITION = "Three Fold Repeteation",
+  AGREEMENT = "Agreement",
+}
+export type TGameOverInfo = {
+  status: boolean;
+  reason: {
+    won: {
+      status: boolean;
+      reason: COLORS | null;
+    };
+    draw: {
+      status: boolean;
+      reason: DRAW_REASONS | null;
+    };
+  };
+};
+
 export type TPiece = King | Queen | Rook | Bishop | Knight | Pawn;

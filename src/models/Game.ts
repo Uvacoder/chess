@@ -1,5 +1,5 @@
 import FenParser from "@chess-fu/fen-parser";
-import { TPieceMap } from "../@types";
+import { TGameOverInfo, TPieceMap } from "../@types";
 import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
@@ -8,6 +8,19 @@ import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 export default class Game {
   constructor() {}
   private m_gameOver = false;
+  private m_gameOverInfo: TGameOverInfo = {
+    status: false,
+    reason: {
+      won: {
+        status: false,
+        reason: null,
+      },
+      draw: {
+        status: false,
+        reason: null,
+      },
+    },
+  };
   private m_winner: COLORS | "DRAW" | "STALEMATE" | null = null;
   private m_board: Board = new Board(this);
   public NewGame(fenString?: string) {
@@ -84,6 +97,7 @@ export default class Game {
 
       this.m_board = board;
       this.m_board.pieceLocation = pieces;
+      this.m_board.turn = parser.turn === "w" ? COLORS.WHITE : COLORS.BLACK;
       this.m_board.kings = kings;
     } catch (e) {
       throw e;
@@ -95,6 +109,11 @@ export default class Game {
   get board() {
     return this.m_board;
   }
+
+  set gameOverInfo(val: TGameOverInfo) {
+    this.m_gameOverInfo = val;
+  }
+
   set gameOverStatus(status: boolean) {
     this.m_gameOver = status;
   }
@@ -103,6 +122,9 @@ export default class Game {
   }
   set winner(color: COLORS | "DRAW" | "STALEMATE" | null) {
     this.m_winner = color;
+  }
+  get gameOverInfo() {
+    return this.m_gameOverInfo;
   }
   get winner() {
     return this.m_winner;

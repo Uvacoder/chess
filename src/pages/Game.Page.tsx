@@ -5,27 +5,78 @@ import FenComponent from "../components/Fen.Component";
 import Board from "../models/Board";
 import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
+import { TGameOverInfo } from "../@types";
 export default function GamePage() {
   const [board, setBoard] = useState<Board>();
   const [fenError, setFenError] = useState<boolean>(false);
-  const [gameOver, setGameOver] = useState<boolean>(false);
-  const [winner, setWinner] = useState<string | null>(null);
+
+  const [gameOver, setGameOver] = useState<TGameOverInfo>({
+    status: false,
+    reason: {
+      won: {
+        status: false,
+        reason: null,
+      },
+      draw: {
+        status: false,
+        reason: null,
+      },
+    },
+  });
+
   useEffect(() => {
-    setGameOver(false);
     const game = new Game();
     game.NewGame();
+    setGameOver({
+      status: false,
+      reason: {
+        won: {
+          status: false,
+          reason: null,
+        },
+        draw: {
+          status: false,
+          reason: null,
+        },
+      },
+    });
+
     const b = game.board;
     setBoard(b);
+    setGameOver({
+      status: false,
+      reason: {
+        won: {
+          status: false,
+          reason: null,
+        },
+        draw: {
+          status: false,
+          reason: null,
+        },
+      },
+    });
   }, []);
 
   function ChangeFenString(fen: string) {
     try {
-      setGameOver(false);
-      setFenError(false);
       const game = new Game();
       game.NewGame(fen);
       const b = game.board;
       setBoard(b);
+      setGameOver({
+        status: false,
+        reason: {
+          won: {
+            status: false,
+            reason: null,
+          },
+          draw: {
+            status: false,
+            reason: null,
+          },
+        },
+      });
     } catch (error) {
       setFenError(true);
       console.error(error);
@@ -39,9 +90,9 @@ export default function GamePage() {
         {board && (
           <div className="relative">
             <BoardComponent setGameOver={setGameOver} board={board as Board} />
-            {gameOver && (
+            {gameOver.status && (
               <ModalComponent
-                winner={board.game.winner}
+                gameOverInfo={gameOver}
                 setOpen={() => {}}
                 openStatus={true}
               />

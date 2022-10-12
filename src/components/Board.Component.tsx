@@ -14,9 +14,7 @@ export default function BoardComponent({
 }) {
   const [state, setState] = useState(false);
   useEffect(() => {
-    if (board.game.gameOverStatus) {
-      setGameOver(true);
-    } else setGameOver(false);
+    setGameOver(board.game.gameOverInfo);
   }, [state]);
 
   const [parent] = useAutoAnimate<HTMLDivElement>(/* optional config */);
@@ -26,6 +24,7 @@ export default function BoardComponent({
     check: new Audio("/assets/sounds/check.mp3"),
     castle: new Audio("/assets/sounds/castle.mp3"),
     checkmate: new Audio("/assets/sounds/checkmate.mp3"),
+    draw: new Audio("/assets/sounds/draw.mp3"),
   });
 
   return !board ? (
@@ -76,6 +75,7 @@ export default function BoardComponent({
                 else if (board.sound.castle) sounds.castle.play();
                 else if (board.sound.move) sounds.move.play();
                 else if (board.sound.checkmate) sounds.checkmate.play();
+                else if (board.sound.draw) sounds.draw.play();
               }}
             >
               <div className="absolute">
