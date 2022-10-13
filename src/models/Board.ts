@@ -288,9 +288,11 @@ export default class Board {
                 );
             });
         });
+      console.log(validLocations);
       piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
+        console.log(location, isAttacked);
         return !isAttacked.status;
       });
       if (currKing.checkInfo.status === false && piece.castle.ks) {
