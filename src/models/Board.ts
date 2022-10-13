@@ -401,6 +401,10 @@ export default class Board {
     const currLocation = this.m_currPiece.location;
     tempBoard[currLocation.x][currLocation.y].piece = null;
 
+    let kingChecks = [];
+
+    kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
+
     if (this.m_currPiece.piece instanceof Pawn) {
       const currLoc = this.m_currPiece.location;
       const enPassant = this.m_currPiece.piece.CanCaptureEnpassant(
@@ -416,7 +420,6 @@ export default class Board {
         tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
       }
     }
-    let kingChecks = [];
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
     // if king is in same row as the active piece
@@ -557,7 +560,10 @@ export default class Board {
       })
       .map((sq) => sq.responsibleSquares);
 
-    return [...responsibleSquares, ..._responsibleSquares];
+    const returnData = [...responsibleSquares, ..._responsibleSquares];
+
+    return returnData;
+    // return [...responsibleSquares, ..._responsibleSquares];
   }
 
   private AssignSound(type: string) {
@@ -867,7 +873,6 @@ export default class Board {
       (sq, idx) => idx !== kingIdx
     );
     const canBlock = responsibleSquares.some((sq) => {
-      console.log(sq);
       const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
       const kingIdx = CellIsAttacked.attackers.findIndex((sq) => {
         return sq.x === location.x && sq.y === location.y;
@@ -875,13 +880,13 @@ export default class Board {
       const attackersWithoutKing = CellIsAttacked.attackers.filter(
         (sq, idx) => idx !== kingIdx
       );
-      console.log(attackersWithoutKing);
+
       return attackersWithoutKing.length > 0;
     });
-    console.log(canBlock);
+
     return !canBlock;
     // responsibleSquares.splice(kingIdx, 1);
-    // console.log(kingIdx, location);
+    //
     // const canBlock = responsibleSquares.some((sq) => {
     //   const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
     //   //remove location from attackers

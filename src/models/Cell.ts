@@ -296,6 +296,7 @@ export default class Cell {
         if (attackingPiece.color !== attackerColor) return null;
         else {
           const validMoves = attackingPiece.CalculateValidMoves(loc, board);
+
           if (attackingPiece instanceof Pawn) {
             /**
              * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
@@ -337,7 +338,7 @@ export default class Cell {
                     return m && m.x === location.x && m?.y === location.y;
                   });
                   if (!findL) return null;
-                }
+                } else return null;
               } else {
                 const sameRow = Direction.SameRow(loc, location);
                 const sameCol = Direction.SameCol(loc, location);
