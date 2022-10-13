@@ -859,8 +859,8 @@ export default class Board {
     responsibleSquares = responsibleSquares.filter(
       (sq, idx) => idx !== kingIdx
     );
-    console.log(kingIdx, responsibleSquares);
     const canBlock = responsibleSquares.some((sq) => {
+      console.log(sq);
       const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
       const kingIdx = CellIsAttacked.attackers.findIndex((sq) => {
         return sq.x === location.x && sq.y === location.y;
@@ -868,6 +868,7 @@ export default class Board {
       const attackersWithoutKing = CellIsAttacked.attackers.filter(
         (sq, idx) => idx !== kingIdx
       );
+      console.log(attackersWithoutKing);
       return attackersWithoutKing.length > 0;
     });
     console.log(canBlock);

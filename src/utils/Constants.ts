@@ -79,7 +79,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Ladder Checkmate - 1",
-    fen: "4k3/Q7/8/8/1Q6/8/8/4K3 b - - 0 1",
+    fen: "4k3/Q7/8/8/1Q6/8/8/4K3 w - - 0 1",
   },
   {
     name: "Stalemate",
@@ -91,13 +91,13 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Not Checkmate ",
-    fen: "rnb1kbnr/pppp3p/8/1B6/6Q1/8/PPP1PPPP/RN2KB1R w - - 0 3",
+    fen: "rnbqkbnr/ppppp2p/5p2/6p1/3PP3/8/PPP2PPP/RNBQKBNR w - - 0 4",
   },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[st + 15].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
 
 export enum COLORS {
   WHITE = "white",

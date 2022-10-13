@@ -1,6 +1,6 @@
 import { TLocation, TPiece } from "../@types";
 import { COLORS } from "../utils/Constants";
-import { Bishop, King, Pawn, Queen, Rook } from "./Piece";
+import { Bishop, King, Knight, Pawn, Queen, Rook } from "./Piece";
 import Direction from "./Direction";
 export default class Cell {
   private m_validSq = false;
@@ -310,7 +310,11 @@ export default class Cell {
               y: loc.y + 1,
             };
             const findMove = [attackerLD, attackerRD].find((m) => {
-              return m.x === location.x && m.y === location.y;
+              const locInMove = m.x === location.x && m.y === location.y;
+              const locationPiece = board[m.x][m.y]?.piece;
+              let pieceIsofPlayerColor =
+                locationPiece && locationPiece.color === playerColor;
+              return locInMove && pieceIsofPlayerColor;
             });
             if (!findMove) return null;
           } else {
@@ -327,11 +331,13 @@ export default class Cell {
                */
               if (attackingPiece.slidingPiece === false) {
                 // if piece is knight, see L directions of the location. If a knight is not found in any L direction, return null
-                const LDirections = Cell.GetLCoverage(loc);
-                const findL = LDirections.find((m) => {
-                  return m && m.x === location.x && m?.y === location.y;
-                });
-                if (!findL) return null;
+                if (attackingPiece instanceof Knight) {
+                  const LDirections = Cell.GetLCoverage(loc);
+                  const findL = LDirections.find((m) => {
+                    return m && m.x === location.x && m?.y === location.y;
+                  });
+                  if (!findL) return null;
+                }
               } else {
                 const sameRow = Direction.SameRow(loc, location);
                 const sameCol = Direction.SameCol(loc, location);
@@ -360,6 +366,7 @@ export default class Cell {
       attackers,
     };
     if (attackers.length <= 0) return returnData;
+    console.log(finalRetData);
     return finalRetData;
   }
 }
