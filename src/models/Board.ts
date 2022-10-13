@@ -239,6 +239,14 @@ export default class Board {
         }
       });
     });
+
+    this.m_board.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell.piece instanceof Pawn) {
+          console.log(cell.location, cell.piece.enPassantEligible);
+        }
+      });
+    });
   }
   private ResetEnPassantCapture() {
     this.m_board.forEach((row) => {
@@ -520,6 +528,7 @@ export default class Board {
       this.m_currPiece.piece.pinned.bottomRight = false;
       this.m_currPiece.piece.pinned.horizontal = false;
     }
+    //if piece is pawn, check for enpassant as well
   }
 
   public KingInCheck(

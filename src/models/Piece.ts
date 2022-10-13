@@ -465,6 +465,10 @@ export class Pawn extends Piece {
     this.m_enPassantEligible = val;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
+    this.m_enpassantCapture = {
+      left: false,
+      right: false,
+    };
     const left = board[currLocation.x][currLocation.y - 1];
     const right = board[currLocation.x][currLocation.y + 1];
     let leftPiece = null,
@@ -493,10 +497,12 @@ export class Pawn extends Piece {
       rightPiece.color === opponentColor &&
       rightPiece
     ) {
+      console.log(rightPiece, (rightPiece as Pawn).enPassantEligible);
       if ((rightPiece as Pawn).enPassantEligible) {
         this.m_enpassantCapture.right = true;
       }
     }
+    console.log(this.m_enpassantCapture.right);
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -551,32 +557,32 @@ export class Pawn extends Piece {
       else return loc !== null;
     });
 
+    const ldPin =
+      this.color === COLORS.WHITE
+        ? this.pinned.topLeft
+        : this.pinned.bottomLeft;
+    const rdPin =
+      this.color === COLORS.WHITE
+        ? this.pinned.topRight
+        : this.pinned.bottomRight;
     const finalLocationLD = [fl].filter((loc) => {
-      const pinnedDir =
-        this.color === COLORS.WHITE
-          ? this.pinned.topLeft
-          : this.pinned.bottomLeft;
-      if (pinnedDir) return false;
+      if (ldPin) return false;
       else return loc !== null;
     });
-    const finalLocationLR = [fr].filter((loc) => {
-      const pinnedDir =
-        this.color === COLORS.WHITE
-          ? this.pinned.topRight
-          : this.pinned.bottomRight;
-      if (pinnedDir) return false;
+    const finalLocationRD = [fr].filter((loc) => {
+      if (rdPin) return false;
       else return loc !== null;
     });
     const normalValidMoves = [
       ...finalLocationFront,
       ...finalLocationLD,
-      ...finalLocationLR,
+      ...finalLocationRD,
     ].filter((m) => m !== null) as TLocation[];
     // check for enpassant
 
     this.CanCaptureEnpassant(board, srcLocation);
 
-    if (this.m_enpassantCapture.left) {
+    if (this.m_enpassantCapture.left && !ldPin) {
       const yLocation = srcLocation.y - 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
@@ -585,10 +591,11 @@ export class Pawn extends Piece {
         x: xLocation,
         y: yLocation,
       };
+      // iif not pinned in left diagonal
 
       normalValidMoves.push(enpassantLoc);
     }
-    if (this.m_enpassantCapture.right) {
+    if (this.m_enpassantCapture.right && !rdPin) {
       const yLocation = srcLocation.y + 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;

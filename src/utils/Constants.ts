@@ -85,11 +85,15 @@ export const AVAILABLE_FENS_LABLED = [
     name: "Stalemate",
     fen: "4k3/4P3/3K4/8/8/8/8/8 w - - 0 1",
   },
+  {
+    name: "En Passant Pinned",
+    fen: "8/2p5/3p4/KP5r/1R4pk/8/4P1P1/8 b - - 0 1",
+  },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[st + 13].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
 
 export enum COLORS {
   WHITE = "white",
