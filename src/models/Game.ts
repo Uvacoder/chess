@@ -1,5 +1,5 @@
 import FenParser from "@chess-fu/fen-parser";
-import { TGameOverInfo, TPieceMap } from "../@types";
+import { TBoardKing, TGameOverInfo, TPieceMap } from "../@types";
 import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
@@ -29,7 +29,7 @@ export default class Game {
     try {
       const parser = new Fen(fenString || START_POSITION);
       if (!parser.isValid) throw new Error("Invalid FEN String");
-      const kings = {
+      const kings: TBoardKing = {
         [COLORS.WHITE]: {
           location: { x: -1, y: -1 },
           checkInfo: {
@@ -101,6 +101,13 @@ export default class Game {
       this.m_board.pieceLocation = pieces;
       this.m_board.turn = parser.turn === "w" ? COLORS.WHITE : COLORS.BLACK;
       this.m_board.kings = kings;
+
+      const playerColor = this.m_board.turn;
+      const opponentColor =
+        playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+      this.m_board.GameOver(this.m_board.board, playerColor, opponentColor);
+
+      // this.m_board.KingInCheck(this.m_board, )
     } catch (e) {
       throw e;
     }

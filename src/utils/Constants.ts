@@ -91,7 +91,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Not Checkmate ",
-    fen: "rnbqkbnr/ppppp2p/5p2/6p1/3PP3/8/PPP2PPP/RNBQKBNR w - - 0 4",
+    fen: "r1bq1r2/4n1p1/4N2k/3pPp1P/1b1n2Q1/2N5/PP3PP1/R1B1K2R b - - 0 1",
   },
 ];
 

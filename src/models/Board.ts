@@ -784,13 +784,12 @@ export default class Board {
 
     this.m_currFen = currBoardFen;
     this.game.AddToBoardPositions(currBoardFen);
-
-    const checkSquares = this.KingInCheck(
-      this.m_board,
-      opponentColor,
-      this.kings
-    );
-
+    this.GameOver(board, playerColor, opponentColor);
+    this.SwitchTurn();
+    this.ResetCurrPiece();
+  }
+  public GameOver(board: Cell[][], playerColor: COLORS, opponentColor: COLORS) {
+    const checkSquares = this.KingInCheck(board, opponentColor, this.kings);
     if (checkSquares.length > 0) {
       this.m_kings[opponentColor]!.checkInfo.status = true;
       this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
@@ -836,11 +835,7 @@ export default class Board {
         },
       };
     }
-
-    this.SwitchTurn();
-    this.ResetCurrPiece();
   }
-
   public IsCheckmate(board: Cell[][], opponentColor: COLORS) {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
