@@ -826,6 +826,8 @@ export default class Board {
     );
 
     this.m_currFen = currBoardFen;
+    this.game.AddToBoardPositions(currBoardFen);
+
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {
       this.AssignSound("draw");
@@ -918,6 +920,11 @@ export default class Board {
         return { status: true, reason: DRAW_REASONS.INSUFFICIENT_MATERIAL };
     }
 
+    // if same position has been repeated 3 times
+    const position = this.fen;
+    const countFen = this.game.PositionCount(position);
+    if (countFen >= 3)
+      return { status: true, reason: DRAW_REASONS.THREEFOLD_REPETITION };
     return { status: false, reason: null };
   }
 }
