@@ -239,27 +239,8 @@ export default class Board {
         }
       });
     });
+  }
 
-    this.m_board.forEach((row) => {
-      row.forEach((cell) => {
-        if (cell.piece instanceof Pawn) {
-          console.log(cell.location, cell.piece.enPassantEligible);
-        }
-      });
-    });
-  }
-  private ResetEnPassantCapture() {
-    this.m_board.forEach((row) => {
-      row.forEach((cell) => {
-        if (cell.piece instanceof Pawn) {
-          cell.piece.enPassantCapture = {
-            left: false,
-            right: false,
-          };
-        }
-      });
-    });
-  }
   private ResetSound() {
     this.sound = {
       castle: false,
@@ -422,6 +403,23 @@ export default class Board {
     const tempBoard = this.CopyBoard().board;
     const currLocation = this.m_currPiece.location;
     tempBoard[currLocation.x][currLocation.y].piece = null;
+
+    if (this.m_currPiece.piece instanceof Pawn) {
+      const currLoc = this.m_currPiece.location;
+      const enPassant = this.m_currPiece.piece.CanCaptureEnpassant(
+        tempBoard,
+        currLoc
+      );
+      if (enPassant.right === true) {
+        let oppCapSqLoc = { x: currLoc.x, y: currLoc.y + 1 };
+        tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
+      }
+      if (enPassant.left === true) {
+        let oppCapSqLoc = { x: currLoc.x, y: currLoc.y - 1 };
+        tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
+      }
+    }
+    console.log(tempBoard);
     let kingChecks = [];
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
@@ -716,6 +714,7 @@ export default class Board {
       this.m_halfTurnMoves = 0;
       const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
+      const enPassantCaptureDir = pawn.CanCaptureEnpassant(board, srcLocation);
 
       const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
       if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
@@ -724,20 +723,18 @@ export default class Board {
       // see if move is enpassant move
       const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
       if (
-        pawn.enPassantCapture.left === true &&
+        enPassantCaptureDir.left === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y - 1
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
         this.AssignSound("capture");
-        this.ResetEnPassantCapture();
       } else if (
-        pawn.enPassantCapture.right === true &&
+        enPassantCaptureDir.right === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y + 1
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
-        this.ResetEnPassantCapture();
         this.AssignSound("capture");
       }
 

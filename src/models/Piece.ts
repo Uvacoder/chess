@@ -455,17 +455,17 @@ export class Pawn extends Piece {
   get enPassantEligible() {
     return this.m_enPassantEligible;
   }
-  get enPassantCapture() {
-    return this.m_enpassantCapture;
-  }
-  set enPassantCapture(val: { left: boolean; right: boolean }) {
-    this.m_enpassantCapture = val;
-  }
+  // get enPassantCapture() {
+  //   return this.m_enpassantCapture;
+  // }
+  // set enPassantCapture(val: { left: boolean; right: boolean }) {
+  //   this.m_enpassantCapture = val;
+  // }
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
-    this.m_enpassantCapture = {
+    const enpassantCaptureDir = {
       left: false,
       right: false,
     };
@@ -488,7 +488,7 @@ export class Pawn extends Piece {
       leftPiece
     ) {
       if ((leftPiece as Pawn).enPassantEligible) {
-        this.m_enpassantCapture.left = true;
+        enpassantCaptureDir.left = true;
       }
     }
     if (
@@ -497,12 +497,11 @@ export class Pawn extends Piece {
       rightPiece.color === opponentColor &&
       rightPiece
     ) {
-      console.log(rightPiece, (rightPiece as Pawn).enPassantEligible);
       if ((rightPiece as Pawn).enPassantEligible) {
-        this.m_enpassantCapture.right = true;
+        enpassantCaptureDir.right = true;
       }
     }
-    console.log(this.m_enpassantCapture.right);
+    return enpassantCaptureDir;
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -580,9 +579,9 @@ export class Pawn extends Piece {
     ].filter((m) => m !== null) as TLocation[];
     // check for enpassant
 
-    this.CanCaptureEnpassant(board, srcLocation);
+    const enPassantCaptureDir = this.CanCaptureEnpassant(board, srcLocation);
 
-    if (this.m_enpassantCapture.left && !ldPin) {
+    if (enPassantCaptureDir.left && !ldPin) {
       const yLocation = srcLocation.y - 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
@@ -595,7 +594,7 @@ export class Pawn extends Piece {
 
       normalValidMoves.push(enpassantLoc);
     }
-    if (this.m_enpassantCapture.right && !rdPin) {
+    if (enPassantCaptureDir.right && !rdPin) {
       const yLocation = srcLocation.y + 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
