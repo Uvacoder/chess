@@ -70,6 +70,18 @@ export default class Direction {
     }
     return m;
   }
+  public static SameRowCoord(sx: number, sy: number, ex: number, ey: number) {
+    const m = [];
+    const _sx = Math.min(sx, ex);
+    const _sy = Math.min(sy, ey);
+    const _ex = Math.max(sx, ex);
+    const _ey = Math.max(sy, ey);
+
+    for (let i = _sy + 1; i < _ey; i++) {
+      m.push({ x: sx, y: i });
+    }
+    return m;
+  }
 
   public static SameCol(loc1: TLocation, loc2: TLocation) {
     return loc1.y === loc2.y;

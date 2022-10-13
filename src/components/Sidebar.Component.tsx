@@ -25,7 +25,7 @@ export default function SideBar({
           className="p-2 flex text-[1.5rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
         >
           <Chess size={20} />
-          <p className="overflow-hidden">Board Position</p>
+          <p className="overflow-hidden">Game Info</p>
         </button>
         <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
         <InfoButtons />

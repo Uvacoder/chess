@@ -173,7 +173,7 @@ export default class Board {
     board.board = this.m_board.map((row, rIdx) => {
       return row.map((col, cIdx) => {
         const cellColor = (rIdx + cIdx) % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
-        const piece = col.piece;
+        const piece = col.piece as TPiece;
         if (piece instanceof King) {
           const color = piece.color;
           kings[color].location = { x: rIdx, y: cIdx };
@@ -288,45 +288,42 @@ export default class Board {
                 );
             });
         });
-      piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
         return !isAttacked.status;
       });
+
+      piece.CanCastle(board, cell.location);
+      const kingLoc = currKing.location;
       if (currKing.checkInfo.status === false && piece.castle.ks) {
-        if (
-          validLocations.find(
-            (loc) => loc.x === cell.location.x && loc.y === cell.location.y + 1
-          ) !== undefined
-        ) {
-          const castleLocation = {
-            x: cell.location.x,
-            y: cell.location.y + 2,
-          };
-          const castleCellIsAttacked = Cell.CellIsAttacked(
-            board,
-            castleLocation,
-            piece.color
-          );
-          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        const rookLoc = { x: kingLoc.x, y: 7 };
+        const sqBtn = Direction.SameRowCoord(
+          kingLoc.x,
+          kingLoc.y,
+          rookLoc.x,
+          rookLoc.y
+        );
+        // if any square between king and rook is attacked, then king cannot castle
+        const isAttacked = sqBtn.some((location) => {
+          return Cell.CellIsAttacked(board, location, piece.color).status;
+        });
+        if (!isAttacked) {
+          validLocations.push({ x: kingLoc.x, y: 6 });
         }
       }
       if (currKing.checkInfo.status === false && piece.castle.qs) {
-        if (
-          validLocations.find(
-            (loc) => loc.x === cell.location.x && loc.y === cell.location.y - 1
-          ) !== undefined
-        ) {
-          const castleLocation = {
-            x: cell.location.x,
-            y: cell.location.y - 2,
-          };
-          const castleCellIsAttacked = Cell.CellIsAttacked(
-            board,
-            castleLocation,
-            piece.color
-          );
-          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        const rookLoc = { x: kingLoc.x, y: 0 };
+        const sqBtn = Direction.SameRowCoord(
+          kingLoc.x,
+          kingLoc.y,
+          rookLoc.x,
+          rookLoc.y
+        );
+        const isAttacked = sqBtn.some((location) => {
+          return Cell.CellIsAttacked(board, location, piece.color).status;
+        });
+        if (!isAttacked) {
+          validLocations.push({ x: kingLoc.x, y: 2 });
         }
       }
     } else {
@@ -404,6 +401,10 @@ export default class Board {
     const currLocation = this.m_currPiece.location;
     tempBoard[currLocation.x][currLocation.y].piece = null;
 
+    let kingChecks = [];
+
+    kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
+
     if (this.m_currPiece.piece instanceof Pawn) {
       const currLoc = this.m_currPiece.location;
       const enPassant = this.m_currPiece.piece.CanCaptureEnpassant(
@@ -419,7 +420,6 @@ export default class Board {
         tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
       }
     }
-    let kingChecks = [];
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
     // if king is in same row as the active piece
@@ -560,7 +560,10 @@ export default class Board {
       })
       .map((sq) => sq.responsibleSquares);
 
-    return [...responsibleSquares, ..._responsibleSquares];
+    const returnData = [...responsibleSquares, ..._responsibleSquares];
+
+    return returnData;
+    // return [...responsibleSquares, ..._responsibleSquares];
   }
 
   private AssignSound(type: string) {
@@ -695,6 +698,9 @@ export default class Board {
     this.m_halfTurnMoves++;
     this.m_totalMoves++;
 
+    const playerColor = this.m_currPiece.piece!.color;
+    const opponentColor = playerColor === "white" ? "black" : "white";
+
     if (board[destLocation.x][destLocation.y].piece instanceof King) return;
 
     let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
@@ -720,15 +726,24 @@ export default class Board {
 
       // see if move is enpassant move
       const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
+      const xLoc = srcLocation.x + enPassantCaptureOffsetX;
+      const leftY = srcLocation.y - 1;
+      const rightY = srcLocation.y + 1;
+      const leftPiece = board[srcLocation.x][leftY]?.piece;
+      const rightPiece = board[srcLocation.x][rightY]?.piece;
       if (
-        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
-        destLocation.y === srcLocation.y - 1
+        leftPiece instanceof Pawn &&
+        leftPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === leftY
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
         this.AssignSound("capture");
       } else if (
-        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
-        destLocation.y === srcLocation.y + 1
+        rightPiece instanceof Pawn &&
+        rightPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === rightY
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
         this.AssignSound("capture");
@@ -777,12 +792,22 @@ export default class Board {
     if (this.m_currPiece.piece) this.m_currPiece.piece.hasMoved = true;
     this.m_currPiece.location = destLocation;
 
-    const checkSquares = this.KingInCheck(
-      this.m_board,
+    const currBoardFen = Fen.GenerateFen(
+      board,
+      this.m_kings,
       opponentColor,
-      this.kings
+      this.m_totalMoves,
+      this.m_halfTurnMoves
     );
 
+    this.m_currFen = currBoardFen;
+    this.game.AddToBoardPositions(currBoardFen);
+    this.GameOver(board, playerColor, opponentColor);
+    this.SwitchTurn();
+    this.ResetCurrPiece();
+  }
+  public GameOver(board: Cell[][], playerColor: COLORS, opponentColor: COLORS) {
+    const checkSquares = this.KingInCheck(board, opponentColor, this.kings);
     if (checkSquares.length > 0) {
       this.m_kings[opponentColor]!.checkInfo.status = true;
       this.m_kings[opponentColor]!.checkInfo.responsibleSquares =
@@ -817,17 +842,6 @@ export default class Board {
       };
     }
 
-    const currBoardFen = Fen.GenerateFen(
-      board,
-      this.m_kings,
-      opponentColor,
-      this.m_totalMoves,
-      this.m_halfTurnMoves
-    );
-
-    this.m_currFen = currBoardFen;
-    this.game.AddToBoardPositions(currBoardFen);
-
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {
       this.AssignSound("draw");
@@ -839,11 +853,7 @@ export default class Board {
         },
       };
     }
-
-    this.SwitchTurn();
-    this.ResetCurrPiece();
   }
-
   public IsCheckmate(board: Cell[][], opponentColor: COLORS) {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
@@ -862,7 +872,6 @@ export default class Board {
     responsibleSquares = responsibleSquares.filter(
       (sq, idx) => idx !== kingIdx
     );
-    console.log(kingIdx, responsibleSquares);
     const canBlock = responsibleSquares.some((sq) => {
       const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
       const kingIdx = CellIsAttacked.attackers.findIndex((sq) => {
@@ -871,12 +880,13 @@ export default class Board {
       const attackersWithoutKing = CellIsAttacked.attackers.filter(
         (sq, idx) => idx !== kingIdx
       );
+
       return attackersWithoutKing.length > 0;
     });
-    console.log(canBlock);
+
     return !canBlock;
     // responsibleSquares.splice(kingIdx, 1);
-    // console.log(kingIdx, location);
+    //
     // const canBlock = responsibleSquares.some((sq) => {
     //   const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
     //   //remove location from attackers

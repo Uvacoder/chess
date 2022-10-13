@@ -67,7 +67,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Black Castle, BSP, BSP Obstruction",
-    fen: "r3k2r/pppp3p/6bb/8/2B5/BP2P3/P1PP1PPP/R3K1NR w KQkq - 0 1",
+    fen: "r3k2r/pp1p3p/2pB2bb/3B4/8/1P2P3/P1PP1PPP/R3K1NR b KQ - 1 3",
   },
   {
     name: "Black Castle, KNT, BSP Obstruction",
@@ -79,7 +79,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Ladder Checkmate - 1",
-    fen: "4k3/Q7/8/8/1Q6/8/8/4K3 b - - 0 1",
+    fen: "4k3/Q7/8/8/1Q6/8/8/4K3 w - - 0 1",
   },
   {
     name: "Stalemate",
@@ -91,13 +91,21 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Not Checkmate ",
-    fen: "rnb1kbnr/pppp3p/8/1B6/6Q1/8/PPP1PPPP/RN2KB1R w - - 0 3",
+    fen: "r1bq1r2/4n1p1/4N2k/3pPp1P/1b1n2Q1/2N5/PP3PP1/R1B1K2R b - - 0 1",
+  },
+  {
+    name: "Pawn Capture, Enpassant Eligible",
+    fen: "rnbqkbnr/ppp2ppp/8/3pp3/4PP2/8/PPPP2PP/RNBQKBNR w - - 0 4",
+  },
+  {
+    name: "Test",
+    fen: "rn1qkbnr/ppp2ppp/8/8/3Pp3/5N2/PP4PP/RNB1KB1R b - - 0 13",
   },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[st].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
 
 export enum COLORS {
   WHITE = "white",
