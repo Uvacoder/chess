@@ -287,6 +287,7 @@ export default class Cell {
       attackers: [] as TLocation[],
     };
     const coverage = Cell.GenAllCoverage(location, board, playerColor);
+    console.log(coverage);
     const attackerColor =
       playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
     const attackers = coverage
@@ -296,6 +297,7 @@ export default class Cell {
         if (attackingPiece.color !== attackerColor) return null;
         else {
           const validMoves = attackingPiece.CalculateValidMoves(loc, board);
+          console.log(loc, attackingPiece, validMoves);
           if (attackingPiece instanceof Pawn) {
             /**
              * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
@@ -326,7 +328,12 @@ export default class Cell {
                * If no, return null
                */
               if (attackingPiece.slidingPiece === false) {
-                return null;
+                // if piece is knight, see L directions of the location. If a knight is not found in any L direction, return null
+                const LDirections = Cell.GetLCoverage(loc);
+                const findL = LDirections.find((m) => {
+                  return m && m.x === location.x && m?.y === location.y;
+                });
+                if (!findL) return null;
               } else {
                 const sameRow = Direction.SameRow(loc, location);
                 const sameCol = Direction.SameCol(loc, location);

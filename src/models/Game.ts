@@ -120,7 +120,7 @@ export default class Game {
   public PositionCount(position: string) {
     let count = 0;
     this.m_boardPositions.forEach((pos) => {
-      if (pos === position) count++;
+      if (pos.split(" ")[0] === position.split(" ")[0]) count++;
     });
     return count;
   }

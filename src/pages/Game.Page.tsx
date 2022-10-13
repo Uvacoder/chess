@@ -6,14 +6,13 @@ import Board from "../models/Board";
 import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
 import { TGameOverInfo } from "../@types";
-import GameContext, { useFen } from "../hooks/GameContext";
+import GameContext, { useGame } from "../hooks/GameContext";
 import { START_POSITION } from "../utils/Constants";
+import GameOver from "../components/GameOver";
 export default function GamePage() {
-  const { fen, setFen } = useFen();
+  const { fen, setFen, board, setBoard } = useGame();
 
-  console.log(fen);
-
-  const [board, setBoard] = useState<Board>();
+  // const [board, setBoard] = useState<Board>();
   const [fenError, setFenError] = useState<boolean>(false);
 
   const [gameOver, setGameOver] = useState<TGameOverInfo>({
@@ -99,14 +98,10 @@ export default function GamePage() {
       <div className="flex">
         {board && (
           <div className="relative">
-            <BoardComponent setGameOver={setGameOver} board={board as Board} />
-            {gameOver.status && (
-              <ModalComponent
-                gameOverInfo={gameOver}
-                setOpen={() => {}}
-                openStatus={true}
-              />
-            )}
+            <BoardComponent setGameOver={setGameOver} />
+            <ModalComponent setOpen={() => {}} openStatus={gameOver.status}>
+              <GameOver gameOverInfo={gameOver} />
+            </ModalComponent>
           </div>
         )}
         <SidebarComponent invalidFen={fenError} updateFen={ChangeFenString} />

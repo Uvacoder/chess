@@ -5,15 +5,14 @@ import Cell from "../models/Cell";
 import { COLORS, Flip, START_POSITION } from "../utils/Constants";
 import Piece from "./Piece";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useFen } from "../hooks/GameContext";
+import { useGame } from "../hooks/GameContext";
 export default function BoardComponent({
-  board,
   setGameOver,
 }: {
-  board: Board;
   setGameOver: Function;
 }) {
-  const { setFen } = useFen();
+  const { board } = useGame();
+  const { setFen } = useGame();
   const [state, setState] = useState(false);
   useEffect(() => {
     setFen(board.fen || START_POSITION);

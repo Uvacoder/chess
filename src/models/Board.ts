@@ -240,18 +240,7 @@ export default class Board {
       });
     });
   }
-  private ResetEnPassantCapture() {
-    this.m_board.forEach((row) => {
-      row.forEach((cell) => {
-        if (cell.piece instanceof Pawn) {
-          cell.piece.enPassantCapture = {
-            left: false,
-            right: false,
-          };
-        }
-      });
-    });
-  }
+
   private ResetSound() {
     this.sound = {
       castle: false,
@@ -299,9 +288,11 @@ export default class Board {
                 );
             });
         });
+      console.log(validLocations);
       piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
+        console.log(location, isAttacked);
         return !isAttacked.status;
       });
       if (currKing.checkInfo.status === false && piece.castle.ks) {
@@ -414,6 +405,22 @@ export default class Board {
     const tempBoard = this.CopyBoard().board;
     const currLocation = this.m_currPiece.location;
     tempBoard[currLocation.x][currLocation.y].piece = null;
+
+    if (this.m_currPiece.piece instanceof Pawn) {
+      const currLoc = this.m_currPiece.location;
+      const enPassant = this.m_currPiece.piece.CanCaptureEnpassant(
+        tempBoard,
+        currLoc
+      );
+      if (enPassant.right === true) {
+        let oppCapSqLoc = { x: currLoc.x, y: currLoc.y + 1 };
+        tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
+      }
+      if (enPassant.left === true) {
+        let oppCapSqLoc = { x: currLoc.x, y: currLoc.y - 1 };
+        tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
+      }
+    }
     let kingChecks = [];
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
@@ -520,6 +527,7 @@ export default class Board {
       this.m_currPiece.piece.pinned.bottomRight = false;
       this.m_currPiece.piece.pinned.horizontal = false;
     }
+    //if piece is pawn, check for enpassant as well
   }
 
   public KingInCheck(
@@ -715,20 +723,16 @@ export default class Board {
       // see if move is enpassant move
       const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
       if (
-        pawn.enPassantCapture.left === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y - 1
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
         this.AssignSound("capture");
-        this.ResetEnPassantCapture();
       } else if (
-        pawn.enPassantCapture.right === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y + 1
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
-        this.ResetEnPassantCapture();
         this.AssignSound("capture");
       }
 
@@ -824,7 +828,8 @@ export default class Board {
     );
 
     this.m_currFen = currBoardFen;
-    console.log(currBoardFen);
+    this.game.AddToBoardPositions(currBoardFen);
+
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {
       this.AssignSound("draw");
@@ -844,7 +849,7 @@ export default class Board {
   public IsCheckmate(board: Cell[][], opponentColor: COLORS) {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
-    const responsibleSquares = opponentKing.checkInfo.responsibleSquares;
+    const responsibleSquares = opponentKing.checkInfo.responsibleSquares.flat();
     const cell = board[location.x][location.y];
     const king = board[location.x][location.y].piece as King;
     const validMoves = this.GetValidMoves(board, king, cell);
@@ -853,15 +858,19 @@ export default class Board {
     // for each responsible square, see if it has attacker. If yes, return false
     const playerColor =
       opponentColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-    const kingIdx = responsibleSquares.findIndex(
-      (sq) => sq.x === location.x && sq.y === location.y
-    );
+    const kingIdx = responsibleSquares.findIndex((sq) => {
+      return sq.x === location.x && sq.y === location.y;
+    });
     responsibleSquares.splice(kingIdx, 1);
-
-    const canBlock = responsibleSquares
-      .flat()
-      .some((sq) => Cell.CellIsAttacked(board, sq, playerColor).status);
-
+    console.log(kingIdx, location);
+    const canBlock = responsibleSquares.some((sq) => {
+      const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
+      //remove location from attackers
+      const attackers = CellIsAttacked.attackers.filter((attacker) => {
+        return attacker.x !== location.x && attacker.y !== location.y;
+      });
+      return attackers.length > 0;
+    });
     return !canBlock;
   }
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
@@ -917,6 +926,11 @@ export default class Board {
         return { status: true, reason: DRAW_REASONS.INSUFFICIENT_MATERIAL };
     }
 
+    // if same position has been repeated 3 times
+    const position = this.fen;
+    const countFen = this.game.PositionCount(position);
+    if (countFen >= 3)
+      return { status: true, reason: DRAW_REASONS.THREEFOLD_REPETITION };
     return { status: false, reason: null };
   }
 }

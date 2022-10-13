@@ -455,16 +455,20 @@ export class Pawn extends Piece {
   get enPassantEligible() {
     return this.m_enPassantEligible;
   }
-  get enPassantCapture() {
-    return this.m_enpassantCapture;
-  }
-  set enPassantCapture(val: { left: boolean; right: boolean }) {
-    this.m_enpassantCapture = val;
-  }
+  // get enPassantCapture() {
+  //   return this.m_enpassantCapture;
+  // }
+  // set enPassantCapture(val: { left: boolean; right: boolean }) {
+  //   this.m_enpassantCapture = val;
+  // }
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
+    const enpassantCaptureDir = {
+      left: false,
+      right: false,
+    };
     const left = board[currLocation.x][currLocation.y - 1];
     const right = board[currLocation.x][currLocation.y + 1];
     let leftPiece = null,
@@ -484,7 +488,7 @@ export class Pawn extends Piece {
       leftPiece
     ) {
       if ((leftPiece as Pawn).enPassantEligible) {
-        this.m_enpassantCapture.left = true;
+        enpassantCaptureDir.left = true;
       }
     }
     if (
@@ -494,9 +498,10 @@ export class Pawn extends Piece {
       rightPiece
     ) {
       if ((rightPiece as Pawn).enPassantEligible) {
-        this.m_enpassantCapture.right = true;
+        enpassantCaptureDir.right = true;
       }
     }
+    return enpassantCaptureDir;
   }
   public CalculateValidMoves(
     srcLocation: TLocation,
@@ -551,32 +556,32 @@ export class Pawn extends Piece {
       else return loc !== null;
     });
 
+    const ldPin =
+      this.color === COLORS.WHITE
+        ? this.pinned.topLeft
+        : this.pinned.bottomLeft;
+    const rdPin =
+      this.color === COLORS.WHITE
+        ? this.pinned.topRight
+        : this.pinned.bottomRight;
     const finalLocationLD = [fl].filter((loc) => {
-      const pinnedDir =
-        this.color === COLORS.WHITE
-          ? this.pinned.topLeft
-          : this.pinned.bottomLeft;
-      if (pinnedDir) return false;
+      if (ldPin) return false;
       else return loc !== null;
     });
-    const finalLocationLR = [fr].filter((loc) => {
-      const pinnedDir =
-        this.color === COLORS.WHITE
-          ? this.pinned.topRight
-          : this.pinned.bottomRight;
-      if (pinnedDir) return false;
+    const finalLocationRD = [fr].filter((loc) => {
+      if (rdPin) return false;
       else return loc !== null;
     });
     const normalValidMoves = [
       ...finalLocationFront,
       ...finalLocationLD,
-      ...finalLocationLR,
+      ...finalLocationRD,
     ].filter((m) => m !== null) as TLocation[];
     // check for enpassant
 
-    this.CanCaptureEnpassant(board, srcLocation);
+    const enPassantCaptureDir = this.CanCaptureEnpassant(board, srcLocation);
 
-    if (this.m_enpassantCapture.left) {
+    if (enPassantCaptureDir.left && !ldPin) {
       const yLocation = srcLocation.y - 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;
@@ -585,10 +590,11 @@ export class Pawn extends Piece {
         x: xLocation,
         y: yLocation,
       };
+      // iif not pinned in left diagonal
 
       normalValidMoves.push(enpassantLoc);
     }
-    if (this.m_enpassantCapture.right) {
+    if (enPassantCaptureDir.right && !rdPin) {
       const yLocation = srcLocation.y + 1;
       const xLocation =
         this.color === COLORS.WHITE ? srcLocation.x - 1 : srcLocation.x + 1;

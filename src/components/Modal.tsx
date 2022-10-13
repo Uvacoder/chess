@@ -1,59 +1,40 @@
-import { Chess } from "tabler-icons-react";
-import { TGameOverInfo } from "../@types";
-import { Capitalize, COLORS } from "../utils/Constants";
+import { X } from "tabler-icons-react";
 
 export default function ModalComponent({
   openStatus,
   setOpen,
-  gameOverInfo,
+  children,
+  closable = false,
+  closeBtnBgVal = 200,
+  backgroundClassName = "bg-white/90",
+  closeBtnIconColor = "black",
 }: {
   openStatus: boolean;
   setOpen: any;
-  gameOverInfo: TGameOverInfo;
+  children: React.ReactNode;
+  closable?: boolean;
+  closeBtnBgVal?: number;
+  backgroundClassName?: string;
+  closeBtnIconColor?: string;
 }) {
-  return (
-    <div className="absolute z-[999999999999] top-0 w-full h-full backdrop-blur-sm bg-white/90 grid place-items-center">
-      <div className="flex flex-col gap-5">
-        <h2 className=" text-center text-lg overflow-hidden font-black text-black">
-          Game Over!
-        </h2>
-        <h2 className="text-center text-[2rem] font-black text-black">
-          {gameOverInfo.reason.won.status === true && (
-            <div className="flex items-center gap-3">
-              <p className="overflow-hidden">
-                {Capitalize(gameOverInfo.reason.won.reason as string)} Won!
-              </p>
-              <div
-                className={`p-2 rounded shadow-sm border-[3px] ${
-                  gameOverInfo.reason.won.reason === "white"
-                    ? "bg-white"
-                    : "bg-black"
-                }`}
-              >
-                <Chess
-                  color={
-                    gameOverInfo.reason.won.reason === "white"
-                      ? COLORS.BLACK
-                      : COLORS.WHITE
-                  }
-                />
-              </div>
-            </div>
-          )}
-          {gameOverInfo.reason.draw.status === true && (
-            <div className="flex items-center gap-3">
-              <p className="overflow-hidden">Game Drawn!</p>
-              <p className="overflow-hidden">
-                {gameOverInfo.reason.draw.reason &&
-                  gameOverInfo.reason.draw.reason[0] +
-                    gameOverInfo.reason.draw.reason
-                      .slice(1, gameOverInfo.reason.draw.reason.length)
-                      .toLowerCase()}
-              </p>
-            </div>
-          )}
-        </h2>
-      </div>
+  return openStatus ? (
+    <div
+      className={`transition absolute z-[999999999999] top-0 w-full h-full backdrop-blur-sm ${backgroundClassName} ${"opacity-100"}`}
+    >
+      {closable && (
+        <button
+          onClick={() => setOpen(false)}
+          className={`absolute top-[10px] right-[10px] p-2 rounded-full shadow-lg bg-neutral-${closeBtnBgVal} transition hover:rotate-[-10deg] hover:scale-[3] hover:bg-neutral-bg-neutral-${
+            closeBtnBgVal + 100
+          }`}
+        >
+          <X color={closeBtnIconColor} />
+        </button>
+      )}
+
+      {children}
     </div>
+  ) : (
+    <></>
   );
 }
