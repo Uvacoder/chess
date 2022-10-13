@@ -288,45 +288,42 @@ export default class Board {
                 );
             });
         });
-      piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
         return !isAttacked.status;
       });
+
+      piece.CanCastle(board, cell.location);
+      const kingLoc = currKing.location;
       if (currKing.checkInfo.status === false && piece.castle.ks) {
-        if (
-          validLocations.find(
-            (loc) => loc.x === cell.location.x && loc.y === cell.location.y + 1
-          ) !== undefined
-        ) {
-          const castleLocation = {
-            x: cell.location.x,
-            y: cell.location.y + 2,
-          };
-          const castleCellIsAttacked = Cell.CellIsAttacked(
-            board,
-            castleLocation,
-            piece.color
-          );
-          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        const rookLoc = { x: kingLoc.x, y: 7 };
+        const sqBtn = Direction.SameRowCoord(
+          kingLoc.x,
+          kingLoc.y,
+          rookLoc.x,
+          rookLoc.y
+        );
+        // if any square between king and rook is attacked, then king cannot castle
+        const isAttacked = sqBtn.some((location) => {
+          return Cell.CellIsAttacked(board, location, piece.color).status;
+        });
+        if (!isAttacked) {
+          validLocations.push({ x: kingLoc.x, y: 6 });
         }
       }
       if (currKing.checkInfo.status === false && piece.castle.qs) {
-        if (
-          validLocations.find(
-            (loc) => loc.x === cell.location.x && loc.y === cell.location.y - 1
-          ) !== undefined
-        ) {
-          const castleLocation = {
-            x: cell.location.x,
-            y: cell.location.y - 2,
-          };
-          const castleCellIsAttacked = Cell.CellIsAttacked(
-            board,
-            castleLocation,
-            piece.color
-          );
-          if (!castleCellIsAttacked.status) validLocations.push(castleLocation);
+        const rookLoc = { x: kingLoc.x, y: 0 };
+        const sqBtn = Direction.SameRowCoord(
+          kingLoc.x,
+          kingLoc.y,
+          rookLoc.x,
+          rookLoc.y
+        );
+        const isAttacked = sqBtn.some((location) => {
+          return Cell.CellIsAttacked(board, location, piece.color).status;
+        });
+        if (!isAttacked) {
+          validLocations.push({ x: kingLoc.x, y: 2 });
         }
       }
     } else {
@@ -777,6 +774,17 @@ export default class Board {
     if (this.m_currPiece.piece) this.m_currPiece.piece.hasMoved = true;
     this.m_currPiece.location = destLocation;
 
+    const currBoardFen = Fen.GenerateFen(
+      board,
+      this.m_kings,
+      opponentColor,
+      this.m_totalMoves,
+      this.m_halfTurnMoves
+    );
+
+    this.m_currFen = currBoardFen;
+    this.game.AddToBoardPositions(currBoardFen);
+
     const checkSquares = this.KingInCheck(
       this.m_board,
       opponentColor,
@@ -816,17 +824,6 @@ export default class Board {
         },
       };
     }
-
-    const currBoardFen = Fen.GenerateFen(
-      board,
-      this.m_kings,
-      opponentColor,
-      this.m_totalMoves,
-      this.m_halfTurnMoves
-    );
-
-    this.m_currFen = currBoardFen;
-    this.game.AddToBoardPositions(currBoardFen);
 
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {

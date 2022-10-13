@@ -67,7 +67,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Black Castle, BSP, BSP Obstruction",
-    fen: "r3k2r/pppp3p/6bb/8/2B5/BP2P3/P1PP1PPP/R3K1NR w KQkq - 0 1",
+    fen: "r3k2r/pp1p3p/2pB2bb/3B4/8/1P2P3/P1PP1PPP/R3K1NR b KQ - 1 3",
   },
   {
     name: "Black Castle, KNT, BSP Obstruction",
@@ -97,7 +97,7 @@ export const AVAILABLE_FENS_LABLED = [
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[st].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[st + 15].fen;
 
 export enum COLORS {
   WHITE = "white",
