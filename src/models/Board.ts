@@ -289,7 +289,12 @@ export default class Board {
             });
         });
       validLocations = validLocations.filter((location) => {
-        const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
+        const isAttacked = Cell.CellIsAttacked(
+          board,
+          location,
+          piece.color,
+          true
+        );
         return !isAttacked.status;
       });
 
@@ -885,24 +890,16 @@ export default class Board {
     });
 
     return !canBlock;
-    // responsibleSquares.splice(kingIdx, 1);
-    //
-    // const canBlock = responsibleSquares.some((sq) => {
-    //   const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
-    //   //remove location from attackers
-    //   const attackers = CellIsAttacked.attackers.filter((attacker) => {
-    //     return attacker.x !== location.x && attacker.y !== location.y;
-    //   });
-    //   return attackers.length > 0;
-    // });
-    // return !canBlock;
   }
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
+    console.log(opponentPieceLocations);
     const isNotStalemate = opponentPieceLocations.some((loc) => {
       const piece = board[loc.x][loc.y].piece;
       if (piece === null) return false;
+
       const validMoves = this.GetValidMoves(board, piece, board[loc.x][loc.y]);
+      console.log(validMoves);
       return validMoves.length > 0;
     });
     return !isNotStalemate;
