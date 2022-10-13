@@ -72,7 +72,6 @@ export default class Fen {
     if (boardRep[boardRep.length - 1] === "/")
       boardRep = boardRep.slice(0, boardRep.length - 1);
     const finalFen = `${boardRep} ${fenTurn} ${fenCastleString} - ${totalHalfMoves} ${totalMoves}`;
-    console.log(finalFen);
     return finalFen;
   }
 }

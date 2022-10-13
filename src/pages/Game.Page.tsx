@@ -11,8 +11,6 @@ import { START_POSITION } from "../utils/Constants";
 export default function GamePage() {
   const { fen, setFen } = useFen();
 
-  console.log(fen);
-
   const [board, setBoard] = useState<Board>();
   const [fenError, setFenError] = useState<boolean>(false);
 

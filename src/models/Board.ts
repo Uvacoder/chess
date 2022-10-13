@@ -419,7 +419,6 @@ export default class Board {
         tempBoard[oppCapSqLoc.x][oppCapSqLoc.y].piece = null;
       }
     }
-    console.log(tempBoard);
     let kingChecks = [];
 
     kingChecks = this.KingInCheck(tempBoard, playerColor, this.kings).flat();
@@ -714,7 +713,6 @@ export default class Board {
       this.m_halfTurnMoves = 0;
       const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
       const pawnColor = pawn!.color;
-      const enPassantCaptureDir = pawn.CanCaptureEnpassant(board, srcLocation);
 
       const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
       if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
@@ -723,14 +721,12 @@ export default class Board {
       // see if move is enpassant move
       const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
       if (
-        enPassantCaptureDir.left === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y - 1
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
         this.AssignSound("capture");
       } else if (
-        enPassantCaptureDir.right === true &&
         destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
         destLocation.y === srcLocation.y + 1
       ) {
@@ -830,7 +826,6 @@ export default class Board {
     );
 
     this.m_currFen = currBoardFen;
-    console.log(currBoardFen);
     const draw = this.IsDraw(board, opponentColor);
     if (draw.status) {
       this.AssignSound("draw");
