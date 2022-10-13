@@ -288,11 +288,9 @@ export default class Board {
                 );
             });
         });
-      console.log(validLocations);
       piece.CanCastle(board, cell.location);
       validLocations = validLocations.filter((location) => {
         const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
-        console.log(location, isAttacked);
         return !isAttacked.status;
       });
       if (currKing.checkInfo.status === false && piece.castle.ks) {
@@ -849,7 +847,7 @@ export default class Board {
   public IsCheckmate(board: Cell[][], opponentColor: COLORS) {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
-    const responsibleSquares = opponentKing.checkInfo.responsibleSquares.flat();
+    let responsibleSquares = opponentKing.checkInfo.responsibleSquares.flat();
     const cell = board[location.x][location.y];
     const king = board[location.x][location.y].piece as King;
     const validMoves = this.GetValidMoves(board, king, cell);
@@ -861,17 +859,33 @@ export default class Board {
     const kingIdx = responsibleSquares.findIndex((sq) => {
       return sq.x === location.x && sq.y === location.y;
     });
-    responsibleSquares.splice(kingIdx, 1);
-    console.log(kingIdx, location);
+    responsibleSquares = responsibleSquares.filter(
+      (sq, idx) => idx !== kingIdx
+    );
+    console.log(kingIdx, responsibleSquares);
     const canBlock = responsibleSquares.some((sq) => {
       const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
-      //remove location from attackers
-      const attackers = CellIsAttacked.attackers.filter((attacker) => {
-        return attacker.x !== location.x && attacker.y !== location.y;
+      const kingIdx = CellIsAttacked.attackers.findIndex((sq) => {
+        return sq.x === location.x && sq.y === location.y;
       });
-      return attackers.length > 0;
+      const attackersWithoutKing = CellIsAttacked.attackers.filter(
+        (sq, idx) => idx !== kingIdx
+      );
+      return attackersWithoutKing.length > 0;
     });
+    console.log(canBlock);
     return !canBlock;
+    // responsibleSquares.splice(kingIdx, 1);
+    // console.log(kingIdx, location);
+    // const canBlock = responsibleSquares.some((sq) => {
+    //   const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
+    //   //remove location from attackers
+    //   const attackers = CellIsAttacked.attackers.filter((attacker) => {
+    //     return attacker.x !== location.x && attacker.y !== location.y;
+    //   });
+    //   return attackers.length > 0;
+    // });
+    // return !canBlock;
   }
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
