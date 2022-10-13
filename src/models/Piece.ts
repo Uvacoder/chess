@@ -455,12 +455,7 @@ export class Pawn extends Piece {
   get enPassantEligible() {
     return this.m_enPassantEligible;
   }
-  // get enPassantCapture() {
-  //   return this.m_enpassantCapture;
-  // }
-  // set enPassantCapture(val: { left: boolean; right: boolean }) {
-  //   this.m_enpassantCapture = val;
-  // }
+
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
   }

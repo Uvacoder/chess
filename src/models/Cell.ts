@@ -366,7 +366,6 @@ export default class Cell {
       attackers,
     };
     if (attackers.length <= 0) return returnData;
-    console.log(finalRetData);
     return finalRetData;
   }
 }

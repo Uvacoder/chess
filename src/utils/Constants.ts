@@ -93,11 +93,15 @@ export const AVAILABLE_FENS_LABLED = [
     name: "Not Checkmate ",
     fen: "r1bq1r2/4n1p1/4N2k/3pPp1P/1b1n2Q1/2N5/PP3PP1/R1B1K2R b - - 0 1",
   },
+  {
+    name: "Pawn Capture, Enpassant Eligible",
+    fen: "rnbqkbnr/ppp2ppp/8/3pp3/4PP2/8/PPPP2PP/RNBQKBNR w - - 0 4",
+  },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[st].fen;
 
 export enum COLORS {
   WHITE = "white",

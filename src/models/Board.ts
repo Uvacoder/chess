@@ -173,7 +173,7 @@ export default class Board {
     board.board = this.m_board.map((row, rIdx) => {
       return row.map((col, cIdx) => {
         const cellColor = (rIdx + cIdx) % 2 === 0 ? COLORS.WHITE : COLORS.BLACK;
-        const piece = col.piece;
+        const piece = col.piece as TPiece;
         if (piece instanceof King) {
           const color = piece.color;
           kings[color].location = { x: rIdx, y: cIdx };
@@ -692,6 +692,9 @@ export default class Board {
     this.m_halfTurnMoves++;
     this.m_totalMoves++;
 
+    const playerColor = this.m_currPiece.piece!.color;
+    const opponentColor = playerColor === "white" ? "black" : "white";
+
     if (board[destLocation.x][destLocation.y].piece instanceof King) return;
 
     let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
@@ -717,15 +720,24 @@ export default class Board {
 
       // see if move is enpassant move
       const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
+      const xLoc = srcLocation.x + enPassantCaptureOffsetX;
+      const leftY = srcLocation.y - 1;
+      const rightY = srcLocation.y + 1;
+      const leftPiece = board[srcLocation.x][leftY]?.piece;
+      const rightPiece = board[srcLocation.x][rightY]?.piece;
       if (
-        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
-        destLocation.y === srcLocation.y - 1
+        leftPiece instanceof Pawn &&
+        leftPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === leftY
       ) {
         board[srcLocation.x][srcLocation.y - 1].piece = null;
         this.AssignSound("capture");
       } else if (
-        destLocation.x === srcLocation.x + enPassantCaptureOffsetX &&
-        destLocation.y === srcLocation.y + 1
+        rightPiece instanceof Pawn &&
+        rightPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === rightY
       ) {
         board[srcLocation.x][srcLocation.y + 1].piece = null;
         this.AssignSound("capture");
