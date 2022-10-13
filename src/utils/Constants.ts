@@ -89,11 +89,34 @@ export const AVAILABLE_FENS_LABLED = [
     name: "En Passant Pinned",
     fen: "8/2p5/3p4/KP5r/1R4pk/8/4P1P1/8 b - - 0 1",
   },
+  {
+    name: "Not Checkmate ",
+    fen: "rnb1kbnr/pppp3p/8/4N1q1/3Q2p1/8/PPP1PPPP/RN2KB1R b - - 3 12",
+  },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[st].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
+
+export const PGN = [
+  "e4",
+  "e5",
+  "Nf3",
+  "Nc6",
+  "Bb5",
+  "a6",
+  "Ba4",
+  "Nf6",
+  "O-O",
+  "Be7",
+  "Re1",
+  "b5",
+  "Bb3",
+  "O-O",
+  "c3",
+  "d6",
+];
 
 export enum COLORS {
   WHITE = "white",

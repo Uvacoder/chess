@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import { Copy } from "tabler-icons-react";
-import { useFen } from "../hooks/GameContext";
+import { Copy, InfoCircle } from "tabler-icons-react";
+import { useGame } from "../hooks/GameContext";
 import {
   AVAILABLE_FENS_LABLED,
   CopyTextToClipBoard,
+  PGN,
   START_POSITION,
 } from "../utils/Constants";
 import InfoButtons from "./InfoButtons";
+import ModalComponent from "./Modal";
 export default function SideBar({
   updateFen,
   invalidFen,
@@ -15,36 +17,30 @@ export default function SideBar({
   invalidFen: boolean;
   updateFen: Function;
 }) {
-  const { fen } = useFen();
+  const [modalOpen, setModalOpen] = useState(false);
   return (
     <div className="grid relative w-[400px]">
       <div className="p-5 bg-neutral-900 rounded-lg">
-        <div className="mb-5">
-          <h2 className="text-lg font-bold">Game Info</h2>
-          <hr />
-          <div className="mt-2 flex items-center gap-3">
-            <p className="text-sm font-bold">Board FEN</p>
-            <p className="text-sm w-fit px-2 py-1 bg-red-900 rounded-full">
-              {fen?.slice(0, 25) + "..."}
-            </p>
-            <div>
-              <button
-                className="p-1 bg-neutral-600 rounded-full hover:opacity-80"
-                title="Copy Fen"
-                onClick={() => {
-                  CopyTextToClipBoard(fen);
-                  toast.success("FEN Copied to Clipboard");
-                }}
-              >
-                <Copy size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-        <hr />
+        <button
+          onClick={() => setModalOpen(true)}
+          className="p-2 flex text-[1.75rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
+        >
+          <InfoCircle size={40} />
+          <p className="overflow-hidden">Game Info</p>
+        </button>
         <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
         <InfoButtons />
       </div>
+      <ModalComponent
+        closable={true}
+        openStatus={modalOpen}
+        setOpen={setModalOpen}
+        backgroundClassName="bg-neutral-900/90"
+        closeBtnBgVal={800}
+        closeBtnIconColor="white"
+      >
+        <GameInfo />
+      </ModalComponent>
     </div>
   );
 }
@@ -130,6 +126,76 @@ function FenComponent({
           Reset Board
         </button>
       </div>
+    </div>
+  );
+}
+
+function GameInfo() {
+  const { fen, board } = useGame();
+
+  return (
+    <div className="mb-5 p-3 grid gap-2">
+      <h2 className="text-lg font-bold">Game Info</h2>
+      <div className="grid-item">
+        <div className="grid-item">
+          <h2 className="text-lg font-bold">Turn</h2>
+          <p className="text-xl">
+            It{"'"}s {board.turn[0].toUpperCase() + board.turn.slice(1)} {"'"}s
+            Turn
+          </p>
+        </div>
+      </div>
+      <div className="grid-item">
+        <div className="mt-2 flex items-center gap-3">
+          <h2 className="text-lg font-bold">Board FEN</h2>
+          <button
+            className="p-1 bg-neutral-600 rounded-full hover:opacity-80"
+            title="Copy Fen"
+            onClick={() => {
+              CopyTextToClipBoard(fen);
+              toast.success("FEN Copied to Clipboard");
+            }}
+          >
+            <Copy size={20} />
+          </button>
+        </div>
+        <div className="mt-1 break-words bg-neutral-800 resize-none appearance-none rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline h-max">
+          {fen}
+        </div>
+      </div>
+      {PGN.length > 0 ? (
+        <div className="grid-item">
+          <div className="mt-2 flex items-center gap-3">
+            <h2 className="text-lg font-bold">Board Moves (PGN)</h2>
+            <button
+              className="p-1 bg-neutral-600 rounded-full hover:opacity-80"
+              title="Copy PGN"
+              onClick={() => {
+                CopyTextToClipBoard(fen);
+                toast.success("PGN Copied to Clipboard");
+              }}
+            >
+              <Copy size={20} />
+            </button>
+          </div>
+          <ul className="mt-2 p-2 bg-neutral-800 text-white rounded max-h-[250px]">
+            {PGN.map((m, i) => {
+              return (
+                <li
+                  className="hover:bg-neutral-700 py-3 text-lg font-bold px-2 rounded"
+                  key={`pgn-${m}-${i}`}
+                >
+                  {i + 1}. {m}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : (
+        <p className="mt-2 text-center font-bold italic">
+          - Play Game to View Moves (PGN) -
+        </p>
+      )}
     </div>
   );
 }
