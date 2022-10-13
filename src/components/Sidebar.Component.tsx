@@ -138,11 +138,17 @@ function GameInfo() {
       <h2 className="text-lg font-bold">Game Info</h2>
       <div className="grid-item">
         <div className="grid-item">
-          <h2 className="text-lg font-bold">Turn</h2>
-          <p className="text-xl">
-            It{"'"}s {board.turn[0].toUpperCase() + board.turn.slice(1)} {"'"}s
-            Turn
-          </p>
+          {board.game.gameOverInfo.status === false ? (
+            <>
+              <h2 className="text-lg font-bold">Turn</h2>
+              <p className="text-xl">
+                It{"'"}s {board.turn[0].toUpperCase() + board.turn.slice(1)}{" "}
+                {"'"}s Turn
+              </p>
+            </>
+          ) : (
+            <p className="text-xl"> Game Over!</p>
+          )}
         </div>
       </div>
       <div className="grid-item">
