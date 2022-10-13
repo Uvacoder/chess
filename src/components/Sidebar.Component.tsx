@@ -27,7 +27,7 @@ export default function SideBar({
           <Chess size={20} />
           <p className="overflow-hidden">Board Position</p>
         </button>
-        <GameInfo />
+        <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
         <InfoButtons />
       </div>
       <ModalComponent
@@ -38,8 +38,8 @@ export default function SideBar({
         closeBtnBgVal={800}
         closeBtnIconColor="white"
       >
-        <div className="px-5">
-          <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
+        <div className="p-3">
+          <GameInfo />
         </div>
       </ModalComponent>
     </div>
@@ -136,7 +136,7 @@ function GameInfo() {
 
   return (
     <div className="mb-5 p-3 grid gap-2">
-      <h2 className="text-lg font-bold">Game Info</h2>
+      <h2 className="text-[1.5rem] font-bold">Game Info</h2>
       <div className="grid-item">
         <div className="grid-item">
           {board?.game.gameOverInfo.status === false ? (
