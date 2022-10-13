@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Copy, InfoCircle } from "tabler-icons-react";
+import { Biohazard, Chess, Copy, InfoCircle } from "tabler-icons-react";
 import { useGame } from "../hooks/GameContext";
 import {
   AVAILABLE_FENS_LABLED,
   CopyTextToClipBoard,
-  PGN,
   START_POSITION,
 } from "../utils/Constants";
 import InfoButtons from "./InfoButtons";
@@ -23,12 +22,12 @@ export default function SideBar({
       <div className="p-5 bg-neutral-900 rounded-lg">
         <button
           onClick={() => setModalOpen(true)}
-          className="p-2 flex text-[1.75rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
+          className="p-2 flex text-[1.5rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
         >
-          <InfoCircle size={40} />
-          <p className="overflow-hidden">Game Info</p>
+          <Chess size={20} />
+          <p className="overflow-hidden">Board Position</p>
         </button>
-        <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
+        <GameInfo />
         <InfoButtons />
       </div>
       <ModalComponent
@@ -39,7 +38,9 @@ export default function SideBar({
         closeBtnBgVal={800}
         closeBtnIconColor="white"
       >
-        <GameInfo />
+        <div className="px-5">
+          <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
+        </div>
       </ModalComponent>
     </div>
   );
@@ -131,18 +132,18 @@ function FenComponent({
 }
 
 function GameInfo() {
-  const { fen, board } = useGame();
+  const { fen, pgn, board } = useGame();
 
   return (
     <div className="mb-5 p-3 grid gap-2">
       <h2 className="text-lg font-bold">Game Info</h2>
       <div className="grid-item">
         <div className="grid-item">
-          {board.game.gameOverInfo.status === false ? (
+          {board?.game.gameOverInfo.status === false ? (
             <>
               <h2 className="text-lg font-bold">Turn</h2>
               <p className="text-xl">
-                It{"'"}s {board.turn[0].toUpperCase() + board.turn.slice(1)}{" "}
+                It{"'"}s {board?.turn[0].toUpperCase() + board.turn.slice(1)}{" "}
                 {"'"}s Turn
               </p>
             </>
@@ -169,7 +170,7 @@ function GameInfo() {
           {fen}
         </div>
       </div>
-      {PGN.length > 0 ? (
+      {pgn?.length > 0 ? (
         <div className="grid-item">
           <div className="mt-2 flex items-center gap-3">
             <h2 className="text-lg font-bold">Board Moves (PGN)</h2>
@@ -184,8 +185,8 @@ function GameInfo() {
               <Copy size={20} />
             </button>
           </div>
-          <ul className="mt-2 p-2 bg-neutral-800 text-white rounded max-h-[250px]">
-            {PGN.map((m, i) => {
+          <ul className="mt-2 p-2 bg-neutral-800 text-white rounded max-h-[200px]">
+            {pgn?.map((m, i) => {
               return (
                 <li
                   className="hover:bg-neutral-700 py-3 text-lg font-bold px-2 rounded"

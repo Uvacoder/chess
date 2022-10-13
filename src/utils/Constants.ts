@@ -99,25 +99,6 @@ const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
 export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
 
-export const PGN = [
-  "e4",
-  "e5",
-  "Nf3",
-  "Nc6",
-  "Bb5",
-  "a6",
-  "Ba4",
-  "Nf6",
-  "O-O",
-  "Be7",
-  "Re1",
-  "b5",
-  "Bb3",
-  "O-O",
-  "c3",
-  "d6",
-];
-
 export enum COLORS {
   WHITE = "white",
   BLACK = "black",
