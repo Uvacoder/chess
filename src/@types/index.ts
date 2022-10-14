@@ -47,4 +47,11 @@ export type TGameOverInfo = {
   };
 };
 
+export type TCurrPiece = {
+  piece: TPiece | null;
+  validLocations: TLocation[];
+  boardCoverage: TLocation[];
+  location: TLocation;
+};
+
 export type TPiece = King | Queen | Rook | Bishop | Knight | Pawn;

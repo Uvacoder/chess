@@ -99,13 +99,13 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Test",
-    fen: "rnbqkbnr/ppppp1pp/8/5p2/4P3/8/PPPP1PPP/RNBQKBNR w - - 0 2",
+    fen: "rnbqk3/pppppppP/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
 
 export enum COLORS {
   WHITE = "white",

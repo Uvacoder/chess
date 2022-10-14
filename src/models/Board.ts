@@ -1,6 +1,7 @@
 import {
   DRAW_REASONS,
   TBoardKing,
+  TCurrPiece,
   TLocation,
   TPiece,
   TPieceMap,
@@ -60,12 +61,7 @@ export default class Board {
     },
   };
 
-  private m_currPiece: {
-    piece: TPiece | null;
-    validLocations: TLocation[];
-    boardCoverage: TLocation[];
-    location: TLocation;
-  } = {
+  private m_currPiece: TCurrPiece = {
     piece: null,
     validLocations: [],
     boardCoverage: [],
@@ -91,7 +87,9 @@ export default class Board {
   set turn(val: COLORS) {
     this.m_turn = val;
   }
+
   // getters
+
   get fen() {
     return this.m_currFen;
   }
@@ -371,7 +369,11 @@ export default class Board {
       )
         return;
 
-      this.MoveAction(this.m_board, this.m_currPiece.location, cell.location);
+      this.StartPieceMove(
+        this.m_board,
+        this.m_currPiece.location,
+        cell.location
+      );
 
       this.ResetBoardMarkers();
     } else if (cell.piece === null) {
@@ -619,39 +621,6 @@ export default class Board {
       this.m_piecesLocation[playerColor][curPieceLocIdx] = destLocation;
     }
   }
-  public PromotePawn(
-    cell: Cell,
-    pieceName: "queen" | "rook" | "bishop" | "knight"
-  ) {
-    const location = cell.location;
-    const board = this.m_board;
-    const piece = board[location.x][location.y].piece;
-    if (piece === null) return;
-    const color = piece.color;
-
-    if (piece instanceof Pawn === false) return;
-    let newPiece = null;
-    switch (pieceName) {
-      case "queen":
-        newPiece = new Queen(color);
-        break;
-      case "rook":
-        newPiece = new Rook(color);
-        break;
-      case "bishop":
-        newPiece = new Bishop(color);
-        break;
-      case "knight":
-        newPiece = new Knight(color);
-        break;
-      default:
-        break;
-    }
-    if (newPiece === null) return;
-    else {
-      cell.piece = newPiece;
-    }
-  }
 
   private CastleKing(
     board: Cell[][],
@@ -689,128 +658,7 @@ export default class Board {
       draw: false,
     };
   }
-  public MovePiece(
-    board: Cell[][],
-    boardKing: TBoardKing,
-    srcLocation: TLocation,
-    destLocation: TLocation
-  ) {
-    this.m_halfTurnMoves++;
-    this.m_totalMoves++;
 
-    const playerColor = this.m_currPiece.piece!.color;
-    const opponentColor = playerColor === "white" ? "black" : "white";
-
-    if (board[destLocation.x][destLocation.y].piece instanceof King) return;
-
-    let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
-
-    if (board[srcLocation.x][srcLocation.y].piece instanceof King) {
-      const kingColor = board[srcLocation.x][srcLocation.y].piece!.color;
-      boardKing[kingColor].location = destLocation;
-      if (destLocation.y == srcLocation.y + 2) {
-        this.CastleKing(board, srcLocation, "ks");
-        return;
-      } else if (destLocation.y == srcLocation.y - 2) {
-        this.CastleKing(board, srcLocation, "qs");
-        return;
-      }
-    } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
-      this.m_halfTurnMoves = 0;
-      const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
-      const pawnColor = pawn!.color;
-
-      const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
-      if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
-        (pawn as Pawn).enPassantEligible = true;
-
-      // see if move is enpassant move
-      const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
-      const xLoc = srcLocation.x + enPassantCaptureOffsetX;
-      const leftY = srcLocation.y - 1;
-      const rightY = srcLocation.y + 1;
-      const leftPiece = board[srcLocation.x][leftY]?.piece;
-      const rightPiece = board[srcLocation.x][rightY]?.piece;
-
-      const destHasPiece = board[destLocation.x][destLocation.y].piece !== null;
-
-      if (
-        leftPiece instanceof Pawn &&
-        !destHasPiece &&
-        leftPiece.color === opponentColor &&
-        destLocation.x === xLoc &&
-        destLocation.y === leftY
-      ) {
-        board[srcLocation.x][srcLocation.y - 1].piece = null;
-        this.AssignSound("capture");
-      } else if (
-        rightPiece instanceof Pawn &&
-        !destHasPiece &&
-        rightPiece.color === opponentColor &&
-        destLocation.x === xLoc &&
-        destLocation.y === rightY
-      ) {
-        board[srcLocation.x][srcLocation.y + 1].piece = null;
-        this.AssignSound("capture");
-      }
-
-      const promotionRow = pawnColor === "white" ? 0 : 7;
-      if (destLocation.x === promotionRow) {
-        finalPieceAtDestination = new Queen(pawnColor);
-      }
-    }
-
-    const pieceAtDestination = board[destLocation.x][destLocation.y].piece;
-    if (pieceAtDestination !== null) this.m_halfTurnMoves = 0;
-    board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
-    board[srcLocation.x][srcLocation.y].piece = null;
-  }
-  public MoveAction(
-    board: Cell[][],
-    srcLocation: TLocation,
-    destLocation: TLocation
-  ) {
-    const playerColor = this.m_currPiece.piece!.color;
-    const opponentColor =
-      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
-
-    const oppPieceAtDestination = board[destLocation.x][destLocation.y].piece;
-
-    this.RecordPiecesLocation(
-      srcLocation,
-      destLocation,
-      oppPieceAtDestination !== null,
-      playerColor,
-      opponentColor
-    );
-    this.ResetCheck();
-    this.ResetEnPassantEligible();
-
-    this.m_kings[playerColor].checkInfo.status = false;
-    this.m_kings[playerColor].checkInfo.responsibleSquares = [];
-
-    if (oppPieceAtDestination) this.AssignSound("capture");
-    else this.AssignSound("move");
-
-    this.MovePiece(board, this.m_kings, srcLocation, destLocation);
-
-    if (this.m_currPiece.piece) this.m_currPiece.piece.hasMoved = true;
-    this.m_currPiece.location = destLocation;
-
-    const currBoardFen = Fen.GenerateFen(
-      board,
-      this.m_kings,
-      opponentColor,
-      this.m_totalMoves,
-      this.m_halfTurnMoves
-    );
-
-    this.m_currFen = currBoardFen;
-    this.game.AddToBoardPositions(currBoardFen);
-    this.GameOver(board, playerColor, opponentColor);
-    this.SwitchTurn();
-    this.ResetCurrPiece();
-  }
   public GameOver(board: Cell[][], playerColor: COLORS, opponentColor: COLORS) {
     const checkSquares = this.KingInCheck(board, opponentColor, this.kings);
     if (checkSquares.length > 0) {
@@ -893,7 +741,6 @@ export default class Board {
   }
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
-    console.log(opponentPieceLocations);
     const isNotStalemate = opponentPieceLocations.some((loc) => {
       const piece = board[loc.x][loc.y].piece;
       if (piece === null) return false;
@@ -952,5 +799,167 @@ export default class Board {
     if (countFen >= 3)
       return { status: true, reason: DRAW_REASONS.THREEFOLD_REPETITION };
     return { status: false, reason: null };
+  }
+  public StartPieceMove(
+    board: Cell[][],
+    srcLocation: TLocation,
+    destLocation: TLocation
+  ) {
+    const playerColor = this.m_currPiece.piece!.color;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    const oppPieceAtDestination = board[destLocation.x][destLocation.y].piece;
+
+    this.RecordPiecesLocation(
+      srcLocation,
+      destLocation,
+      oppPieceAtDestination !== null,
+      playerColor,
+      opponentColor
+    );
+    this.ResetCheck();
+    this.ResetEnPassantEligible();
+
+    this.m_kings[playerColor].checkInfo.status = false;
+    this.m_kings[playerColor].checkInfo.responsibleSquares = [];
+
+    if (oppPieceAtDestination) this.AssignSound("capture");
+    else this.AssignSound("move");
+
+    this.PieceMoveMid(board, this.m_kings, srcLocation, destLocation);
+  }
+  public PieceMoveMid(
+    board: Cell[][],
+    boardKing: TBoardKing,
+    srcLocation: TLocation,
+    destLocation: TLocation
+  ) {
+    this.m_halfTurnMoves++;
+    this.m_totalMoves++;
+
+    const playerColor = this.m_currPiece.piece!.color;
+    const opponentColor = playerColor === "white" ? "black" : "white";
+
+    if (board[destLocation.x][destLocation.y].piece instanceof King) return;
+
+    let finalPieceAtDestination = board[srcLocation.x][srcLocation.y].piece;
+    let isPromoting = false;
+    if (board[srcLocation.x][srcLocation.y].piece instanceof King) {
+      const kingColor = board[srcLocation.x][srcLocation.y].piece!.color;
+      boardKing[kingColor].location = destLocation;
+      if (destLocation.y == srcLocation.y + 2) {
+        this.CastleKing(board, srcLocation, "ks");
+        return;
+      } else if (destLocation.y == srcLocation.y - 2) {
+        this.CastleKing(board, srcLocation, "qs");
+        return;
+      }
+    } else if (board[srcLocation.x][srcLocation.y].piece instanceof Pawn) {
+      this.m_halfTurnMoves = 0;
+      const pawn = board[srcLocation.x][srcLocation.y].piece as Pawn;
+      const pawnColor = pawn!.color;
+
+      const enPassantEligibleOffset = pawnColor === "white" ? -2 : 2;
+      if (destLocation.x === srcLocation.x + enPassantEligibleOffset)
+        (pawn as Pawn).enPassantEligible = true;
+
+      // see if move is enpassant move
+      const enPassantCaptureOffsetX = pawnColor === "white" ? -1 : 1;
+      const xLoc = srcLocation.x + enPassantCaptureOffsetX;
+      const leftY = srcLocation.y - 1;
+      const rightY = srcLocation.y + 1;
+      const leftPiece = board[srcLocation.x][leftY]?.piece;
+      const rightPiece = board[srcLocation.x][rightY]?.piece;
+
+      const destHasPiece = board[destLocation.x][destLocation.y].piece !== null;
+      if (
+        leftPiece instanceof Pawn &&
+        !destHasPiece &&
+        leftPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === leftY
+      ) {
+        board[srcLocation.x][srcLocation.y - 1].piece = null;
+        this.AssignSound("capture");
+      } else if (
+        rightPiece instanceof Pawn &&
+        !destHasPiece &&
+        rightPiece.color === opponentColor &&
+        destLocation.x === xLoc &&
+        destLocation.y === rightY
+      ) {
+        board[srcLocation.x][srcLocation.y + 1].piece = null;
+        this.AssignSound("capture");
+      }
+
+      const promotionRow = pawnColor === "white" ? 0 : 7;
+      if (destLocation.x === promotionRow) {
+        pawn.promotion = true;
+        isPromoting = true;
+      } else pawn.promotion = false;
+    }
+
+    const pieceAtDestination = board[destLocation.x][destLocation.y].piece;
+    if (pieceAtDestination !== null) this.m_halfTurnMoves = 0;
+    board[destLocation.x][destLocation.y].piece = finalPieceAtDestination;
+    board[srcLocation.x][srcLocation.y].piece = null;
+
+    if (isPromoting) return;
+    this.PieceMoveEnd(board, destLocation);
+  }
+  public PromotePawn(cell: Cell, pieceName: string) {
+    const location = cell.location;
+    const board = this.m_board;
+    const piece = board[location.x][location.y].piece;
+    if (piece === null) return;
+    const color = piece.color;
+    if (piece instanceof Pawn === false) return;
+    let newPiece = null;
+    switch (pieceName) {
+      case "q":
+        newPiece = new Queen(color);
+        break;
+      case "r":
+        newPiece = new Rook(color);
+        break;
+      case "b":
+        newPiece = new Bishop(color);
+        break;
+      case "n":
+        newPiece = new Knight(color);
+        break;
+      default:
+        break;
+    }
+    if (newPiece === null) return;
+    else {
+      cell.piece = newPiece;
+    }
+    this.PieceMoveEnd(board, location);
+  }
+  public PieceMoveEnd(board: Cell[][], destLocation: TLocation) {
+    if (!this.m_currPiece.piece) return;
+
+    const playerColor = this.m_currPiece.piece.color;
+    const opponentColor =
+      playerColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+
+    if (this.m_currPiece.piece) this.m_currPiece.piece.hasMoved = true;
+    this.m_currPiece.location = destLocation;
+
+    const currBoardFen = Fen.GenerateFen(
+      board,
+      this.m_kings,
+      opponentColor,
+      this.m_totalMoves,
+      this.m_halfTurnMoves
+    );
+
+    this.m_currFen = currBoardFen;
+    this.game.AddToBoardPositions(currBoardFen);
+    this.GameOver(board, playerColor, opponentColor);
+    this.SwitchTurn();
+    this.ResetCurrPiece();
   }
 }
