@@ -19,7 +19,7 @@ export default function ModalComponent({
 }) {
   return openStatus ? (
     <div
-      className={`transition absolute z-[999999999999] top-0 w-full h-full backdrop-blur-sm ${backgroundClassName} ${"opacity-100"}`}
+      className={`transition absolute z-[999] top-0 w-full h-full backdrop-blur-sm ${backgroundClassName} ${"opacity-100"}`}
     >
       {closable && (
         <button

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Biohazard, Chess, Copy, InfoCircle } from "tabler-icons-react";
+import { Chess, Copy } from "tabler-icons-react";
 import { useGame } from "../hooks/GameContext";
 import {
   AVAILABLE_FENS_LABLED,
@@ -9,13 +9,7 @@ import {
 } from "../utils/Constants";
 import InfoButtons from "./InfoButtons";
 import ModalComponent from "./Modal";
-export default function SideBar({
-  updateFen,
-  invalidFen,
-}: {
-  invalidFen: boolean;
-  updateFen: Function;
-}) {
+export default function SideBar() {
   const [modalOpen, setModalOpen] = useState(false);
   return (
     <div className="grid relative h-full w-[400px]">
@@ -27,7 +21,7 @@ export default function SideBar({
           <Chess size={20} />
           <p className="overflow-hidden">Game Info</p>
         </button>
-        <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
+        <FenComponent />
         <InfoButtons />
       </div>
       <ModalComponent
@@ -46,14 +40,9 @@ export default function SideBar({
   );
 }
 
-function FenComponent({
-  updateFen,
-  invalidFen,
-}: {
-  invalidFen: boolean;
-  updateFen: Function;
-}) {
+function FenComponent() {
   const [fenString, setFenString] = useState(START_POSITION);
+  const { ChangeFenString, fenError } = useGame();
 
   return (
     <div className="mt-5">
@@ -72,9 +61,9 @@ function FenComponent({
         <textarea
           rows={6}
           className={`border-2 resize-none appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-            invalidFen && "animate-[shake_0.5s_ease-in-out_1]"
+            fenError && "animate-[shake_0.5s_ease-in-out_1]"
           } ${
-            invalidFen
+            fenError
               ? " bg-rose-100 border-[2px] border-rose-500"
               : "bg-neutral-800 border-neutral-700 text-white"
           }`}
@@ -110,7 +99,7 @@ function FenComponent({
       </div>
       <div className="flex gap-2">
         <button
-          onClick={() => updateFen(fenString)}
+          onClick={() => ChangeFenString(fenString)}
           className="mt-3 w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           type="button"
         >
@@ -121,7 +110,7 @@ function FenComponent({
           type="button"
           onClick={() => {
             setFenString(START_POSITION);
-            updateFen(START_POSITION);
+            ChangeFenString(START_POSITION);
           }}
         >
           Reset Board

@@ -6,13 +6,9 @@ import { COLORS, Flip, START_POSITION } from "../utils/Constants";
 import Piece from "./Piece";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useGame } from "../hooks/GameContext";
-export default function BoardComponent({
-  setGameOver,
-}: {
-  setGameOver: Function;
-}) {
+export default function BoardComponent() {
   const { board } = useGame();
-  const { setFen } = useGame();
+  const { setFen, setGameOver } = useGame();
   const [state, setState] = useState(false);
   useEffect(() => {
     setFen(board.fen || START_POSITION);
