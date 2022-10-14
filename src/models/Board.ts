@@ -661,6 +661,7 @@ export default class Board {
       move: false,
       draw: false,
     };
+    this.PieceMoveEnd(board, srcLocation);
   }
 
   public GameOver(board: Cell[][], playerColor: COLORS, opponentColor: COLORS) {
