@@ -90,7 +90,6 @@ export default function BoardComponent() {
                   if (!gameOver.status) {
                     board.PieceClick(cell, board.turn);
                     PlaySound();
-                    console.log(board.sound);
                     setCell(cell);
                     setState(!state);
                   }
