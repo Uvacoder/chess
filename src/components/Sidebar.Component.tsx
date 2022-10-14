@@ -18,8 +18,8 @@ export default function SideBar({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   return (
-    <div className="grid relative w-[400px]">
-      <div className="p-5 bg-neutral-900 rounded-lg">
+    <div className="grid relative h-full w-[400px]">
+      <div className="p-5 bg-neutral-900">
         <button
           onClick={() => setModalOpen(true)}
           className="p-2 flex text-[1.5rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
