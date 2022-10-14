@@ -280,7 +280,8 @@ export default class Cell {
   public static CellIsAttacked(
     board: Cell[][],
     location: TLocation,
-    playerColor: COLORS
+    playerColor: COLORS,
+    forCheck = false
   ) {
     const returnData = {
       status: false,
@@ -300,6 +301,32 @@ export default class Cell {
           const findMove = validMoves.find((m) => {
             return m.x === location.x && m.y === location.y;
           });
+
+          if (forCheck) {
+            if (attackingPiece instanceof Pawn) {
+              console.log("PAWN");
+              /**
+               * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
+               * If pawn is white, check top left and right diagonals for king. If black, check bottom left and right diagonals for king.
+               */
+              const attackerLD: TLocation = {
+                x:
+                  attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
+                y: loc.y - 1,
+              };
+              const attackerRD: TLocation = {
+                x:
+                  attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
+                y: loc.y + 1,
+              };
+              const findMove = [attackerLD, attackerRD].find((m) => {
+                return m.x === location.x && m.y === location.y;
+              });
+              if (!findMove) return null;
+              return loc;
+            }
+          }
+
           if (!findMove) {
             /**
              * if the move is not in validLocations,

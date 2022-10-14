@@ -287,7 +287,12 @@ export default class Board {
             });
         });
       validLocations = validLocations.filter((location) => {
-        const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
+        const isAttacked = Cell.CellIsAttacked(
+          board,
+          location,
+          piece.color,
+          true
+        );
         return !isAttacked.status;
       });
 
@@ -656,6 +661,7 @@ export default class Board {
       move: false,
       draw: false,
     };
+    this.PieceMoveEnd(board, srcLocation);
   }
 
   public GameOver(board: Cell[][], playerColor: COLORS, opponentColor: COLORS) {
@@ -741,6 +747,13 @@ export default class Board {
   public IsStalemate(board: Cell[][], opponentColor: COLORS) {
     const opponentPieceLocations = this.m_piecesLocation[opponentColor];
     const isNotStalemate = opponentPieceLocations.some((loc) => {
+      const piece = board[loc.x][loc.y].piece;
+      if (piece === null) return false;
+
+      const validMoves = this.GetValidMoves(board, piece, board[loc.x][loc.y]);
+      return validMoves.length > 0;
+    });
+    const isNotStalemateLocs = opponentPieceLocations.filter((loc) => {
       const piece = board[loc.x][loc.y].piece;
       if (piece === null) return false;
 
