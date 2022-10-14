@@ -95,7 +95,7 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Pawn Capture, Enpassant Eligible",
-    fen: "rnbqkbnr/ppp2ppp/8/3pp3/4PP2/8/PPPP2PP/RNBQKBNR w - - 0 4",
+    fen: "rnbqkbnr/2pppppp/8/pP6/1P6/8/2PPPPPP/RNBQKBNR b - - 0 5",
   },
   {
     name: "Test",
@@ -105,7 +105,7 @@ export const AVAILABLE_FENS_LABLED = [
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end - 1].fen;
 
 export enum COLORS {
   WHITE = "white",

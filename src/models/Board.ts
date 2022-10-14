@@ -239,6 +239,13 @@ export default class Board {
         }
       });
     });
+    this.m_board.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell.piece instanceof Pawn) {
+          console.log(cell.location, cell.piece.enPassantEligible);
+        }
+      });
+    });
   }
 
   private ResetSound() {
@@ -736,8 +743,12 @@ export default class Board {
       const rightY = srcLocation.y + 1;
       const leftPiece = board[srcLocation.x][leftY]?.piece;
       const rightPiece = board[srcLocation.x][rightY]?.piece;
+
+      const destHasPiece = board[destLocation.x][destLocation.y].piece !== null;
+
       if (
         leftPiece instanceof Pawn &&
+        !destHasPiece &&
         leftPiece.color === opponentColor &&
         destLocation.x === xLoc &&
         destLocation.y === leftY
@@ -746,6 +757,7 @@ export default class Board {
         this.AssignSound("capture");
       } else if (
         rightPiece instanceof Pawn &&
+        !destHasPiece &&
         rightPiece.color === opponentColor &&
         destLocation.x === xLoc &&
         destLocation.y === rightY
@@ -899,7 +911,6 @@ export default class Board {
       if (piece === null) return false;
 
       const validMoves = this.GetValidMoves(board, piece, board[loc.x][loc.y]);
-      console.log(validMoves);
       return validMoves.length > 0;
     });
     return !isNotStalemate;

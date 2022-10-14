@@ -69,9 +69,9 @@ export default function BoardComponent() {
                   else if (board.sound.draw) sounds.draw.play();
                 }}
               >
-                {/* <div className="absolute">
-                 {x}, {y}
-               </div> */}
+                {/* <div className="absolute top-0 left-0">
+                  {x}, {y}
+                </div> */}
                 <Piece sprite={cell.piece?.sprite} />
               </div>
             );

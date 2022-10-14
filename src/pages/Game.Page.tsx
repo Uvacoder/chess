@@ -43,10 +43,11 @@ export default function GamePage() {
     <div className="grid relative h-screen place-items-center">
       <div className="absolute top-[20px] right-[20px] ">
         <button
-          className="p-2 bg-neutral-700 rounded hover:opacity-80"
+          className="p-2 bg-neutral-700 rounded flex gap-2 items-center hover:opacity-80"
           onClick={() => setDrawerOpen(true)}
         >
           <ChevronLeft />
+          <p>Game Options</p>
         </button>
       </div>
       <div className="flex">
