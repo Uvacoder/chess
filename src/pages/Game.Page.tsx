@@ -9,103 +9,59 @@ import { TGameOverInfo } from "../@types";
 import GameContext, { useGame } from "../hooks/GameContext";
 import { START_POSITION } from "../utils/Constants";
 import GameOver from "../components/GameOver";
+import { Anchor, ChevronLeft } from "tabler-icons-react";
+import DrawerComponent from "../components/Drawer.Component";
 export default function GamePage() {
-  const { fen, setFen, board, setBoard } = useGame();
+  const {
+    fen,
+    setFen,
+    board,
+    setBoard,
+    fenError,
+    gameOver,
+    setGameOver,
+    setFenError,
+    ChangeFenString,
+    ResetGameOverStatus,
+  } = useGame();
 
   // const [board, setBoard] = useState<Board>();
-  const [fenError, setFenError] = useState<boolean>(false);
-
-  const [gameOver, setGameOver] = useState<TGameOverInfo>({
-    status: false,
-    reason: {
-      won: {
-        status: false,
-        reason: null,
-      },
-      draw: {
-        status: false,
-        reason: null,
-      },
-    },
-  });
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setFen(START_POSITION);
     const game = new Game();
     game.NewGame(fen);
-    setGameOver({
-      status: false,
-      reason: {
-        won: {
-          status: false,
-          reason: null,
-        },
-        draw: {
-          status: false,
-          reason: null,
-        },
-      },
-    });
+
     setFenError(false);
     const b = game.board;
     setBoard(b);
-    setGameOver({
-      status: false,
-      reason: {
-        won: {
-          status: false,
-          reason: null,
-        },
-        draw: {
-          status: false,
-          reason: null,
-        },
-      },
-    });
+    // ResetGameOverStatus();
   }, []);
-
-  function ChangeFenString(fen: string) {
-    try {
-      setFenError(false);
-      setFen(fen);
-      const game = new Game();
-      game.NewGame(fen);
-      const b = game.board;
-      setBoard(b);
-      setGameOver({
-        status: false,
-        reason: {
-          won: {
-            status: false,
-            reason: null,
-          },
-          draw: {
-            status: false,
-            reason: null,
-          },
-        },
-      });
-      toast.success("Position Updated on the Board");
-    } catch (error) {
-      setFenError(true);
-      console.error(error);
-      toast.error("Invalid Fen String");
-    }
-  }
 
   return (
     <div className="grid relative h-screen place-items-center">
+      <div className="absolute top-[20px] right-[20px] ">
+        <button
+          className="p-2 bg-neutral-700 rounded hover:opacity-80"
+          onClick={() => setDrawerOpen(true)}
+        >
+          <ChevronLeft />
+        </button>
+      </div>
       <div className="flex">
         {board && (
           <div className="relative">
-            <BoardComponent setGameOver={setGameOver} />
-            <ModalComponent setOpen={() => {}} openStatus={gameOver.status}>
-              <GameOver gameOverInfo={gameOver} />
-            </ModalComponent>
+            <BoardComponent />
           </div>
         )}
-        <SidebarComponent invalidFen={fenError} updateFen={ChangeFenString} />
       </div>
+      <ModalComponent setOpen={() => {}} openStatus={gameOver.status}>
+        <GameOver />
+      </ModalComponent>
+      <DrawerComponent isOpen={drawerOpen} setOpen={setDrawerOpen}>
+        <SidebarComponent setDrawerOpen={setDrawerOpen} />
+      </DrawerComponent>
     </div>
   );
 }

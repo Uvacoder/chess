@@ -1,20 +1,14 @@
-import React from "react";
-
 export default function Piece({ sprite }: { sprite: string | undefined }) {
-  return (
-    <div
-      className="w-[75px] h-[75px] object-cover"
-      style={{ transform: "translate(0, 0)" }}
-      draggable={sprite !== null}
-    >
-      {sprite && (
-        <img
-          src={sprite}
-          alt=""
-          className="w-[75px] h-[75px]"
-          style={{ transform: "translate(0, 0)" }}
-        />
-      )}
-    </div>
+  return sprite ? (
+    <img
+      className="z-[999] w-[90px] h-[full] absolute top-[50%] left-[50%]"
+      style={{
+        transform: "translate(-50%, -50%)",
+      }}
+      src={sprite}
+      alt=""
+    />
+  ) : (
+    <></>
   );
 }

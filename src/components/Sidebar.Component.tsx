@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Biohazard, Chess, Copy, InfoCircle } from "tabler-icons-react";
+import { Chess, Copy } from "tabler-icons-react";
 import { useGame } from "../hooks/GameContext";
 import {
   AVAILABLE_FENS_LABLED,
@@ -10,16 +10,14 @@ import {
 import InfoButtons from "./InfoButtons";
 import ModalComponent from "./Modal";
 export default function SideBar({
-  updateFen,
-  invalidFen,
+  setDrawerOpen,
 }: {
-  invalidFen: boolean;
-  updateFen: Function;
+  setDrawerOpen: Function;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   return (
-    <div className="grid relative w-[400px]">
-      <div className="p-5 bg-neutral-900 rounded-lg">
+    <div className="grid relative h-full w-[400px]">
+      <div className="p-5 bg-neutral-900">
         <button
           onClick={() => setModalOpen(true)}
           className="p-2 flex text-[1.5rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
@@ -27,7 +25,7 @@ export default function SideBar({
           <Chess size={20} />
           <p className="overflow-hidden">Game Info</p>
         </button>
-        <FenComponent updateFen={updateFen} invalidFen={invalidFen} />
+        <FenComponent setDrawerOpen={setDrawerOpen} />
         <InfoButtons />
       </div>
       <ModalComponent
@@ -39,21 +37,16 @@ export default function SideBar({
         closeBtnIconColor="white"
       >
         <div className="p-3">
-          <GameInfo />
+          <GameInfo setDrawerOpen={setDrawerOpen} />
         </div>
       </ModalComponent>
     </div>
   );
 }
 
-function FenComponent({
-  updateFen,
-  invalidFen,
-}: {
-  invalidFen: boolean;
-  updateFen: Function;
-}) {
+function FenComponent({ setDrawerOpen }: { setDrawerOpen: Function }) {
   const [fenString, setFenString] = useState(START_POSITION);
+  const { ChangeFenString, fenError } = useGame();
 
   return (
     <div className="mt-5">
@@ -72,9 +65,9 @@ function FenComponent({
         <textarea
           rows={6}
           className={`border-2 resize-none appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-            invalidFen && "animate-[shake_0.5s_ease-in-out_1]"
+            fenError && "animate-[shake_0.5s_ease-in-out_1]"
           } ${
-            invalidFen
+            fenError
               ? " bg-rose-100 border-[2px] border-rose-500"
               : "bg-neutral-800 border-neutral-700 text-white"
           }`}
@@ -110,7 +103,10 @@ function FenComponent({
       </div>
       <div className="flex gap-2">
         <button
-          onClick={() => updateFen(fenString)}
+          onClick={() => {
+            ChangeFenString(fenString);
+            fenError && setDrawerOpen(false);
+          }}
           className="mt-3 w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           type="button"
         >
@@ -121,7 +117,8 @@ function FenComponent({
           type="button"
           onClick={() => {
             setFenString(START_POSITION);
-            updateFen(START_POSITION);
+            ChangeFenString(START_POSITION);
+            fenError && setDrawerOpen(false);
           }}
         >
           Reset Board
@@ -131,7 +128,7 @@ function FenComponent({
   );
 }
 
-function GameInfo() {
+function GameInfo({ setDrawerOpen }: { setDrawerOpen: Function }) {
   const { fen, pgn, board } = useGame();
 
   return (
@@ -160,6 +157,7 @@ function GameInfo() {
             title="Copy Fen"
             onClick={() => {
               CopyTextToClipBoard(fen);
+              setDrawerOpen(false);
               toast.success("FEN Copied to Clipboard");
             }}
           >

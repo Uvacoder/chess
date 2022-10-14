@@ -280,7 +280,8 @@ export default class Cell {
   public static CellIsAttacked(
     board: Cell[][],
     location: TLocation,
-    playerColor: COLORS
+    playerColor: COLORS,
+    forCheck: boolean = false
   ) {
     const returnData = {
       status: false,
@@ -312,6 +313,7 @@ export default class Cell {
             };
             const findMove = [attackerLD, attackerRD].find((m) => {
               const locInMove = m.x === location.x && m.y === location.y;
+              if (forCheck) return locInMove;
               const locationPiece = board[m.x][m.y]?.piece;
               let pieceIsofPlayerColor =
                 locationPiece && locationPiece.color === playerColor;
