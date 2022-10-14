@@ -9,7 +9,11 @@ import {
 } from "../utils/Constants";
 import InfoButtons from "./InfoButtons";
 import ModalComponent from "./Modal";
-export default function SideBar() {
+export default function SideBar({
+  setDrawerOpen,
+}: {
+  setDrawerOpen: Function;
+}) {
   const [modalOpen, setModalOpen] = useState(false);
   return (
     <div className="grid relative h-full w-[400px]">
@@ -21,7 +25,7 @@ export default function SideBar() {
           <Chess size={20} />
           <p className="overflow-hidden">Game Info</p>
         </button>
-        <FenComponent />
+        <FenComponent setDrawerOpen={setDrawerOpen} />
         <InfoButtons />
       </div>
       <ModalComponent
@@ -33,14 +37,14 @@ export default function SideBar() {
         closeBtnIconColor="white"
       >
         <div className="p-3">
-          <GameInfo />
+          <GameInfo setDrawerOpen={setDrawerOpen} />
         </div>
       </ModalComponent>
     </div>
   );
 }
 
-function FenComponent() {
+function FenComponent({ setDrawerOpen }: { setDrawerOpen: Function }) {
   const [fenString, setFenString] = useState(START_POSITION);
   const { ChangeFenString, fenError } = useGame();
 
@@ -99,7 +103,10 @@ function FenComponent() {
       </div>
       <div className="flex gap-2">
         <button
-          onClick={() => ChangeFenString(fenString)}
+          onClick={() => {
+            ChangeFenString(fenString);
+            fenError && setDrawerOpen(false);
+          }}
           className="mt-3 w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           type="button"
         >
@@ -111,6 +118,7 @@ function FenComponent() {
           onClick={() => {
             setFenString(START_POSITION);
             ChangeFenString(START_POSITION);
+            fenError && setDrawerOpen(false);
           }}
         >
           Reset Board
@@ -120,7 +128,7 @@ function FenComponent() {
   );
 }
 
-function GameInfo() {
+function GameInfo({ setDrawerOpen }: { setDrawerOpen: Function }) {
   const { fen, pgn, board } = useGame();
 
   return (
@@ -149,6 +157,7 @@ function GameInfo() {
             title="Copy Fen"
             onClick={() => {
               CopyTextToClipBoard(fen);
+              setDrawerOpen(false);
               toast.success("FEN Copied to Clipboard");
             }}
           >

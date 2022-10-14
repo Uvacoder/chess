@@ -60,7 +60,7 @@ export default function GamePage() {
         <GameOver />
       </ModalComponent>
       <DrawerComponent isOpen={drawerOpen} setOpen={setDrawerOpen}>
-        <SidebarComponent />
+        <SidebarComponent setDrawerOpen={setDrawerOpen} />
       </DrawerComponent>
     </div>
   );

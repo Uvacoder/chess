@@ -2,7 +2,7 @@ import React, { createContext, ReactNode } from "react";
 import { TGameOverInfo } from "../@types";
 import Board from "../models/Board";
 import Game from "../models/Game";
-
+import { toast } from "react-toastify";
 const GameContext = createContext<any>({});
 
 export const useGame = () =>
@@ -75,9 +75,11 @@ export default function GameProvider({ children }: { children: ReactNode }) {
           },
         },
       });
+      toast.success("Position Set on Board");
     } catch (error) {
       setFenError(true);
       console.error(error);
+      toast.error("Invalid FEN string");
     }
   }
 
