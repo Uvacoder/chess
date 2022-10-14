@@ -1,6 +1,6 @@
 import FenParser from "@chess-fu/fen-parser";
 import { TBoardKing, TGameOverInfo, TPieceMap } from "../@types";
-import { COLORS, GAME_STATE, PIECES, START_POSITION } from "../utils/Constants";
+import { COLORS, PIECES, START_POSITION } from "../utils/Constants";
 import Board from "./Board";
 
 import Cell from "./Cell";
