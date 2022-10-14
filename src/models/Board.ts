@@ -565,7 +565,6 @@ export default class Board {
     const returnData = [...responsibleSquares, ..._responsibleSquares];
 
     return returnData;
-    // return [...responsibleSquares, ..._responsibleSquares];
   }
 
   private AssignSound(type: string) {

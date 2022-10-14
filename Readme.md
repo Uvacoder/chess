@@ -26,13 +26,13 @@
 |       En Passant       |        ✔️         |
 |     Turn Wise Play     |        ✔️         |
 |       Checkmate        |        ✔️         |
-|     Pawn Promotion     |        ⏳         |
+|     Pawn Promotion     |        ✔️         |
+|       Stalemate        |        ✔️         |
+| Insufficient Material  |        ⏳         |
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
 |      Resignation       |        ✖️         |
 |       Time Up ✖️       |
-| Insufficient Material  |        ✖️         |
-|       Stalemate        |        ✖️         |
 
 ---
 
