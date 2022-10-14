@@ -12,20 +12,8 @@ import GameOver from "../components/GameOver";
 import { Anchor, ChevronLeft } from "tabler-icons-react";
 import DrawerComponent from "../components/Drawer.Component";
 export default function GamePage() {
-  const {
-    fen,
-    setFen,
-    board,
-    setBoard,
-    fenError,
-    gameOver,
-    setGameOver,
-    setFenError,
-    ChangeFenString,
-    ResetGameOverStatus,
-  } = useGame();
+  const { fen, setFen, board, setBoard, gameOver, setFenError } = useGame();
 
-  // const [board, setBoard] = useState<Board>();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -36,17 +24,17 @@ export default function GamePage() {
     setFenError(false);
     const b = game.board;
     setBoard(b);
-    // ResetGameOverStatus();
   }, []);
 
   return (
     <div className="grid relative h-screen place-items-center">
       <div className="absolute top-[20px] right-[20px] ">
         <button
-          className="p-2 bg-neutral-700 rounded hover:opacity-80"
+          className="p-2 bg-neutral-700 rounded flex gap-2 items-center hover:opacity-80"
           onClick={() => setDrawerOpen(true)}
         >
           <ChevronLeft />
+          <p>Game Options</p>
         </button>
       </div>
       <div className="flex">

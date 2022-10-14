@@ -95,17 +95,17 @@ export const AVAILABLE_FENS_LABLED = [
   },
   {
     name: "Pawn Capture, Enpassant Eligible",
-    fen: "rnbqkbnr/ppp2ppp/8/3pp3/4PP2/8/PPPP2PP/RNBQKBNR w - - 0 4",
+    fen: "rnbqkbnr/2pppppp/8/pP6/1P6/8/2PPPPPP/RNBQKBNR b - - 0 5",
   },
   {
     name: "Test",
-    fen: "rn1qkbnr/ppp2ppp/8/8/3Pp3/5N2/PP4PP/RNB1KB1R b - - 0 13",
+    fen: "rnbqk3/pppppppP/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   },
 ];
 
 const st = 0;
 const end = AVAILABLE_FENS_LABLED.length - 1;
-export const START_POSITION = AVAILABLE_FENS_LABLED[0].fen;
+export const START_POSITION = AVAILABLE_FENS_LABLED[end].fen;
 
 export enum COLORS {
   WHITE = "white",

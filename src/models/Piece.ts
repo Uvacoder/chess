@@ -444,10 +444,8 @@ export class Knight extends Piece {
 }
 export class Pawn extends Piece {
   private m_enPassantEligible: boolean = false;
-  private m_enpassantCapture = {
-    left: false,
-    right: false,
-  };
+  private m_promotion: boolean = false;
+
   constructor(color: COLORS) {
     super(color, PIECES.PAWN);
     this.m_slidingPiece = false;
@@ -458,6 +456,12 @@ export class Pawn extends Piece {
 
   set enPassantEligible(val: boolean) {
     this.m_enPassantEligible = val;
+  }
+  get promotion() {
+    return this.m_promotion;
+  }
+  set promotion(promotion: boolean) {
+    this.m_promotion = promotion;
   }
   public CanCaptureEnpassant(board: Cell[][], currLocation: TLocation) {
     const enpassantCaptureDir = {
