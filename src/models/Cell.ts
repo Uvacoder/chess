@@ -280,8 +280,7 @@ export default class Cell {
   public static CellIsAttacked(
     board: Cell[][],
     location: TLocation,
-    playerColor: COLORS,
-    forCheck: boolean = false
+    playerColor: COLORS
   ) {
     const returnData = {
       status: false,
@@ -298,65 +297,41 @@ export default class Cell {
         else {
           const validMoves = attackingPiece.CalculateValidMoves(loc, board);
 
-          if (attackingPiece instanceof Pawn) {
+          const findMove = validMoves.find((m) => {
+            return m.x === location.x && m.y === location.y;
+          });
+          if (!findMove) {
             /**
-             * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
-             * If pawn is white, check top left and right diagonals for king. If black, check bottom left and right diagonals for king.
+             * if the move is not in validLocations,
+             * see if attacking piece is a sliding piece.
+             * If attacker is a sliding piece,
+             * see if attackingPiece and the coverageLoc are in same row, col or diagonal
+             * If no, return null
              */
-            const attackerLD: TLocation = {
-              x: attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
-              y: loc.y - 1,
-            };
-            const attackerRD: TLocation = {
-              x: attackingPiece.color === COLORS.WHITE ? loc.x - 1 : loc.x + 1,
-              y: loc.y + 1,
-            };
-            const findMove = [attackerLD, attackerRD].find((m) => {
-              const locInMove = m.x === location.x && m.y === location.y;
-              if (forCheck) return locInMove;
-              const locationPiece = board[m.x][m.y]?.piece;
-              let pieceIsofPlayerColor =
-                locationPiece && locationPiece.color === playerColor;
-              return locInMove && pieceIsofPlayerColor;
-            });
-            if (!findMove) return null;
-          } else {
-            const findMove = validMoves.find((m) => {
-              return m.x === location.x && m.y === location.y;
-            });
-            if (!findMove) {
-              /**
-               * if the move is not in validLocations,
-               * see if attacking piece is a sliding piece.
-               * If attacker is a sliding piece,
-               * see if attackingPiece and the coverageLoc are in same row, col or diagonal
-               * If no, return null
-               */
-              if (attackingPiece.slidingPiece === false) {
-                // if piece is knight, see L directions of the location. If a knight is not found in any L direction, return null
-                if (attackingPiece instanceof Knight) {
-                  const LDirections = Cell.GetLCoverage(loc);
-                  const findL = LDirections.find((m) => {
-                    return m && m.x === location.x && m?.y === location.y;
-                  });
-                  if (!findL) return null;
-                } else return null;
-              } else {
-                const sameRow = Direction.SameRow(loc, location);
-                const sameCol = Direction.SameCol(loc, location);
-                const sameDiagonal = Direction.SameDiagonal(loc, location);
-                if (
-                  attackingPiece instanceof Queen &&
-                  !sameRow &&
-                  !sameCol &&
-                  !sameDiagonal
-                )
-                  return null;
-                else if (attackingPiece instanceof Rook && !sameRow && !sameCol)
-                  return null;
-                else if (attackingPiece instanceof Bishop && !sameDiagonal)
-                  return null;
-              }
+            if (attackingPiece.slidingPiece === false) {
+              // if piece is knight, see L directions of the location. If a knight is not found in any L direction, return null
+              if (attackingPiece instanceof Knight) {
+                const LDirections = Cell.GetLCoverage(loc);
+                const findL = LDirections.find((m) => {
+                  return m && m.x === location.x && m?.y === location.y;
+                });
+                if (!findL) return null;
+              } else return null;
+            } else {
+              const sameRow = Direction.SameRow(loc, location);
+              const sameCol = Direction.SameCol(loc, location);
+              const sameDiagonal = Direction.SameDiagonal(loc, location);
+              if (
+                attackingPiece instanceof Queen &&
+                !sameRow &&
+                !sameCol &&
+                !sameDiagonal
+              )
+                return null;
+              else if (attackingPiece instanceof Rook && !sameRow && !sameCol)
+                return null;
+              else if (attackingPiece instanceof Bishop && !sameDiagonal)
+                return null;
             }
           }
           return location;

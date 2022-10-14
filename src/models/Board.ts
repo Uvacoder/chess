@@ -239,13 +239,6 @@ export default class Board {
         }
       });
     });
-    this.m_board.forEach((row) => {
-      row.forEach((cell) => {
-        if (cell.piece instanceof Pawn) {
-          console.log(cell.location, cell.piece.enPassantEligible);
-        }
-      });
-    });
   }
 
   private ResetSound() {
@@ -296,12 +289,7 @@ export default class Board {
             });
         });
       validLocations = validLocations.filter((location) => {
-        const isAttacked = Cell.CellIsAttacked(
-          board,
-          location,
-          piece.color,
-          true
-        );
+        const isAttacked = Cell.CellIsAttacked(board, location, piece.color);
         return !isAttacked.status;
       });
 

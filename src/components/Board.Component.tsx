@@ -7,7 +7,7 @@ import Piece from "./Piece";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useGame } from "../hooks/GameContext";
 export default function BoardComponent() {
-  const { board } = useGame();
+  const { board, gameOver } = useGame();
   const { setFen, setGameOver } = useGame();
   const [state, setState] = useState(false);
   useEffect(() => {
@@ -59,14 +59,16 @@ export default function BoardComponent() {
                   cell.piece !== null && "cursor-grab hover:opacity-80"
                 } ${cellColorClass} ${cellClass()}`}
                 onMouseDown={() => {
-                  board.PieceClick(cell, board.turn);
-                  setState(!state);
-                  if (board.sound.capture) sounds.capture.play();
-                  else if (board.sound.check) sounds.check.play();
-                  else if (board.sound.castle) sounds.castle.play();
-                  else if (board.sound.move) sounds.move.play();
-                  else if (board.sound.checkmate) sounds.checkmate.play();
-                  else if (board.sound.draw) sounds.draw.play();
+                  if (!gameOver.status) {
+                    board.PieceClick(cell, board.turn);
+                    setState(!state);
+                    if (board.sound.capture) sounds.capture.play();
+                    else if (board.sound.check) sounds.check.play();
+                    else if (board.sound.castle) sounds.castle.play();
+                    else if (board.sound.move) sounds.move.play();
+                    else if (board.sound.checkmate) sounds.checkmate.play();
+                    else if (board.sound.draw) sounds.draw.play();
+                  }
                 }}
               >
                 {/* <div className="absolute top-0 left-0">

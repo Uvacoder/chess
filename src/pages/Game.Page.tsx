@@ -12,20 +12,8 @@ import GameOver from "../components/GameOver";
 import { Anchor, ChevronLeft } from "tabler-icons-react";
 import DrawerComponent from "../components/Drawer.Component";
 export default function GamePage() {
-  const {
-    fen,
-    setFen,
-    board,
-    setBoard,
-    fenError,
-    gameOver,
-    setGameOver,
-    setFenError,
-    ChangeFenString,
-    ResetGameOverStatus,
-  } = useGame();
+  const { fen, setFen, board, setBoard, gameOver, setFenError } = useGame();
 
-  // const [board, setBoard] = useState<Board>();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -36,7 +24,6 @@ export default function GamePage() {
     setFenError(false);
     const b = game.board;
     setBoard(b);
-    // ResetGameOverStatus();
   }, []);
 
   return (
