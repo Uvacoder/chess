@@ -715,14 +715,20 @@ export default class Board {
   public IsCheckmate(board: Cell[][], opponentColor: COLORS) {
     const opponentKing = this.m_kings[opponentColor];
     const location = opponentKing.location;
-    let responsibleSquares = opponentKing.checkInfo.responsibleSquares.flat();
+    let responsibleSquaresUnFlat = opponentKing.checkInfo.responsibleSquares;
+    
     const cell = board[location.x][location.y];
     const king = board[location.x][location.y].piece as King;
     const validMoves = this.GetValidMoves(board, king, cell);
     if (validMoves.length > 0) return false;
+
+    if(responsibleSquaresUnFlat.length > 1 && validMoves.length <=0) return true;
+    
+    console.log("HERE")
     // else {
-    // for each responsible square, see if it has attacker. If yes, return false
-    const playerColor =
+      // for each responsible square, see if it has attacker. If yes, return false
+      let responsibleSquares = opponentKing.checkInfo.responsibleSquares.flat();
+      const playerColor =
       opponentColor === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
     const kingIdx = responsibleSquares.findIndex((sq) => {
       return sq.x === location.x && sq.y === location.y;
@@ -741,6 +747,19 @@ export default class Board {
 
       return attackersWithoutKing.length > 0;
     });
+    const canBlockSq = responsibleSquares.filter((sq) => {
+      const CellIsAttacked = Cell.CellIsAttacked(board, sq, playerColor);
+      const kingIdx = CellIsAttacked.attackers.findIndex((sq) => {
+        return sq.x === location.x && sq.y === location.y;
+      });
+      const attackersWithoutKing = CellIsAttacked.attackers.filter(
+        (sq, idx) => idx !== kingIdx
+      );
+
+      return attackersWithoutKing.length > 0;
+    });
+
+    console.log(canBlockSq)
 
     return !canBlock;
   }
