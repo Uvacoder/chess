@@ -1,16 +1,16 @@
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
-import GameProvider from "./hooks/GameContext";
 import Game from "./pages/Game.Page";
 import MenuPage from "./pages/Menu.Page";
+
+import { Route, Routes } from "react-router-dom";
+
 function App() {
   return (
-    <GameProvider>
-      <MenuPage />
-      {/* <Game /> */}
-      <ToastContainer theme="dark" position="bottom-right" />
-    </GameProvider>
+    <Routes>
+      <Route path="/" element={<MenuPage />} />
+      <Route path="/game" element={<Game />} />
+    </Routes>
   );
 }
 

@@ -1,19 +1,16 @@
 import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import Error from "./pages/Error.Page";
+import GameProvider from "./hooks/GameContext";
+import { ToastContainer } from "react-toastify";
 import "./index.css";
 import "./menu.css";
 
-// Pagination module
-import { createBrowserRouter, RouterProvider, Route } from "react-router-dom";
-const router = createBrowserRouter([
-  {
-    path: "/",
-
-    element: <App />,
-    errorElement: <Error />,
-  },
-]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <RouterProvider router={router} />
+  <BrowserRouter>
+    <GameProvider>
+      <App />
+    </GameProvider>
+    <ToastContainer theme="dark" position="bottom-right" />
+  </BrowserRouter>
 );

@@ -68,9 +68,12 @@ body {
 }
 
 .bg-primary {
-  background: var(--clr-primary) !important;
+  background: var(--clr-primary);
 }
 
 .text-primary {
   color: var(--clr-primary) !important;
+}
+.text-sans-serif {
+  font-family: sans-serif;
 }
