@@ -7,8 +7,8 @@ import MenuPage from "./pages/Menu.Page";
 function App() {
   return (
     <GameProvider>
-      {/* <MenuPage /> */}
-      <Game />
+      <MenuPage />
+      {/* <Game /> */}
       <ToastContainer theme="dark" position="bottom-right" />
     </GameProvider>
   );

@@ -1,0 +1,61 @@
+.logo {
+}
+.logo-entry-left-animate {
+  animation: left_entry 1.5s ease-in-out forwards;
+}
+.logo-entry-right-animate {
+  animation: right_entry 1.5s ease-in-out forwards;
+}
+
+.logo-txt-animate {
+  animation: up 1s ease-in-out forwards;
+  animation-delay: 1s;
+  opacity: 0;
+}
+
+@keyframes left_entry {
+  0% {
+    transform: translate(100%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-40px, 0) rotate(-30deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(-40px, 0) rotate(-30deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-40px, -25%) rotate(-30deg);
+    opacity: 1;
+  }
+}
+
+@keyframes right_entry {
+  0% {
+    transform: translate(-100%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(40px, 0) rotate(30deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(40px, 0) rotate(30deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40px, -25%) rotate(30deg);
+    opacity: 1;
+  }
+}
+
+@keyframes up {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
