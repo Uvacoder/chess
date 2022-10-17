@@ -304,7 +304,6 @@ export default class Cell {
 
           if (forCheck) {
             if (attackingPiece instanceof Pawn) {
-              console.log("PAWN");
               /**
                * Since pawn captures diagonally, we need to only check for those valid locations that are diagonal to the king.
                * If pawn is white, check top left and right diagonals for king. If black, check bottom left and right diagonals for king.

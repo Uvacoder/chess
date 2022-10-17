@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,9 +10,10 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: hsla(0, 0%, 100%, 0.87);
+  /* background-color: #1D2435; */
 
+  --clr-primary: #ffcc4a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,7 +24,9 @@
   box-sizing: border-box;
   overflow-x: hidden;
   user-select: none;
+  font-family: "Bebas Neue", cursive;
 }
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -61,4 +65,15 @@ body {
 
 .text-white {
   color: white !important;
+}
+
+.bg-primary {
+  background: var(--clr-primary);
+}
+
+.text-primary {
+  color: var(--clr-primary) !important;
+}
+.text-sans-serif {
+  font-family: sans-serif;
 }
