@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode } from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 import { TGameOverInfo } from "../@types";
 import Board from "../models/Board";
 import Game from "../models/Game";
@@ -20,6 +20,7 @@ type TGameContextType = {
   ResetGameOverStatus: Function;
   turn: COLORS;
   setTurn: Function;
+  PlaySound: Function;
 };
 
 const GameContext = createContext<TGameContextType>({
@@ -49,17 +50,28 @@ const GameContext = createContext<TGameContextType>({
   ResetGameOverStatus: () => {},
   turn: COLORS.WHITE,
   setTurn: () => {},
+  PlaySound: (
+    type: "WIN" | "DRAW" | "CHECK" | "CASTLE" | "CAPTURE" | "MOVE"
+  ) => {},
 });
 
-export const useGame = () => React.useContext<TGameContextType>(GameContext);
+export const useGame = () => useContext<TGameContextType>(GameContext);
 
 export default function GameProvider({ children }: { children: ReactNode }) {
-  const [fen, setFen] = React.useState<string>(START_POSITION);
-  const [board, setBoard] = React.useState<Board>();
-  const [pgn, setPgn] = React.useState<Array<string>>();
-  const [fenError, setFenError] = React.useState<boolean>(false);
-  const [turn, setTurn] = React.useState<COLORS>(COLORS.WHITE);
-  const [gameOver, setGameOver] = React.useState<TGameOverInfo>({
+  const [sounds, setSounds] = useState({
+    move: new Audio("/assets/sounds/move.mp3"),
+    capture: new Audio("/assets/sounds/capture.mp3"),
+    check: new Audio("/assets/sounds/check.mp3"),
+    castle: new Audio("/assets/sounds/castle.mp3"),
+    win: new Audio("/assets/sounds/checkmate.mp3"),
+    draw: new Audio("/assets/sounds/draw.mp3"),
+  });
+  const [fen, setFen] = useState<string>(START_POSITION);
+  const [board, setBoard] = useState<Board>();
+  const [pgn, setPgn] = useState<Array<string>>();
+  const [fenError, setFenError] = useState<boolean>(false);
+  const [turn, setTurn] = useState<COLORS>(COLORS.WHITE);
+  const [gameOver, setGameOver] = useState<TGameOverInfo>({
     status: false,
     reason: {
       won: {
@@ -86,6 +98,32 @@ export default function GameProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+  }
+
+  function PlaySound(
+    type: "WIN" | "DRAW" | "CHECK" | "CASTLE" | "CAPTURE" | "MOVE"
+  ) {
+    switch (type) {
+      case "WIN":
+        console.log("PLAU WIN");
+        sounds.win.play();
+        break;
+      case "DRAW":
+        sounds.draw.play();
+        break;
+      case "CHECK":
+        sounds.check.play();
+        break;
+      case "CASTLE":
+        sounds.castle.play();
+        break;
+      case "CAPTURE":
+        sounds.capture.play();
+        break;
+      case "MOVE":
+        sounds.move.play();
+        break;
+    }
   }
   function ChangeFenString(fen: string) {
     try {
@@ -133,6 +171,7 @@ export default function GameProvider({ children }: { children: ReactNode }) {
         ResetGameOverStatus,
         turn,
         setTurn,
+        PlaySound,
       }}
     >
       {children}

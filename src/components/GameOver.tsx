@@ -2,7 +2,6 @@ import { Chess } from "tabler-icons-react";
 import { useGame } from "../hooks/GameContext";
 import { Capitalize, COLORS, START_POSITION } from "../utils/Constants";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 export default function GameOver() {
   const { gameOver, ChangeFenString, ResetGameOverStatus } = useGame();
   return (

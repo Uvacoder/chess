@@ -11,19 +11,19 @@ import ModalComponent from "./Modal";
 import { Pawn } from "../models/Piece";
 import { TPiece } from "../@types";
 export default function BoardComponent() {
-  const { board, gameOver, setTurn } = useGame();
+  const { board, gameOver, setTurn, PlaySound } = useGame();
   const { setFen, setGameOver } = useGame();
   const [state, setState] = useState(false);
   const [cell, setCell] = useState<Cell>();
   const [modelOpen, setModalOpen] = useState<boolean>(false);
 
-  function PlaySound() {
-    if (board && board.sound.checkmate) sounds.checkmate.play();
-    else if (board && board.sound.draw) sounds.draw.play();
-    else if (board && board.sound.check) sounds.check.play();
-    else if (board && board.sound.castle) sounds.castle.play();
-    else if (board && board.sound.capture) sounds.capture.play();
-    else if (board && board.sound.move) sounds.move.play();
+  function Sound() {
+    if (board && board.sound.checkmate) PlaySound("WIN");
+    else if (board && board.sound.draw) PlaySound("DRAW");
+    else if (board && board.sound.check) PlaySound("CHECK");
+    else if (board && board.sound.castle) PlaySound("CASTLE");
+    else if (board && board.sound.capture) PlaySound("CAPTURE");
+    else if (board && board.sound.move) PlaySound("MOVE");
   }
 
   useEffect(() => {
@@ -41,15 +41,6 @@ export default function BoardComponent() {
     setFen((board && board.fen) || START_POSITION);
     setGameOver(board && board.game.gameOverInfo);
   }, [state]);
-
-  const [sounds, setSounds] = useState({
-    move: new Audio("/assets/sounds/move.mp3"),
-    capture: new Audio("/assets/sounds/capture.mp3"),
-    check: new Audio("/assets/sounds/check.mp3"),
-    castle: new Audio("/assets/sounds/castle.mp3"),
-    checkmate: new Audio("/assets/sounds/checkmate.mp3"),
-    draw: new Audio("/assets/sounds/draw.mp3"),
-  });
 
   return !board ? (
     <p>Loading</p>
@@ -89,7 +80,7 @@ export default function BoardComponent() {
                 onMouseDown={() => {
                   if (!gameOver.status) {
                     board.PieceClick(cell, board.turn);
-                    PlaySound();
+                    Sound();
                     setCell(cell);
                     setState(!state);
                     setTurn(board.turn);
@@ -112,7 +103,7 @@ export default function BoardComponent() {
               <PromotionMenuComponent
                 callBack={() => {
                   (cell.piece as Pawn).promotion = false;
-                  PlaySound();
+                  Sound();
                   setState(!state);
                   // setModalOpen(false);
                 }}
