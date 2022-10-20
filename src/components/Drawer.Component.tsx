@@ -26,7 +26,9 @@ export default function DrawerComponent({
           <ChevronRight size={20} />
         </button>
       </div>
-      {children}
+      <div className="grid relative h-full w-[400px]">
+        <div className="p-5 bg-neutral-900">{children}</div>
+      </div>
     </div>
   );
 }

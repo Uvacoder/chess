@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import About from "../components/Menu/About";
 import Settings from "../components/Menu/Settings";
 import Play from "../components/Menu/Play";
+import { useGame } from "../hooks/GameContext";
+import { START_POSITION } from "../utils/Constants";
 
 export default function MenuPage() {
+  const { ChangeFenString, ResetGameOverStatus } = useGame();
+
   const [tabIdx, setTabIdx] = useState(0);
   const [tabs, _] = useState({
     0: {
@@ -19,6 +23,10 @@ export default function MenuPage() {
       component: <Settings />,
     },
   });
+  useEffect(() => {
+    ChangeFenString(START_POSITION);
+    ResetGameOverStatus();
+  }, []);
   return (
     <div className="text-black h-screen lg:h-fit w-screen lg:w-[75vw] lg:min-w-[1000px] p-10 lg:px-[100px] bg-white">
       <header className="flex gap-4 items-center h-fit">

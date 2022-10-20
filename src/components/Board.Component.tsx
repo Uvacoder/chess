@@ -62,7 +62,7 @@ export default function BoardComponent() {
           display: "grid",
           gridTemplateColumns: "repeat(8, 1fr)",
           gridTemplateRows: "auto",
-          maxWidth: "800px",
+          maxWidth: "650px",
         }}
       >
         {board.board.map((rank: Cell[], x: number) => {

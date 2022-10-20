@@ -7,12 +7,11 @@ import Game from "../models/Game";
 import ModalComponent from "../components/Modal";
 import { TGameOverInfo } from "../@types";
 import GameContext, { useGame } from "../hooks/GameContext";
-import { COLORS, START_POSITION } from "../utils/Constants";
+import { START_POSITION } from "../utils/Constants";
 import GameOver from "../components/GameOver";
 import { Anchor, ChevronLeft } from "tabler-icons-react";
 import DrawerComponent from "../components/Drawer.Component";
 import PlayerBanner from "../components/PlayerBanner.Component";
-
 export default function GamePage() {
   const { fen, setFen, board, setBoard, gameOver, setFenError } = useGame();
 
@@ -39,20 +38,12 @@ export default function GamePage() {
           <p>Game Options</p>
         </button>
       </div>
-      <div className="flex items-center">
-        {board && (
-          <div className="grid place-items-center">
-            <PlayerBanner color={COLORS.WHITE} name="Suparth" />
-            <BoardComponent />
-            <PlayerBanner color={COLORS.WHITE} name="Suparth" />
-          </div>
-        )}
-      </div>
+      <div className="flex">{board && <BoardComponent />}</div>
       <ModalComponent setOpen={() => {}} openStatus={gameOver.status}>
         <GameOver />
       </ModalComponent>
       <DrawerComponent isOpen={drawerOpen} setOpen={setDrawerOpen}>
-        <div>Hello</div>
+        <SidebarComponent setDrawerOpen={setDrawerOpen} />
       </DrawerComponent>
     </div>
   );

@@ -1,10 +1,18 @@
-import { Flag } from "tabler-icons-react";
-export default function PlayerBanner({ name }: { name: string }) {
+import { Capture, Flag } from "tabler-icons-react";
+import { COLORS } from "../utils/Constants";
+const capturedPieces = ["p", "p", "p", "b", "b", "k", "k", "r", "r", "q"];
+export default function PlayerBanner({
+  name,
+  color,
+}: {
+  name: string;
+  color: COLORS;
+}) {
   return (
     <div
-      className={`my-5 w-[600px] block p-6 bg-black rounded-lg shadow-md flex items-center justify-between`}
+      className={`my-5 w-full max-w-[650px] block p-6 bg-neutral-800 rounded-lg flex items-center justify-between`}
     >
-      <div className="flex items-center gap-5">
+      <div className="flex w-full items-center gap-5">
         <div className="w-[50px] h-[50px] object-cover rounded-full">
           <img
             src="https://source.unsplash.com/100x100"
@@ -21,12 +29,30 @@ export default function PlayerBanner({ name }: { name: string }) {
               </button>
             </div>
           </div>
-          <p>Capture Opponent's Pieces to View Them Here</p>
+          <div className="flex items-end gap-2 justify-start">
+            {capturedPieces.map((p, i) => (
+              <CapturedPiece
+                key={`captured-piece-${i}-${color}`}
+                type={p}
+                color={color}
+              />
+            ))}
+          </div>
         </div>
       </div>
-      <div className="bg-neutral-700 px-4 py-2 rounded font-bold">
+      <div className="bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
         ⌛ 8 : 12
       </div>
     </div>
+  );
+}
+
+function CapturedPiece({ type, color }: { type: string; color: COLORS }) {
+  return (
+    <img
+      className="h-[25px]  rounded-full"
+      src={`/assets/sprites/${color}/${type}.svg`}
+      alt=""
+    />
   );
 }
