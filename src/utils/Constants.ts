@@ -1,4 +1,3 @@
-
 // "5bn1/P2Q2B1/3p1N2/K2bP3/6P1/7k/1qP5/1R5r w - - 0 1";
 // "8/3K4/2P4P/p3r3/2p3p1/1PkNnPB1/6p1/n2R4 w - - 0 1";
 // "8/8/8/4q1K1/2k1R3/8/8/8 b - - 0 1";
@@ -141,4 +140,17 @@ export function Capitalize(string: string) {
 
 export function CopyTextToClipBoard(text: string) {
   navigator.clipboard.writeText(text);
+}
+
+export function FormattedTime(timeInMs: number) {
+  const timeInSeconds = timeInMs / 1000;
+  const hrs = Math.floor(timeInSeconds / 3600);
+  const mins = Math.floor((timeInSeconds - 3600 * hrs) / 60);
+  const secs = Math.floor(timeInSeconds - 3600 * hrs - 60 * mins);
+
+  const hrStr =
+    hrs > 0 ? (hrs.toString().length < 2 ? "0" + hrs : hrs.toString()) : "";
+  const minStr = mins.toString().length < 2 ? "0" + mins : mins;
+  const secStr = secs.toString().length < 2 ? "0" + secs : secs;
+  return (hrStr.length > 0 ? hrStr + ":" : "") + minStr + ":" + secStr;
 }

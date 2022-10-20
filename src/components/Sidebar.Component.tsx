@@ -16,8 +16,8 @@ export default function SideBar({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   return (
-    <div className="grid relative h-full w-[400px]">
-      <div className="p-5 bg-neutral-900">
+    <>
+      <div>
         <button
           onClick={() => setModalOpen(true)}
           className="p-2 flex text-[1.5rem] items-center gap-3 bg-neutral-800 rounded hover:opacity-80"
@@ -40,7 +40,7 @@ export default function SideBar({
           <GameInfo setDrawerOpen={setDrawerOpen} />
         </div>
       </ModalComponent>
-    </div>
+    </>
   );
 }
 
@@ -168,7 +168,7 @@ function GameInfo({ setDrawerOpen }: { setDrawerOpen: Function }) {
           {fen}
         </div>
       </div>
-      {pgn?.length > 0 ? (
+      {/* {pgn?.length > 0 ? (
         <div className="grid-item">
           <div className="mt-2 flex items-center gap-3">
             <h2 className="text-lg font-bold">Board Moves (PGN)</h2>
@@ -200,7 +200,7 @@ function GameInfo({ setDrawerOpen }: { setDrawerOpen: Function }) {
         <p className="mt-2 text-center font-bold italic">
           - Play Game to View Moves (PGN) -
         </p>
-      )}
+      )} */}
     </div>
   );
 }

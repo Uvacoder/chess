@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import About from "../components/Menu/About";
 import Settings from "../components/Menu/Settings";
 import Play from "../components/Menu/Play";
+import { useGame } from "../hooks/GameContext";
+import { START_POSITION } from "../utils/Constants";
+import Help from "../components/Menu/Help";
 
 export default function MenuPage() {
+  const { ChangeFenString, ResetGameOverStatus } = useGame();
+
   const [tabIdx, setTabIdx] = useState(0);
   const [tabs, _] = useState({
     0: {
@@ -11,14 +16,22 @@ export default function MenuPage() {
       component: <Play />,
     },
     1: {
+      name: "Help",
+      component: <Help />,
+    },
+    2: {
       name: "About",
       component: <About />,
     },
-    2: {
+    3: {
       name: "Settings",
       component: <Settings />,
     },
   });
+  useEffect(() => {
+    ChangeFenString(START_POSITION);
+    ResetGameOverStatus();
+  }, []);
   return (
     <div className="text-black h-screen lg:h-fit w-screen lg:w-[75vw] lg:min-w-[1000px] p-10 lg:px-[100px] bg-white">
       <header className="flex gap-4 items-center h-fit">
@@ -32,7 +45,7 @@ export default function MenuPage() {
           <div
             className={`absolute isolate z-[1] h-full top-0 transition left-0 bg-primary`}
             style={{
-              width: "calc(100% / 3)",
+              width: `calc(100% / ${Object.keys(tabs).length})`,
               transform:
                 tabIdx === 0
                   ? "translateX(0)"

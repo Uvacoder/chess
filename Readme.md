@@ -28,11 +28,12 @@
 |       Checkmate        |        ✔️         |
 |     Pawn Promotion     |        ✔️         |
 |       Stalemate        |        ✔️         |
-| Insufficient Material  |        ⏳         |
+| Insufficient Material  |        ✔️         |
+|        Time Up         |        ⏳         |
+|          PWA           |        ⏳         |
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
 |      Resignation       |        ✖️         |
-|       Time Up ✖️       |
 
 ---
 
