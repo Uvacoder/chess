@@ -4,7 +4,7 @@ import { COLORS, FormattedTime } from "../utils/Constants";
 import useCountDown from "react-countdown-hook";
 import { useEffect, useState } from "react";
 import { TGameOverInfo } from "../@types";
-const initialTime = 60 * 10000; // initial time in milliseconds, defaults to 60000
+const initialTime = 6000 * 100; // initial time in milliseconds, defaults to 60000
 const interval = 500; // interval to change remaining time amount, defaults to 1000
 
 const capturedPieces = ["p", "p", "p", "b", "b", "k", "k", "r", "r", "q"];
@@ -79,7 +79,7 @@ export default function PlayerBanner({
               </button>
             </div>
           </div>
-          <div className="flex items-end gap-2 justify-start">
+          {/* <div className="flex flex-wrap max-w-[200px] items-end gap-2 justify-start">
             {capturedPieces.map((p, i) => (
               <CapturedPiece
                 key={`captured-piece-${i}-${color}`}
@@ -87,10 +87,10 @@ export default function PlayerBanner({
                 color={color}
               />
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
-      <div className="text-sans-serif bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
+      <div className="text-sans-serif bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold lg:text-[1.5rem] lg:text-[2rem]">
         {FormattedTime(timeLeft === 0 ? initialTime : timeLeft)}
       </div>
     </div>

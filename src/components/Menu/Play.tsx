@@ -8,7 +8,7 @@ export default function Play() {
       id="play"
     >
       <MenuButton piece="king" title="Local Multiplayer" link="/game" />
-      <MenuButton piece="bishop" title="Board Analysis" link="/game" />
+      <MenuButton piece="bishop" title="Board Analysis" link="/analysis" />
       <MenuButton disabled={true} piece="rook" title="vs AI" />
       <MenuButton disabled={true} piece="queen" title="Online Multiplayer" />
     </section>
