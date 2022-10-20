@@ -75,5 +75,5 @@ body {
   color: var(--clr-primary) !important;
 }
 .text-sans-serif {
-  font-family: sans-serif;
+  font-family: sans-serif !important;
 }

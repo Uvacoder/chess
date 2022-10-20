@@ -3,7 +3,9 @@ import { useGame } from "../hooks/GameContext";
 import { Capitalize, COLORS, START_POSITION } from "../utils/Constants";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useCountdown } from "../hooks/CountdownContext";
 export default function GameOver() {
+  const { resetCountdown } = useCountdown();
   const { gameOver, ChangeFenString, ResetGameOverStatus } = useGame();
   return (
     <div className="grid border-2 items-center justify-center h-full">
@@ -36,8 +38,8 @@ export default function GameOver() {
           )}
           {gameOver.reason.draw.status === true && (
             <div className="flex items-center gap-3">
-              <p className="overflow-hidden">Game Drawn!</p>
-              <p className="overflow-hidden">
+              <p className="overflow-hidden leading-tight">Game Drawn!</p>
+              <p className="overflow-hidden leading-tight">
                 {gameOver.reason.draw.reason &&
                   gameOver.reason.draw.reason[0] +
                     gameOver.reason.draw.reason
@@ -52,6 +54,7 @@ export default function GameOver() {
             onClick={() => {
               ChangeFenString(START_POSITION);
               ResetGameOverStatus();
+              resetCountdown();
             }}
             className="py-2 pt-3 text-[2rem] w-full bg-primary text-black rounded hover:opacity-80"
           >

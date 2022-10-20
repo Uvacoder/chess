@@ -1,12 +1,22 @@
-import { Capture, Flag } from "tabler-icons-react";
+import { useEffect, useState } from "react";
+import {
+  BorderRadius,
+  Capture,
+  Flag,
+  PlayerPause,
+  PlayerPlay,
+} from "tabler-icons-react";
+import { TConvertedTime } from "../hooks/CountdownContext";
 import { COLORS } from "../utils/Constants";
 const capturedPieces = ["p", "p", "p", "b", "b", "k", "k", "r", "r", "q"];
 export default function PlayerBanner({
   name,
   color,
+  remainingTime,
 }: {
   name: string;
   color: COLORS;
+  remainingTime: TConvertedTime;
 }) {
   return (
     <div
@@ -40,8 +50,9 @@ export default function PlayerBanner({
           </div>
         </div>
       </div>
-      <div className="bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
-        ⌛ 4 : 20
+      <div className="text-sans-serif bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
+        {remainingTime.hrs > 0 && remainingTime.strHrs + " : "}{" "}
+        {remainingTime.strMin} : {remainingTime.strSec}
       </div>
     </div>
   );
