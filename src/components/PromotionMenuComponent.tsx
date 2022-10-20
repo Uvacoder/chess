@@ -36,7 +36,7 @@ export default function PromotionMenuComponent({
                 <button
                   className="p-2 rounded-xl bg-neutral-200 hover:bg-neutral-300"
                   onClick={() => {
-                    board.PromotePawn(cell, info.rep);
+                    board?.PromotePawn(cell, info.rep);
                     toast.success("Promoted to " + info.name);
                     callBack();
                   }}
