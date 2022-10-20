@@ -11,19 +11,19 @@ import ModalComponent from "./Modal";
 import { Pawn } from "../models/Piece";
 import { TPiece } from "../@types";
 export default function BoardComponent() {
-  const { board, gameOver } = useGame();
+  const { board, gameOver, setTurn } = useGame();
   const { setFen, setGameOver } = useGame();
   const [state, setState] = useState(false);
   const [cell, setCell] = useState<Cell>();
   const [modelOpen, setModalOpen] = useState<boolean>(false);
 
   function PlaySound() {
-    if (board.sound.checkmate) sounds.checkmate.play();
-    else if (board.sound.draw) sounds.draw.play();
-    else if (board.sound.check) sounds.check.play();
-    else if (board.sound.castle) sounds.castle.play();
-    else if (board.sound.capture) sounds.capture.play();
-    else if (board.sound.move) sounds.move.play();
+    if (board && board.sound.checkmate) sounds.checkmate.play();
+    else if (board && board.sound.draw) sounds.draw.play();
+    else if (board && board.sound.check) sounds.check.play();
+    else if (board && board.sound.castle) sounds.castle.play();
+    else if (board && board.sound.capture) sounds.capture.play();
+    else if (board && board.sound.move) sounds.move.play();
   }
 
   useEffect(() => {
@@ -38,8 +38,8 @@ export default function BoardComponent() {
     cell && cell.piece && cell.piece instanceof Pawn && cell.piece.promotion,
   ]);
   useEffect(() => {
-    setFen(board.fen || START_POSITION);
-    setGameOver(board.game.gameOverInfo);
+    setFen((board && board.fen) || START_POSITION);
+    setGameOver(board && board.game.gameOverInfo);
   }, [state]);
 
   const [sounds, setSounds] = useState({
@@ -92,6 +92,7 @@ export default function BoardComponent() {
                     PlaySound();
                     setCell(cell);
                     setState(!state);
+                    setTurn(board.turn);
                   }
                 }}
               >
@@ -121,9 +122,6 @@ export default function BoardComponent() {
             </ModalComponent>
           )}
       </div>
-      {/* {board.currPiece.piece && ( */}
-
-      {/* )} */}
     </div>
   );
 }

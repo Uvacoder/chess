@@ -3,9 +3,7 @@ import { useGame } from "../hooks/GameContext";
 import { Capitalize, COLORS, START_POSITION } from "../utils/Constants";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useCountdown } from "../hooks/CountdownContext";
 export default function GameOver() {
-  const { resetCountdown } = useCountdown();
   const { gameOver, ChangeFenString, ResetGameOverStatus } = useGame();
   return (
     <div className="grid border-2 items-center justify-center h-full">
@@ -54,7 +52,6 @@ export default function GameOver() {
             onClick={() => {
               ChangeFenString(START_POSITION);
               ResetGameOverStatus();
-              resetCountdown();
             }}
             className="py-2 pt-3 text-[2rem] w-full bg-primary text-black rounded hover:opacity-80"
           >

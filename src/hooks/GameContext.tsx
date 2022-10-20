@@ -3,29 +3,62 @@ import { TGameOverInfo } from "../@types";
 import Board from "../models/Board";
 import Game from "../models/Game";
 import { toast } from "react-toastify";
-const GameContext = createContext<any>({});
+import { COLORS, START_POSITION } from "../utils/Constants";
 
-export const useGame = () =>
-  React.useContext<{
-    fen: string;
-    pgn: Array<string>;
-    setPgn: Function;
-    setFen: Function;
-    board: Board;
-    setBoard: Function;
-    ChangeFenString: Function;
-    fenError: boolean;
-    gameOver: TGameOverInfo;
-    setFenError: Function;
-    setGameOver: Function;
-    ResetGameOverStatus: Function;
-  }>(GameContext);
+type TGameContextType = {
+  fen: string;
+  pgn: Array<string> | undefined;
+  setPgn: Function;
+  setFen: Function;
+  board: Board | undefined;
+  setBoard: Function;
+  ChangeFenString: Function;
+  fenError: boolean;
+  gameOver: TGameOverInfo;
+  setFenError: Function;
+  setGameOver: Function;
+  ResetGameOverStatus: Function;
+  turn: COLORS;
+  setTurn: Function;
+};
+
+const GameContext = createContext<TGameContextType>({
+  fen: "",
+  pgn: [],
+  setPgn: () => {},
+  setFen: () => {},
+  board: undefined,
+  setBoard: () => {},
+  ChangeFenString: () => {},
+  fenError: false,
+  gameOver: {
+    status: false,
+    reason: {
+      won: {
+        status: false,
+        reason: null,
+      },
+      draw: {
+        status: false,
+        reason: null,
+      },
+    },
+  },
+  setFenError: () => {},
+  setGameOver: () => {},
+  ResetGameOverStatus: () => {},
+  turn: COLORS.WHITE,
+  setTurn: () => {},
+});
+
+export const useGame = () => React.useContext<TGameContextType>(GameContext);
 
 export default function GameProvider({ children }: { children: ReactNode }) {
-  const [fen, setFen] = React.useState<string>();
+  const [fen, setFen] = React.useState<string>(START_POSITION);
   const [board, setBoard] = React.useState<Board>();
   const [pgn, setPgn] = React.useState<Array<string>>();
   const [fenError, setFenError] = React.useState<boolean>(false);
+  const [turn, setTurn] = React.useState<COLORS>(COLORS.WHITE);
   const [gameOver, setGameOver] = React.useState<TGameOverInfo>({
     status: false,
     reason: {
@@ -98,6 +131,8 @@ export default function GameProvider({ children }: { children: ReactNode }) {
         setFenError,
         setGameOver,
         ResetGameOverStatus,
+        turn,
+        setTurn,
       }}
     >
       {children}

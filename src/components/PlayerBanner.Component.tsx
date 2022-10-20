@@ -1,23 +1,36 @@
-import { useEffect, useState } from "react";
-import {
-  BorderRadius,
-  Capture,
-  Flag,
-  PlayerPause,
-  PlayerPlay,
-} from "tabler-icons-react";
-import { TConvertedTime } from "../hooks/CountdownContext";
-import { COLORS } from "../utils/Constants";
+import { Flag } from "tabler-icons-react";
+import { useGame } from "../hooks/GameContext";
+import { COLORS, FormattedTime } from "../utils/Constants";
+import useCountDown from "react-countdown-hook";
+import { useEffect } from "react";
+const initialTime = 600 * 1000; // initial time in milliseconds, defaults to 60000
+const interval = 1000; // interval to change remaining time amount, defaults to 1000
+
 const capturedPieces = ["p", "p", "p", "b", "b", "k", "k", "r", "r", "q"];
 export default function PlayerBanner({
   name,
   color,
-  remainingTime,
 }: {
   name: string;
   color: COLORS;
-  remainingTime: TConvertedTime;
 }) {
+  const { turn } = useGame();
+  const [timeLeft, { start, pause, resume, reset }] = useCountDown(
+    initialTime,
+    interval
+  );
+  useEffect(() => {
+    if (turn === color) {
+      if (timeLeft === 0) start();
+      else {
+        start(timeLeft - interval);
+        resume();
+      }
+    } else {
+      pause();
+    }
+  }, [turn]);
+
   return (
     <div
       className={`my-5 w-full max-w-[650px] block p-6 bg-neutral-800 rounded-lg flex items-center justify-between`}
@@ -51,8 +64,7 @@ export default function PlayerBanner({
         </div>
       </div>
       <div className="text-sans-serif bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
-        {remainingTime.hrs > 0 && remainingTime.strHrs + " : "}{" "}
-        {remainingTime.strMin} : {remainingTime.strSec}
+        {FormattedTime(timeLeft === 0 ? initialTime : timeLeft)}
       </div>
     </div>
   );
