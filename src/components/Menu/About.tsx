@@ -21,7 +21,8 @@ export default function About() {
         plans on what extent this project might grow, but I would like to try to
         create my own AI that can play against humans one day. That point is far
         though. For now, I am developing actual playable game with all rules of
-        Chess. <a href="https://github.com/suparthghimire/chess">[Read More]</a>
+        Chess.{" "}
+        <a href="https://github.com/suparthghimire/chess#readme">[Read More]</a>
       </p>
     </div>
   );
