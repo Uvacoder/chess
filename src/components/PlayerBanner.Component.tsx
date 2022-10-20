@@ -41,7 +41,7 @@ export default function PlayerBanner({
         </div>
       </div>
       <div className="bg-neutral-700 min-w-max px-4 py-2 pt-3 rounded font-bold text-[2rem]">
-        ⌛ 8 : 12
+        ⌛ 4 : 20
       </div>
     </div>
   );

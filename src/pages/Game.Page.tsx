@@ -31,13 +31,13 @@ export default function GamePage() {
   return (
     <div className="grid relative h-screen place-items-center">
       <div className="absolute top-[20px] right-[20px] ">
-        <button
+        {/* <button
           className="p-2 bg-neutral-700 rounded flex gap-2 items-center hover:opacity-80"
           onClick={() => setDrawerOpen(true)}
         >
           <ChevronLeft />
           <p>Game Options</p>
-        </button>
+        </button> */}
       </div>
       <div className="flex items-center">
         {board && (
@@ -51,9 +51,9 @@ export default function GamePage() {
       <ModalComponent setOpen={() => {}} openStatus={gameOver.status}>
         <GameOver />
       </ModalComponent>
-      <DrawerComponent isOpen={drawerOpen} setOpen={setDrawerOpen}>
+      {/* <DrawerComponent isOpen={drawerOpen} setOpen={setDrawerOpen}>
         <div>Hello</div>
-      </DrawerComponent>
+      </DrawerComponent> */}
     </div>
   );
 }
