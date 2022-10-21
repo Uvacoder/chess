@@ -23,8 +23,8 @@ export default function GamePage() {
   }, []);
 
   return (
-    <div className="grid relative h-screen place-items-center">
-      <div className="absolute w-full top-[20px] px-4 py-2">
+    <div className="grid relative bg-white h-screen place-items-center">
+      <div className="absolute w-full top-[10%] md:top-[20px] px-4 py-2">
         <h2 className="text-black text-center font-bold text-[5rem] leading-tight">
           Analysis
         </h2>

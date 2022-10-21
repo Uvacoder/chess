@@ -39,6 +39,7 @@ export default function MenuPage() {
         <h1 className="logo text-primary overflow-hidden text-[3rem] md:text-[5rem] leading-loose">
           Shakuni
         </h1>
+        <div></div>
       </header>
       <section className="flex gap-3 h-fit">
         <div className="rounded-md flex w-fit relative bg-neutral-900">
@@ -54,6 +55,7 @@ export default function MenuPage() {
           ></div>
           {Object.entries(tabs).map(([k, v], i) => (
             <button
+              key={"menu-btn-" + i}
               className={`focus:outline-none z-[2] overflow-hidden w-[100px] lg:w-[120px] h-[50px] text-[1.5rem] lg:text-[2rem] pt-1 transition hover:opacity-80 ${
                 tabIdx === i ? "text-neutral-900 " : "text-white"
               }`}

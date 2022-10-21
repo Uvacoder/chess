@@ -1,0 +1,7 @@
+{
+  "routes": [
+    { "src": "/", "dest": "/", "status": 200 },
+    { "src": "/game", "dest": "/game", "status": 200 },
+    { "src": "/analysis", "dest": "/analysis", "status": 200 }
+  ]
+}

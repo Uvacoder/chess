@@ -20,13 +20,17 @@ export default function GamePage() {
   }, []);
 
   return (
-    <div className="grid relative h-screen place-items-center">
+    <div className="grid relative h-screen bg-white place-items-center">
       <div className="flex items-center">
         {board && (
           <div className="grid place-items-center">
-            <PlayerBanner color={COLORS.BLACK} name="Suparth" />
+            <div className="w-full px-3 lg:px-0">
+              <PlayerBanner color={COLORS.BLACK} name="Suparth" />
+            </div>
             <BoardComponent />
-            <PlayerBanner color={COLORS.WHITE} name="Suparth" />
+            <div className="w-full px-3 lg:px-0">
+              <PlayerBanner color={COLORS.WHITE} name="Suparth" />
+            </div>
           </div>
         )}
       </div>
