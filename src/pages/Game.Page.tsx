@@ -24,11 +24,11 @@ export default function GamePage() {
       <div className="flex items-center">
         {board && (
           <div className="grid place-items-center">
-            <div className="w-full px-3 lg:px-0">
+            <div className="w-full grid place-items-center px-3 lg:px-0">
               <PlayerBanner color={COLORS.BLACK} name="Suparth" />
             </div>
             <BoardComponent />
-            <div className="w-full px-3 lg:px-0">
+            <div className="w-full grid place-items-center px-3 lg:px-0">
               <PlayerBanner color={COLORS.WHITE} name="Suparth" />
             </div>
           </div>
