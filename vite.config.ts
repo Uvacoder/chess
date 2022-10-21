@@ -9,6 +9,8 @@ export default defineConfig({
     VitePWA({
       manifest: {
         name: "Shakuni",
+        short_name: "Shakuni",
+        description: "Just a Simple Chess game",
         icons: [
           {
             src: "assets/icons/manifest-icon-192.maskable.png",
