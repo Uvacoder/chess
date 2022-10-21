@@ -29,8 +29,8 @@
 |     Pawn Promotion     |        ✔️         |
 |       Stalemate        |        ✔️         |
 | Insufficient Material  |        ✔️         |
+|          PWA           |        ✔️         |
 |        Time Up         |        ⏳         |
-|          PWA           |        ⏳         |
 |      Drag to Move      |        ✖️         |
 |    Drag to Capture     |        ✖️         |
 |      Resignation       |        ✖️         |
